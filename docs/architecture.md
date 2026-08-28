@@ -46,17 +46,19 @@ Estado actual (✅ existe · ⏳ pendiente, se crea con su feature):
 ```
 src/
 ├── app/
-│   ├── page.tsx          → ✅ Home placeholder (será el feed)
+│   ├── page.tsx          → ✅ Feed de scroll infinito (M-06)
 │   ├── dev/cards/        → ✅ Demo local de fichas sobre fixtures
 │   ├── dev/seed/         → ✅ Demo local de los repos semilla importados (lee de la DB)
 │   ├── u/[username]/     → ⏳ Perfil público
 │   ├── onboarding/       → ⏳ Selección de repos tras el login
 │   ├── settings/         → ⏳ Gestión de selección, baja de cuenta
 │   └── api/
-│       ├── og/               → ✅ Generación de fichas con @vercel/og (next/og)
+│       ├── og/               → ✅ Generación de fichas con @vercel/og (og:image/embeds)
+│       ├── feed/             → ✅ Paginación del feed por cursor keyset
 │       ├── webhooks/github/  → ⏳ Recepción de webhooks de la GitHub App
 │       └── signals/          → ⏳ Registro de señales implícitas
-├── components/           → ⏳ ui/, card/, feed/
+├── components/
+│   └── feed/             → ✅ RepoCard (HTML/CSS), FeedList (IntersectionObserver); ui/ ⏳
 ├── lib/
 │   ├── card-seed/        → ✅ Semilla determinista, colores Linguist vendorizados, paleta
 │   ├── github/           → ⏳ Cliente GraphQL, GitHub App, verificación de webhooks

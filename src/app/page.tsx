@@ -1,11 +1,37 @@
-export default function Home() {
+import { FeedList } from "@/components/feed/feed-list";
+import { createServiceClient } from "@/lib/db/client";
+import { listFeedPage, type FeedPage } from "@/lib/db/feed-page";
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  let page: FeedPage | null = null;
+  try {
+    page = await listFeedPage(createServiceClient(), null);
+  } catch {
+    page = null;
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6">
-      <h1 className="font-mono text-4xl font-bold">Snapstack</h1>
-      <p className="max-w-md text-center text-content-secondary">
-        Perfil curado de tus repos de GitHub y un feed visual de scroll infinito.
-        En construcción.
-      </p>
+    <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+      <header className="mb-8">
+        <h1 className="font-mono text-2xl font-bold">Snapstack</h1>
+        <p className="mt-1 text-sm text-content-secondary">
+          Qué están construyendo los devs, repo a repo.
+        </p>
+      </header>
+
+      {page === null ? (
+        <p data-testid="feed-unavailable" className="text-error">
+          El feed no está disponible ahora mismo. Vuelve en un rato.
+        </p>
+      ) : page.repos.length === 0 ? (
+        <p data-testid="feed-empty" className="text-content-secondary">
+          Todavía no hay repos en el feed.
+        </p>
+      ) : (
+        <FeedList initialRepos={page.repos} initialCursor={page.nextCursor} />
+      )}
     </main>
   );
 }

@@ -87,9 +87,21 @@ Pinterest de tarjetas, ni una app tinder-style.
 
 ## Componentes definidos
 
-<!-- A medida que se creen componentes reutilizables, documentarlos aquí. -->
+### RepoCard
+Tarjeta del feed. Fondo procedural de M-04 pintado en **HTML/CSS** (misma data determinista
+que `/api/og`; la imagen queda para og:image y embeds), con texto real: en móvil la tarjeta es
+4:5 y en ≥640px, 1.9:1. Estado local de expansión (descripción completa + topics) y enlace al
+repo. Props: `repo: FeedRepo`. Usar en feed y, más adelante, en perfiles.
 
-Ninguno todavía. Los primeros serán `RepoCard`, `FeedList`, `FollowButton`, `LanguageChip`.
+### FeedList
+Lista de scroll infinito: centinela con IntersectionObserver, fin de feed explícito, error con
+reintento inline que conserva lo cargado. Props: `initialRepos`, `initialCursor`.
+
+### CardBackgroundLayer
+Capa de fondo procedural (gradiente + manchas) a partir de un `CardBackground`. La usan
+`RepoCard` ahora y cualquier superficie futura que pinte la identidad visual de un repo.
+
+Pendientes: `FollowButton`, `LanguageChip` (hoy es un dot + texto dentro de `RepoCard`).
 
 ---
 
