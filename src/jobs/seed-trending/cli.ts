@@ -1,8 +1,9 @@
 /**
  * Entrada del seed manual: pnpm seed:trending [--remote] [--days=N] [--limit=N]
  *
- * Por defecto solo acepta el Supabase local (supabase start). Contra el proyecto
- * remoto exige --remote explícito: sembrar producción es una decisión, no un default.
+ * Por defecto siembra el Supabase local (supabase start). Con --remote usa las
+ * variables SUPABASE_REMOTE_URL / SUPABASE_REMOTE_SERVICE_ROLE_KEY: sembrar el
+ * proyecto remoto es una decisión explícita, no un default.
  */
 
 import { createServiceClient, isLocalSupabase } from "@/lib/db/client";
@@ -19,16 +20,25 @@ const flag = (name: string): string | undefined =>
   args.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
 
 const remote = args.includes("--remote");
-if (!isLocalSupabase() && !remote) {
+if (!remote && !isLocalSupabase()) {
   console.error(
     "NEXT_PUBLIC_SUPABASE_URL no apunta al stack local. " +
-      "Si de verdad quieres sembrar el proyecto remoto, ejecuta con --remote.",
+      "Para sembrar el proyecto remoto, ejecuta con --remote (usa las SUPABASE_REMOTE_*).",
   );
+  process.exit(1);
+}
+if (remote && !process.env.SUPABASE_REMOTE_URL) {
+  console.error("Faltan SUPABASE_REMOTE_URL / SUPABASE_REMOTE_SERVICE_ROLE_KEY en .env.local.");
   process.exit(1);
 }
 
 async function main() {
-  const db = createServiceClient();
+  const db = remote
+    ? createServiceClient(
+        process.env.SUPABASE_REMOTE_URL,
+        process.env.SUPABASE_REMOTE_SERVICE_ROLE_KEY,
+      )
+    : createServiceClient();
   const result = await runSeedTrending({
     db,
     days: flag("days") ? Number(flag("days")) : undefined,

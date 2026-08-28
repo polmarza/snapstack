@@ -7,9 +7,10 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export type Db = SupabaseClient;
 
-export function createServiceClient(): Db {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+export function createServiceClient(
+  url = process.env.NEXT_PUBLIC_SUPABASE_URL,
+  key = process.env.SUPABASE_SERVICE_ROLE_KEY,
+): Db {
   if (!url || !key) {
     throw new Error(
       "Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en el entorno (ver .env.example).",
