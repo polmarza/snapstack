@@ -1,0 +1,53 @@
+# Dependencias
+node_modules/
+.pnpm-debug.log*
+
+# Variables de entorno (nunca commitear valores reales)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Builds
+dist/
+build/
+.next/
+out/
+.nuxt/
+.output/
+.vercel/
+
+# Cache
+.cache/
+.parcel-cache/
+.turbo/
+.eslintcache
+
+# Testing
+coverage/
+.nyc_output/
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude Code
+# Nota: .mcp.json SÍ se commitea (las claves van como ${VARIABLE}, nunca el valor real).
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
