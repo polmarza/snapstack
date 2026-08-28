@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* Tokens del design system — fuente de verdad en docs/design-system.md */
+@theme {
+  --color-background: #0b0e14;
+  --color-surface: #151a23;
+  --color-edge: #232b38;
+  --color-primary: #34d399;
+  --color-content: #e6edf3;
+  --color-content-secondary: #8b98a9;
+  --color-success: #34d399;
+  --color-error: #f87171;
+  --color-warning: #fbbf24;
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-content);
+}
