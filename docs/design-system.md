@@ -4,99 +4,97 @@
      Consultar antes de crear cualquier componente nuevo.
      Actualizar cuando se añadan nuevos patrones, componentes o se modifique la identidad visual. -->
 
+> **Estado: propuesta inicial.** La spec no fijaba identidad visual; esta es una primera
+> dirección pendiente de validar con Pol antes de construir UI. Lo único no negociable viene
+> del PRD: las fichas anclan su paleta al color Linguist del lenguaje dominante.
+
+---
+
+## Principio rector
+
+Las **fichas son el color**; la interfaz es el marco. El chrome de la app (fondo, navegación,
+tipografía de apoyo) se mantiene oscuro y neutro para que los fondos procedurales de las
+tarjetas — cada uno con la paleta de su lenguaje — sean lo único que brilla en el feed.
+
 ---
 
 ## Paleta de colores
 
-<!-- Define todos los colores con su rol semántico y código hex.
-     Ejemplo:
-     | Rol | Nombre | Hex |
-     |-----|--------|-----|
-     | Primary | Violeta principal | #7665FF |
-     | Secondary | ... | ... |
-     | Accent | ... | ... |
-     | Background | Fondo base | #FFFFFF |
-     | Surface | Fondo de cards | #F8F8F8 |
-     | Text primary | Texto principal | #111111 |
-     | Text secondary | Texto secundario | #666666 |
-     | Success | Estados positivos | #22C55E |
-     | Error | Estados de error | #EF4444 |
-     | Warning | Advertencias | #F59E0B |
--->
-
 | Rol | Nombre | Hex |
 |-----|--------|-----|
-| Primary | <!-- --> | <!-- --> |
-| Secondary | <!-- --> | <!-- --> |
-| Background | <!-- --> | <!-- --> |
-| Text primary | <!-- --> | <!-- --> |
-| Error | <!-- --> | <!-- --> |
+| Background | Fondo base (casi negro) | #0B0E14 |
+| Surface | Fondo de cards/paneles de UI | #151A23 |
+| Border | Bordes y separadores | #232B38 |
+| Primary | Acento de acción (botones, links, follow) | #34D399 |
+| Text primary | Texto principal | #E6EDF3 |
+| Text secondary | Texto secundario | #8B98A9 |
+| Success | Estados positivos | #34D399 |
+| Error | Estados de error | #F87171 |
+| Warning | Advertencias | #FBBF24 |
+
+Los colores de acento de cada **ficha** no salen de esta tabla: salen del color oficial de
+GitHub Linguist del lenguaje dominante del repo (ej. TypeScript #3178C6, Python #3572A5,
+Rust #DEA584), aplicado al gradiente/formas del fondo procedural.
 
 ---
 
 ## Tipografía
 
-<!-- Define fuentes, tamaños y pesos.
-     Ejemplo:
-     - **Display / Headings:** Fraunces, serif
-     - **Body:** Outfit, sans-serif
-     - **Monospace / Code:** Space Mono
-     
-     | Nivel | Fuente | Tamaño | Peso |
-     |-------|--------|--------|------|
-     | H1 | Fraunces | 48px | 700 |
-     | H2 | Fraunces | 36px | 600 |
-     | Body | Outfit | 16px | 400 |
-     | Caption | Outfit | 12px | 400 |
--->
+- **Display / Headings / UI:** Geist Sans (o Inter como fallback)
+- **Monospace:** JetBrains Mono — nombres de repos, chips de lenguaje, cifras de stars
+
+| Nivel | Fuente | Tamaño | Peso |
+|-------|--------|--------|------|
+| H1 (nombre de repo en ficha) | JetBrains Mono | 32px | 700 |
+| H2 (secciones, nombre en perfil) | Geist Sans | 24px | 600 |
+| Body | Geist Sans | 16px | 400 |
+| Chips / metadata | JetBrains Mono | 13px | 500 |
+| Caption | Geist Sans | 12px | 400 |
 
 ---
 
 ## Espaciado y grid
 
-<!-- Define la escala de espaciado y el sistema de grid.
-     Ejemplo:
-     - Escala: 4px base (4, 8, 12, 16, 24, 32, 48, 64, 96)
-     - Grid: 12 columnas, gutter 24px, max-width 1200px -->
+- Escala: base 4px (4, 8, 12, 16, 24, 32, 48, 64, 96)
+- Feed: columna única centrada, max-width 640px — una ficha por viewport aprox., ritmo de
+  scroll tipo timeline, no grid de galería
+- Perfil: grid de fichas 2 columnas en desktop, 1 en móvil; max-width 960px
 
 ---
 
 ## Estilo de componentes
 
-<!-- Describe las decisiones de estilo que aplican globalmente.
-     Ejemplo:
-     - Border radius: 8px para cards, 4px para inputs, full para badges
-     - Sombras: solo en modales y dropdowns, nunca decorativas
-     - Densidad: compacta (menos padding) en tablas, estándar en el resto
-     - Iconos: Lucide React, tamaño base 20px -->
+- Border radius: 16px para fichas, 8px para botones e inputs, full para chips y avatares
+- Sombras: ninguna decorativa; las fichas se separan del fondo por su propio color
+- Iconos: Lucide, tamaño base 20px
+- La ficha (imagen `@vercel/og`) es el componente central: fondo procedural + nombre +
+  descripción corta. Relación de aspecto 1200×630 (OG estándar), reutilizable como og:image
+  del repo y del perfil
 
 ---
 
 ## Tono visual
 
-<!-- Descripción en prosa del look & feel.
-     Qué sensación debe transmitir el producto. Qué NO debe parecer.
-     Ejemplo:
-     "Profesional pero accesible. No corporativo ni frío.
-      Limpio, con espacio para respirar. Nada de efectos decorativos gratuitos.
-      La información es el protagonista, la UI desaparece." -->
+Oscuro, denso en contenido, tranquilo en el chrome. Debe sentirse como una herramienta de
+developer (terminal, editor), no como una red social genérica. Nada de gamificación visual:
+sin contadores llamativos, sin corazones. Lo que destaca en pantalla es siempre un repo,
+nunca la interfaz.
+
+Qué NO debe parecer: un clon de GitHub (usa sus colores de lenguaje, no su identidad), ni un
+Pinterest de tarjetas, ni una app tinder-style.
 
 ---
 
 ## Componentes definidos
 
-<!-- A medida que se crean componentes reutilizables, documentarlos aquí.
-     Nombre, propósito, props principales, cuándo usarlo y cuándo no.
-     Ejemplo:
-     
-     ### StatusBadge
-     Muestra el estado de un elemento (activo, inactivo, pendiente).
-     Props: `status: 'active' | 'inactive' | 'pending'`
-     Usar en tablas y cards. No usar en formularios. -->
+<!-- A medida que se creen componentes reutilizables, documentarlos aquí. -->
+
+Ninguno todavía. Los primeros serán `RepoCard`, `FeedList`, `FollowButton`, `LanguageChip`.
 
 ---
 
 ## Referencias visuales
 
-<!-- Links o descripciones de diseños, productos o webs que han servido de referencia.
-     Útil para mantener coherencia cuando entra alguien nuevo al proyecto. -->
+- Colores de lenguaje: GitHub Linguist (`languages.yml`)
+- Ritmo de feed en columna única: Read.cv / posts de Bluesky
+- Fondos procedurales deterministas: avatares de Vercel, gradientes de GitHub Next

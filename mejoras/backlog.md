@@ -18,15 +18,3 @@ Descripción breve de la mejora y por qué aportaría valor.
 ```
 
 ---
-
-<!-- Ejemplo (borrar cuando haya entradas reales):
-
-### [MEJORA-01] Modo oscuro
-**Área:** Frontend
-**Prioridad estimada:** Media
-**Origen:** Petición recurrente durante beta
-
-Implementar dark mode usando las variables CSS del design system.
-Ya está parcialmente preparado con las variables de color semánticas.
-
--->

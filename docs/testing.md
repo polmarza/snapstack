@@ -7,10 +7,12 @@
 
 ## Filosofía
 
-<!-- Describe el enfoque de testing del proyecto.
-     Ejemplo: "Priorizamos tests de integración sobre unitarios porque nuestro valor
-     está en los flujos completos, no en funciones aisladas."
-     o: "Seguimos la pirámide clásica: muchos unitarios, integración selectiva, pocos e2e." -->
+Priorizamos tests de integración sobre unitarios: el valor de Snapstack está en flujos
+completos (onboarding → importación → ficha en el feed) y en reaccionar bien a eventos
+externos (webhooks), no en funciones aisladas. Dos excepciones que sí merecen unitarios
+exhaustivos: la generación determinista de fondos (mismo repo → misma semilla → mismo fondo,
+siempre) y la lógica de límite de selección. Todo corre contra localhost — la API de GitHub y
+Clerk se mockean, nunca se testea contra servicios reales.
 
 ---
 
@@ -56,9 +58,9 @@ Reglas que se derivan de eso:
 
 | Tipo | Herramienta |
 |------|-------------|
-| Unitario | <!-- --> |
-| Integración | <!-- --> |
-| E2E | <!-- --> |
+| Unitario | Vitest |
+| Integración | Vitest + Testing Library |
+| E2E | Playwright (contra `localhost`) |
 
 ---
 
@@ -70,27 +72,39 @@ Reglas que se derivan de eso:
      NO → componentes puramente visuales, integraciones con terceros (mockear en su lugar) -->
 
 ### Sí testear
-- <!-- -->
+- Semilla y paleta del fondo procedural: determinismo (mismo input → mismo output) y anclaje
+  al color Linguist del lenguaje dominante
+- Lógica de selección: límite de repos, no duplicados, quitar/añadir (M-02, M-03)
+- Handlers de webhooks: verificación de firma, `push`/`watch`/`repository`, y en especial que
+  borrado o paso a privado retira el contenido (M-08)
+- Transformaciones GraphQL de GitHub → modelo propio (`languages` por bytes, topics)
+- Paginación del feed y filtro por follows
+- Registro de señales: tipo y payload correctos, y que un fallo no rompe la UI (M-09)
+- Borrado de cuenta: cascada completa, sin restos visibles (M-11)
 
 ### No testear (o mockear)
-- <!-- -->
+- API de GitHub, Clerk, Inngest/Trigger.dev, Upstash: siempre mockeados
+- El render visual de `@vercel/og` (se testea el input que recibe, no el píxel)
+- Componentes puramente visuales sin estado
 
 ---
 
 ## Convenciones
 
-<!-- Naming, ubicación de archivos, estructura interna de los tests.
-     Ejemplo:
-     - Archivos: `nombre.test.ts` junto al archivo que testa
-     - Describe en presente: "calcula el total con descuento"
-     - Un assert por test cuando sea posible -->
+- Archivos: `nombre.test.ts` junto al archivo que testan; E2E en `e2e/` con el ID del flujo
+  en el nombre (`flow-01-onboarding.spec.ts`)
+- El nombre del test cita el requisito que valida (`M-08: repo borrado desaparece del feed`),
+  que es lo que referencia la tercera columna de la tabla de cobertura de `docs/features/`
+- Describe en presente; selectores por `data-testid`, nunca por clases de estilos
 
 ---
 
 ## Cobertura objetivo
 
-<!-- Porcentaje objetivo y cómo medirlo.
-     Ejemplo: ≥ 80% en lógica de negocio. Ignorar archivos de configuración y tipos. -->
+≥ 80 % en `lib/` (lógica de negocio: card-seed, github, signals) medido con
+`pnpm test:coverage`. Ignorar configuración, tipos y componentes puramente visuales. La
+cobertura que de verdad se vigila es la de la tabla de requisitos de cada ficha de feature
+(`scripts/verificar-cobertura.mjs`), no el porcentaje global.
 
 ---
 

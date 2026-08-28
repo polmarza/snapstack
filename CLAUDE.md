@@ -7,27 +7,10 @@ Lee este archivo completo antes de hacer cualquier cambio.
 
 Antes de hacer cualquier cosa, comprueba el estado del repositorio:
 
-1. Lee todos los archivos de `docs/`
-2. Comprueba si existe la carpeta `.template/`. Si existe, este repo sigue siendo la plantilla
-   sin inicializar: hay andamiaje, todavía no hay proyecto.
-3. Si los documentos están vacíos o incompletos (solo tienen comentarios, sin contenido real):
-   - No escribas código
-   - No rellenes nada todavía
-   - Empieza con esta pregunta: "¿Qué quieres construir y para quién?"
-   - Con la respuesta en la mano, decide **qué documentación necesita este proyecto** según la
-     tabla de la sección siguiente, y dilo antes de empezar a preguntar. No pidas ocho documentos
-     para una landing.
-   - Completa los documentos que apliquen en este orden: prd.md → business.md →
-     design-system.md → architecture.md → data-model.md → roadmap.md → user-flows.md
-   - Confirma con el usuario antes de pasar al siguiente documento
-   - Cuando estén rellenos, ejecuta la **inicialización del proyecto** (sección
-     siguiente) y solo después pregunta: "¿Empezamos a construir?"
-
-4. Si los documentos ya tienen contenido: lee todo lo que haya en `docs/` antes de actuar.
-   Si además `.template/` sigue existiendo, la inicialización quedó a medias: avisa al usuario
-   y ofrécete a completarla antes de seguir.
-
-5. Mira `docs/features/`. Si hay alguna ficha en estado **En construcción**, ahí está el trabajo a
+1. Lee todos los archivos de `docs/` antes de actuar.
+2. Si algún documento está vacío o incompleto (solo comentarios, sin contenido real), pregunta
+   al usuario para completarlo antes de escribir código que dependa de él.
+3. Mira `docs/features/`. Si hay alguna ficha en estado **En construcción**, ahí está el trabajo a
    medias: léela antes de proponer nada nuevo. Es más rápido y más fiable que reconstruir el
    contexto a partir del historial de git.
 
@@ -72,55 +55,6 @@ Reglas de la tabla:
 
 ---
 
-## Inicialización del proyecto (una sola vez)
-
-Esta plantilla se distribuye con documentación que habla **de la plantilla**, no del proyecto.
-En cuanto los documentos de `docs/` estén rellenos, conviértela en el repo de *este* proyecto.
-Hazlo por iniciativa propia, sin esperar a que el usuario lo pida.
-
-Puedes lanzar el proceso completo con `/init-proyecto`.
-
-**Checklist de inicialización:**
-
-1. **`README.md`** — reescríbelo entero para el proyecto, a partir de lo que hay en `docs/`.
-   Debe explicar el producto, no la plantilla. Estructura sugerida: nombre y descripción de
-   una línea, qué problema resuelve, requisitos previos, variables de entorno (referencia a
-   `.env.example`), instalación y desarrollo (`pnpm install`, `pnpm dev`), estructura de
-   carpetas, cómo contribuir (referencia a `CLAUDE.md` y al protocolo) y estado del proyecto.
-   Los badges de la cabecera apuntan al repositorio de la plantilla: quítalos o repóntalos al
-   tuyo, o quedarán enseñando el estado de un repo que no es este.
-2. **`CLAUDE.md`** — rellena los placeholders de este mismo archivo: nombre, descripción,
-   estado, stack tecnológico, estructura de carpetas, convenciones de código y "Qué NO hacer".
-   Borra los comentarios `<!-- ... -->` que ya no apliquen, esta sección de inicialización
-   (deja de tener sentido una vez hecha), el comando `.claude/commands/init-proyecto.md` y las
-   referencias a `.template/` del arranque y del protocolo de changelog. El "Protocolo de MCPs"
-   se queda: sigue aplicando cada vez que entre una integración nueva.
-3. **`LICENSE`** — la plantilla se distribuye con el copyright de su autor. Sustituye esa línea
-   por el año actual y el titular de *este* proyecto. Pregunta el nombre si no lo sabes.
-4. **`.env.example`** — deja solo las variables que el stack elegido necesita de verdad.
-5. **MCPs** — con el stack ya decidido, pregunta al usuario qué servidores MCP quiere y con qué
-   alcance, siguiendo el "Protocolo de MCPs" (o lanza `/mcp-setup`).
-6. **`changelog/`** — debe quedar sin entradas heredadas. Crea la primera entrada real del
-   proyecto (tipo: Configuración) describiendo la inicialización, y quita de
-   `changelog/README.md` la referencia a la plantilla (o borra el archivo).
-7. **`docs/`** — borra los archivos que este proyecto no necesite, según la tabla "Qué
-   documentación necesita cada proyecto". Un documento que no aplica se borra; no se deja vacío.
-   `docs/features/` se queda como está: empieza sin fichas, solo con su `README.md`.
-8. **`mejoras/backlog.md`** — borra el ejemplo comentado y déjalo listo para entradas reales.
-9. **`.template/`** — bórrala entera (`rm -rf .template`). Es el historial de la plantilla, no
-   del proyecto. Con ella se van también las imágenes del README, así que quita las referencias
-   que queden apuntando a `.template/assets/` (hay una en `docs/features/README.md`).
-10. **Verificación final** — busca referencias sobrantes:
-    `grep -ril "plantilla\|template" . --exclude-dir=.git --exclude-dir=node_modules`.
-    Revisa cada resultado y corrígelo si habla de la plantilla en lugar del proyecto.
-
-**Regla general:** después de la inicialización, ningún archivo del repo debe describirse a sí
-mismo como plantilla ni explicar cómo usar la plantilla. Toda la documentación habla del
-producto que se está construyendo. Si más adelante encuentras un resto de la plantilla en
-cualquier archivo, corrígelo en esa misma sesión.
-
----
-
 ## Protocolo de MCPs
 
 Muchos servicios del stack (Supabase, Resend, Stripe, Vercel, Sentry…) publican un servidor MCP que
@@ -152,15 +86,14 @@ El procedimiento completo —comprobar lo ya configurado, elegir alcance (`user`
 
 ## Descripción del proyecto
 
-<!-- Escribe aquí 3-4 líneas que expliquen qué es este proyecto, qué problema resuelve y para quién.
-     Ejemplo:
-     "Plataforma web para que coleccionistas de vinilos cataloguen y compartan sus colecciones.
-     Usuario objetivo: adultos 25-45 con colecciones físicas que quieren digitalizar su catálogo.
-     Stack principal: Next.js + Supabase + Vercel." -->
+Red social para desarrolladores: cada dev conecta su GitHub y obtiene un perfil público con una
+selección curada de sus repos (elegidos a mano, hasta 5), presentados como fichas visuales
+procedurales en un feed de scroll infinito. Intención social pasiva — seguir a un dev y ver qué
+construye — sin swipe ni like/dislike. Código público desde el primer commit.
 
-**Nombre:** <!-- nombre-del-proyecto -->
-**Descripción:** <!-- una frase -->
-**Estado actual:** <!-- En desarrollo / Beta / Producción -->
+**Nombre:** Snapstack (dominio: snapstack.sh)
+**Descripción:** Perfil curado de repos de GitHub + feed visual de scroll infinito para descubrir qué construyen otros devs.
+**Estado actual:** En desarrollo
 
 ---
 
@@ -180,67 +113,48 @@ al empezar una sesión para saber qué hay en marcha (ver "Ciclo de trabajo de u
 
 ## Stack tecnológico
 
-<!-- Completa esto con el stack real del proyecto.
-     Ejemplo:
-     - Framework: Next.js 14 (App Router)
-     - Base de datos: Supabase (PostgreSQL + Auth + Storage)
-     - Estilos: Tailwind CSS + shadcn/ui
-     - Despliegue: Vercel
-     - Pagos: Stripe
-     - Email: Resend -->
+- Framework: Next.js (App Router)
+- Base de datos: Supabase Postgres + pgvector
+- Autenticación: Clerk (provider de GitHub)
+- Estilos: Tailwind CSS
+- Despliegue: Vercel
+- Otras integraciones: GitHub App + webhooks (sincronización de repos), Inngest o Trigger.dev
+  (jobs en background), `@vercel/og` (fichas visuales), Upstash Redis (cache / rate limiting)
 
-- Framework: <!-- ... -->
-- Base de datos: <!-- ... -->
-- Estilos: <!-- ... -->
-- Despliegue: <!-- ... -->
-- Otras integraciones: <!-- ... -->
+Detalle y justificaciones en `docs/architecture.md`.
 
 ---
 
 ## Estructura de carpetas
 
-<!-- Documenta aquí la estructura real del proyecto una vez inicializado.
-     Ejemplo:
-     src/
-     ├── app/          → rutas (App Router)
-     ├── components/   → componentes reutilizables
-     ├── lib/          → utilidades, clientes de servicios externos
-     ├── hooks/        → custom hooks
-     └── types/        → tipos TypeScript compartidos
-     
-     docs/             → documentación del proyecto (ver sección anterior)
-     docs/features/    → fichas de las features acordadas, con su tabla de cobertura
-     changelog/        → registro de cambios (ver protocolo más abajo)
-     mejoras/          → ideas futuras no implementadas -->
+```
+docs/             → documentación del proyecto (ver sección anterior)
+docs/features/    → fichas de las features acordadas, con su tabla de cobertura
+changelog/        → registro de cambios (ver protocolo más abajo)
+mejoras/          → ideas futuras no implementadas
+scripts/          → verificar-cobertura.mjs (corre en CI)
+src/              → código de la app (aún sin crear)
+```
+
+La estructura interna de `src/` propuesta (app/, components/, lib/, jobs/, types/) está en
+`docs/architecture.md` → "Estructura de carpetas". Al crearla o cambiarla, actualizar allí.
 
 ---
 
 ## Convenciones de código
 
-<!-- Define aquí las reglas de estilo específicas del proyecto.
-     Ejemplo:
-     - TypeScript estricto. No usar `any`.
-     - Componentes en PascalCase, archivos en kebab-case.
-     - Toda función async debe manejar errores explícitamente.
-     - No usar `console.log` en producción.
-     - Comentarios en español. -->
-
 - Gestor de paquetes: pnpm v11. No usar npm ni yarn.
-- Idioma de comentarios y variables: <!-- español / inglés -->
-- Nombrado de componentes: <!-- PascalCase -->
-- Nombrado de archivos: <!-- kebab-case -->
-- <!-- Añade más reglas según el proyecto -->
+- Idioma: código, variables y commits en inglés; comentarios y documentación en español.
+- TypeScript estricto. No usar `any`.
+- Nombrado de componentes: PascalCase.
+- Nombrado de archivos: kebab-case.
+- Selectores estables en la UI: `data-testid`, nunca clases de estilos (ver `docs/testing.md`).
+- Los colores de lenguaje salen de GitHub Linguist; el resto de la paleta, de
+  `docs/design-system.md`.
 
 ---
 
 ## Qué NO hacer
-
-<!-- Lista de antipatrones específicos de este proyecto.
-     Ejemplo:
-     - No modificar el esquema de Supabase directamente desde el cliente; usar migraciones.
-     - No almacenar tokens en localStorage; usar cookies httpOnly.
-     - No crear componentes nuevos sin consultar docs/design-system.md primero.
-     - No hacer fetch directo a APIs externas desde componentes; usar server actions o route handlers. -->
 
 - No usar `npm` ni `yarn`. Siempre `pnpm` (v11).
 - No escribir claves ni tokens reales en `.mcp.json`: el archivo se commitea. Usa `${VARIABLE}` y
@@ -251,7 +165,15 @@ al empezar una sesión para saber qué hay en marcha (ver "Ciclo de trabajo de u
 - No dar por hecho lo que no has ejecutado. Si no has visto pasar el build o los tests, no digas
   que pasan: di que no los has ejecutado.
 - No desactivar, saltar ni vaciar de aserciones un test para que deje de fallar.
-- <!-- ... -->
+- No implementar importación automática masiva de repos: la selección es manual y con límite
+  (`REPO_SELECTION_LIMIT`), por decisión de producto registrada en `docs/prd.md`.
+- No hacer fetch en vivo ni screenshots de URLs de demo de repos: las fichas son procedurales
+  (decisión registrada en `docs/architecture.md`; si se retoma, cuidado con SSRF).
+- No construir ranking ni recomendación sobre las señales implícitas en v1: solo se
+  instrumentan.
+- No testear contra la API real de GitHub ni contra Clerk: siempre mocks (ver
+  `docs/testing.md`).
+- No tocar el esquema de Supabase sin migración y sin actualizar `docs/data-model.md`.
 
 ---
 
@@ -314,10 +236,7 @@ El formato de la ficha, los tres estados y el detalle de qué valida el script e
 
 Cada vez que hagas un cambio importante:
 
-1. **Entrada en `changelog/`**, con `/changelog`. Mientras el repo siga siendo la plantilla sin
-   inicializar (existe `.template/`), los cambios sobre el andamiaje van a `.template/changelog/`,
-   para que quien use la plantilla arranque con el changelog limpio. El formato está en
-   `changelog/README.md`.
+1. **Entrada en `changelog/`**, con `/changelog`. El formato está en `changelog/README.md`.
 2. **Actualiza la documentación que el cambio deja desfasada, en la misma sesión.** Tabla nueva →
    `docs/data-model.md`. Patrón visual nuevo → `docs/design-system.md`. Cambio de estructura o
    servidor MCP → `docs/architecture.md`. Alcance nuevo → `docs/prd.md` y `docs/roadmap.md`, con su
@@ -366,5 +285,8 @@ Si la carpeta `mejoras/` no existe, créala.
 
 ## Notas adicionales
 
-<!-- Cualquier otra instrucción específica del proyecto que no encaje en las secciones anteriores.
-     Ejemplos: credenciales de entorno necesarias, comandos de desarrollo, quirks conocidos del stack. -->
+- Snapstack es un proyecto distinto del directorio de repos en español con ranking de pago que
+  Pol tiene en marcha por separado. No compartir alcance ni base de código salvo decisión
+  explícita.
+- Revisar los GitHub API Terms antes de escalar: límites de caché de datos sin re-sincronizar y
+  prohibición de aparentar respaldo de GitHub.

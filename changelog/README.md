@@ -2,10 +2,6 @@
 
 Registro estructurado de cada cambio importante del proyecto: qué se hizo, qué se modificó y por qué.
 
-Esta carpeta **empieza vacía a propósito**. La plantilla no arrastra aquí su propio historial:
-los cambios de la plantilla viven en `.template/changelog/` y esa carpeta se borra al inicializar
-el proyecto.
-
 ---
 
 ## Cómo añadir una entrada

@@ -12,7 +12,6 @@ o antes de una sesión larga, para no descubrir a mitad que faltaba media config
 - ¿Existen todos los archivos que `CLAUDE.md` marca como obligatorios para este proyecto? (La
   obligatoriedad depende del tamaño: mira la tabla "Qué documentación necesita cada proyecto".)
 - ¿Alguno está vacío — solo comentarios `<!-- -->`, sin contenido real?
-- ¿Sigue existiendo `.template/`? Entonces la inicialización quedó a medias.
 
 ### 2. Fichas de feature
 
