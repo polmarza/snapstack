@@ -13,9 +13,11 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "verificar-cobertura": "node scripts/verificar-cobertura.mjs",
-    "regen:linguist": "node scripts/regen-linguist-colors.mjs"
+    "regen:linguist": "node scripts/regen-linguist-colors.mjs",
+    "seed:trending": "tsx src/jobs/seed-trending/cli.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
     "next": "^16.3.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
@@ -33,6 +35,7 @@
     "jsdom": "^30.0.1",
     "postcss": "^8.5.26",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.12",
     "typescript": "^6.0.3",
     "vitest": "^4.1.11"
   }
