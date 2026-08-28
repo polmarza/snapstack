@@ -123,12 +123,16 @@ El acceso a datos pasa por el servidor Next.js (service role); RLS actúa como s
 
 | Fecha | Archivo | Descripción |
 |-------|---------|-------------|
-| — | — | Ninguna aplicada todavía |
+| 2026-08-29 | `supabase/migrations/001_repos.sql` | Tabla `repos` con índices, check de `status` y RLS (lectura pública solo de activos) |
 
 ---
 
 ## Datos seed
 
-Import de repos públicos trending (M-10) para que el feed no arranque vacío: job en
-Inngest/Trigger.dev que crea filas en `repos` con `is_seed = true` y `owner_profile_id = NULL`.
-El script y su cadencia se documentarán aquí al implementarlo.
+Import de repos públicos trending (M-10) para que el feed no arranque vacío:
+`pnpm seed:trending` (script manual, `src/jobs/seed-trending/`) consulta la Search API oficial
+de GitHub (repos con más stars creados en los últimos 30 días, ajustable con `--days` y
+`--limit`) y hace upsert por `github_repo_id` con `is_seed = true` y `owner_profile_id = NULL`.
+Idempotente: re-ejecutarlo refresca stars y descripción sin duplicar. Por defecto solo acepta
+el Supabase local; contra el remoto exige `--remote` explícito. `GITHUB_TOKEN` opcional para
+subir el rate limit.

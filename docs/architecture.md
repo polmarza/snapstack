@@ -48,6 +48,7 @@ src/
 ├── app/
 │   ├── page.tsx          → ✅ Home placeholder (será el feed)
 │   ├── dev/cards/        → ✅ Demo local de fichas sobre fixtures
+│   ├── dev/seed/         → ✅ Demo local de los repos semilla importados (lee de la DB)
 │   ├── u/[username]/     → ⏳ Perfil público
 │   ├── onboarding/       → ⏳ Selección de repos tras el login
 │   ├── settings/         → ⏳ Gestión de selección, baja de cuenta
@@ -59,13 +60,20 @@ src/
 ├── lib/
 │   ├── card-seed/        → ✅ Semilla determinista, colores Linguist vendorizados, paleta
 │   ├── github/           → ⏳ Cliente GraphQL, GitHub App, verificación de webhooks
-│   ├── db/               → ⏳ Cliente Supabase y queries
+│   ├── db/               → ✅ Cliente Supabase (service role) y queries de repos
 │   └── signals/          → ⏳ Instrumentación de señales implícitas
-├── jobs/                 → ⏳ Funciones de Inngest/Trigger.dev (import, sync, trending)
+├── jobs/
+│   └── seed-trending/    → ✅ Import manual de trending (pnpm seed:trending); Inngest/Trigger.dev ⏳
 └── types/                → ⏳
 e2e/                      → ✅ Tests Playwright (contra localhost)
 scripts/                  → ✅ verificar-cobertura.mjs, regen-linguist-colors.mjs
+supabase/                 → ✅ config.toml (stack local en puertos 573xx) y migrations/
 ```
+
+Desarrollo local de base de datos: `supabase start` (Docker). Los puertos van en el rango
+573xx para convivir con otros proyectos Supabase locales de la máquina. Los tests y el seed
+apuntan por defecto al stack local; el proyecto remoto requiere acción explícita (`--remote`,
+o aplicar migraciones con `DATABASE_URL`, que lanza Pol).
 
 ---
 
