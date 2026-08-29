@@ -128,6 +128,7 @@ El acceso a datos pasa por el servidor Next.js (service role); RLS actúa como s
 | 2026-08-29 | `supabase/migrations/001_repos.sql` | Tabla `repos` con índices, check de `status` y RLS (lectura pública solo de activos) |
 | 2026-08-29 | `supabase/migrations/002_repos_owner.sql` | Columnas `owner_login` y `owner_avatar_url` (identidad del autor en la tarjeta) |
 | 2026-08-29 | `supabase/migrations/003_profiles.sql` | Tabla `profiles` con RLS (lectura pública) y FK `repos.owner_profile_id` → profiles |
+| 2026-08-29 | `supabase/migrations/004_signals.sql` | Tabla `signals` con check de tipo y cap de value; RLS sin políticas (solo service role) |
 
 ---
 

@@ -57,7 +57,7 @@ src/
 │       ├── og/               → ✅ Generación de fichas con @vercel/og (og:image/embeds)
 │       ├── feed/             → ✅ Paginación del feed por cursor keyset
 │       ├── webhooks/github/  → ⏳ Recepción de webhooks de la GitHub App
-│       └── signals/          → ⏳ Registro de señales implícitas
+│       └── signals/          → ✅ Registro de señales implícitas (M-09; solo escritura)
 ├── components/
 │   ├── auth/             → ✅ AuthControls (entrar con GitHub / menú de usuario / Mis repos)
 │   ├── selection/        → ✅ SelectionPage + RepoSelector (onboarding y settings comparten)
@@ -66,8 +66,8 @@ src/
 ├── lib/
 │   ├── card-seed/        → ✅ Semilla determinista, colores Linguist vendorizados, paleta
 │   ├── github/           → ✅ Cliente GraphQL, token OAuth vía Clerk, listado/importación; GitHub App ⏳ (M-08)
-│   ├── db/               → ✅ Cliente Supabase (service role), queries de repos, profiles y selección
-│   └── signals/          → ⏳ Instrumentación de señales implícitas
+│   ├── db/               → ✅ Cliente Supabase (service role), queries de repos, profiles, selección y señales
+│   └── signals/          → ✅ Tipos/validación de señales y tracker de cliente (dwell, expand, click)
 ├── jobs/
 │   └── seed-trending/    → ✅ Import manual de trending (pnpm seed:trending); Inngest/Trigger.dev ⏳
 └── types/                → ⏳
