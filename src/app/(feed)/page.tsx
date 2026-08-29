@@ -14,6 +14,7 @@ import { FeaturesGrid } from "@/components/landing/features-grid";
 import { BuiltWith } from "@/components/landing/built-with";
 import { LandingCta } from "@/components/landing/landing-cta";
 import { LanguageMarquee } from "@/components/landing/language-marquee";
+import { LandingNav } from "@/components/landing/landing-nav";
 import { RepoCardSkeleton } from "@/components/skeleton/skeleton";
 import { createServiceClient } from "@/lib/db/client";
 import { annotateFollowed, listFeedPage, type FeedPage } from "@/lib/db/feed-page";
@@ -152,7 +153,15 @@ export default async function Home({ searchParams }: HomeProps) {
   if (needsOnboarding) redirect("/onboarding");
 
   return (
-    <main className={signedIn ? "mx-auto max-w-2xl px-4 py-8 sm:px-6" : ""}>
+    <main
+      className={
+        signedIn
+          ? "mx-auto max-w-2xl px-4 py-8 sm:px-6"
+          : // El CTA cierra la landing a sangre y en verde: el footer va pegado,
+            // sin el margen ni el borde que lleva en el resto de páginas.
+            "[&+footer]:mt-0 [&+footer]:border-t-0"
+      }
+    >
       {signedIn ? (
         // Con sesión la marca está en la navegación; el h1 se mantiene para
         // lectores de pantalla y buscadores, que no deben quedarse sin él.
@@ -163,9 +172,11 @@ export default async function Home({ searchParams }: HomeProps) {
               entrando escalonado por encima. */}
           <section
             data-testid="landing-hero"
+            id="top"
             className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden px-4 text-center"
           >
             <HeroCardsBackground repos={page?.repos ?? []} />
+            <LandingNav />
             <div className="relative flex flex-col items-center">
               <h1
                 data-testid="hero-wordmark"
@@ -204,7 +215,7 @@ export default async function Home({ searchParams }: HomeProps) {
               El feed completo es para quien entra; la landing solo enseña que
               está vivo. El CTA va justo debajo, donde el interés está caliente. */}
           {page && page.repos.length > 0 ? (
-            <section data-testid="landing-feed-preview" className="mx-auto max-w-2xl px-4 pt-4 sm:px-6">
+            <section data-testid="landing-feed-preview" className="mx-auto max-w-2xl px-4 pb-20 pt-4 sm:px-6">
               <h2 className="mb-6 text-center font-mono text-3xl font-bold">The feed, live</h2>
               <div className="flex flex-col gap-6">
                 {page.repos.slice(0, 3).map((repo) => (

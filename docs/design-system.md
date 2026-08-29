@@ -129,8 +129,22 @@ Los diagramas explicativos van en SVG inline, con las variables de color del tem
 
 ## Estructura de la landing
 
-El orden cuenta una historia y no debería reordenarse sin motivo:
+El orden cuenta una historia y no debería reordenarse sin motivo. Cada sección lleva `id` y
+`scroll-mt-20` para que la navegación pueda saltar a ella sin que la barra fija tape el
+titular:
 
+0. **Navegación** (`LandingNav`) — centrada y sin fondo dentro del hero (solo los enlaces:
+   el hero ya trae su botón de entrar); al pasar el hero se vuelve fija arriba, con el fondo
+   de la app, la marca a la izquierda y el botón de entrar a la derecha, donde ya no es
+   redundante. El cambio lo dispara un IntersectionObserver sobre el propio hero.
+   **En móvil** las cinco secciones no caben junto a la marca y el botón (medido: faltaban
+   ~100 px incluso con etiquetas cortas), así que se despliegan. El disparador no es un burger
+   sino el **icono de panel lateral** (`PanelLeftOpen`/`PanelLeftClose`): es el gesto de
+   cualquier editor de código, el lenguaje de quien nos lee. Al abrir, **la barra no se mueve**
+   — icono, marca y entrada siguen en su sitio y solo cambian de color (verde de fondo,
+   contenido oscuro, entrada con fondo oscuro), y debajo aparecen las secciones **alineadas a
+   la izquierda**: la flecha de cada una cae bajo el icono y su etiqueta bajo la marca, en la
+   misma rejilla. Es el patrón para cualquier menú de móvil que venga después.
 1. **Hero** — marca, promesa y entrada, con las fichas reales del feed al fondo.
 2. **Marquee de lenguajes** — señal de que dentro hay stacks de verdad.
 3. **Por qué** (`WhySnapstack`) — el problema con el que el visitante ya convive, en tres
@@ -143,4 +157,7 @@ El orden cuenta una historia y no debería reordenarse sin motivo:
    argumento de confianza. Los logos salen de `simple-icons` (ya instalada), monocromos —
    varias marcas son negras y desaparecerían sobre el fondo oscuro.
 7. **Preguntas** (`Faq`) — las dudas que frenan el registro (permisos, precio, borrado).
-8. **Muestra del feed y CTA** — la prueba de que está vivo, y la puerta.
+8. **Muestra del feed y CTA** — la prueba de que está vivo, y la puerta. El CTA cierra **a
+   sangre**: ancho completo, fondo en el verde de marca, sin bordes ni esquinas redondeadas y
+   pegado al footer (que solo ahí pierde su margen y su línea). Sobre el verde, el texto va en
+   el color de fondo y el botón cambia de blanco a oscuro (`AuthControls tone="onPrimary"`).

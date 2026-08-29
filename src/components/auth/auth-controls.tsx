@@ -14,8 +14,17 @@ function GithubMark() {
  * sobraba una vez existe la navegación lateral, que ya lleva perfil, ajustes y
  * cerrar sesión.
  */
-export function AuthControls({ size = "md" }: { size?: "md" | "lg" }) {
+export function AuthControls({
+  size = "md",
+  tone = "onDark",
+}: {
+  size?: "md" | "lg";
+  /** "onPrimary": sobre el verde de marca, donde el botón blanco se diluye. */
+  tone?: "onDark" | "onPrimary";
+}) {
   const medidas = size === "lg" ? "h-11 px-6 text-base" : "h-9 px-4 text-sm";
+  const colores =
+    tone === "onPrimary" ? "bg-background text-content" : "bg-white text-background";
   return (
     <div data-testid="auth-controls" className="flex items-center">
       <Show when="signed-in" fallback={
@@ -23,7 +32,7 @@ export function AuthControls({ size = "md" }: { size?: "md" | "lg" }) {
           <button
             type="button"
             data-testid="sign-in-button"
-            className={`flex shrink-0 items-center gap-2 rounded-lg bg-white font-medium text-background ${medidas}`}
+            className={`flex shrink-0 items-center gap-2 rounded-lg font-medium ${colores} ${medidas}`}
           >
             <GithubMark />
             Sign in
