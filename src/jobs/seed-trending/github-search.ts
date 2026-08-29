@@ -13,6 +13,7 @@ export interface SearchRepoItem {
   topics?: string[];
   stargazers_count: number;
   archived: boolean;
+  owner: { login: string; avatar_url: string } | null;
 }
 
 interface SearchResponse {

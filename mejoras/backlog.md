@@ -32,3 +32,29 @@ constantes no monopolice el inicio del feed (p. ej., resurgir máximo una vez al
 pasa con los repos semilla, que no tienen webhooks (¿refresco periódico del script de seed?).
 Decidir al construir M-08. El cursor de paginación de M-06 ya queda parametrizado para que el
 cambio de campo de orden sea barato.
+
+### [MEJORA-02] Dar estrella a un repo desde Snapstack
+**Área:** Backend / UX
+**Prioridad estimada:** Alta
+**Origen:** Idea de Pol tras mergear M-06 (2026-08-29)
+
+Convertir el indicador de estrellas de la tarjeta (arriba a la derecha, contorno sin relleno)
+en un botón que dé/quite la estrella real en GitHub. No es un like local (descartado en el
+PRD): es la acción de GitHub, así que encaja con el modelo social. Requisitos: M-01 (login) y
+un user token de la GitHub App con el permiso fine-grained **"Starring: write"** — no usar el
+scope clásico `public_repo`, que es desproporcionado (incluye escritura de código). Reto: saber
+el estado starred/no-starred por tarjeta sin batch endpoint (consulta lazy al expandir/hover, o
+cache propio + webhook `watch` para reconciliar). Al priorizarla, promover a `docs/prd.md`
+como S-02 con su criterio de aceptación.
+
+### [MEJORA-03] Página de detalle del repo con README
+**Área:** Frontend / Backend
+**Prioridad estimada:** Media
+**Origen:** Idea de Pol tras mergear M-06 (2026-08-29)
+
+Pulsar una ficha abre la página del repo con su README renderizado (la tarjeta muestra solo el
+"about"). Mejor página de detalle que inline en el feed: SEO, y es donde vive la señal de
+click de M-09. Letra pequeña obligatoria: el README es contenido de terceros → sanitizar HTML
+(XSS), reescribir links/imágenes relativos a raw.githubusercontent, límites de tamaño, mayor
+superficie de moderación (S-01) y límites de caché de los GitHub API Terms. El README ya
+estaba previsto para embeddings (C-01), así que traerlo sirve doble.

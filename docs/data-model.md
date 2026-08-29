@@ -27,6 +27,8 @@ importados sin login del autor); si el autor se registra después, el repo puede
 | id | uuid (PK) | Identificador interno |
 | github_repo_id | bigint (único) | ID del repo en GitHub (estable ante renombrados) |
 | owner_profile_id | uuid (FK → profiles, nullable) | Quién lo tiene en su selección; NULL = semilla |
+| owner_login | text (nullable) | Login del dueño en GitHub (denormalizado, para la tarjeta) |
+| owner_avatar_url | text (nullable) | Avatar del dueño (denormalizado, para la tarjeta) |
 | full_name | text | `owner/nombre` en GitHub |
 | description | text | Descripción corta |
 | url | text | URL del repo en GitHub |
@@ -124,6 +126,7 @@ El acceso a datos pasa por el servidor Next.js (service role); RLS actúa como s
 | Fecha | Archivo | Descripción |
 |-------|---------|-------------|
 | 2026-08-29 | `supabase/migrations/001_repos.sql` | Tabla `repos` con índices, check de `status` y RLS (lectura pública solo de activos) |
+| 2026-08-29 | `supabase/migrations/002_repos_owner.sql` | Columnas `owner_login` y `owner_avatar_url` (identidad del autor en la tarjeta) |
 
 ---
 

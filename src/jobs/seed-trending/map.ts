@@ -14,6 +14,8 @@ export function mapSearchItemToRepoRow(item: SearchRepoItem, now: Date): RepoRow
   return {
     github_repo_id: item.id,
     owner_profile_id: null,
+    owner_login: item.owner?.login ?? null,
+    owner_avatar_url: item.owner?.avatar_url ?? null,
     full_name: item.full_name,
     description: item.description,
     url: item.html_url,
