@@ -17,9 +17,10 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
     [repo.github_repo_id, repo.primary_language],
   );
 
-  const [owner, name] = repo.full_name.includes("/")
+  const [ownerFromName, name] = repo.full_name.includes("/")
     ? [repo.full_name.split("/")[0], repo.full_name.split("/").slice(1).join("/")]
     : [null, repo.full_name];
+  const ownerLogin = repo.owner_login ?? ownerFromName;
 
   return (
     <article
@@ -29,14 +30,25 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
     >
       <div className="relative flex aspect-[4/5] flex-col justify-between p-6 sm:aspect-[1.9/1] sm:p-8">
         <CardBackgroundLayer background={background} />
-        <div className="relative flex items-center gap-2">
-          <span
-            aria-hidden
-            className="h-3 w-3 rounded-full"
-            style={{ backgroundColor: languageColor(repo.primary_language) }}
-          />
-          <span className="font-mono text-sm text-white/75">
-            {repo.primary_language ?? "—"}
+        <div className="relative flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span
+              aria-hidden
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: languageColor(repo.primary_language) }}
+            />
+            <span className="font-mono text-sm text-white/75">
+              {repo.primary_language ?? "—"}
+            </span>
+          </div>
+          {/* Indicador pasivo por ahora; será botón de estrella real (GitHub App,
+              permiso Starring) cuando exista login — ver MEJORA-02. */}
+          <span data-testid="feed-card-stars" className="flex items-center gap-1.5 font-mono text-sm text-white/75">
+            <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.3">
+              <path d="M8 1.5l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.8l-4 2.1.8-4.5L1.5 6.2l4.5-.6L8 1.5z" strokeLinejoin="round" />
+            </svg>
+            <span className="sr-only">Estrellas:</span>
+            {repo.stars}
           </span>
         </div>
         <div className="relative flex flex-col gap-2">
@@ -50,9 +62,18 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
       </div>
 
       <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <div className="flex min-w-0 items-baseline gap-3 font-mono text-sm text-content-secondary">
-          <span className="truncate">{owner ? `${owner}/` : ""}{name}</span>
-          <span className="shrink-0">★ {repo.stars}</span>
+        <div className="flex min-w-0 items-center gap-2 font-mono text-sm text-content-secondary">
+          {repo.owner_avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- avatar pequeño de GitHub, sin optimización
+            <img
+              src={repo.owner_avatar_url}
+              alt=""
+              width={20}
+              height={20}
+              className="h-5 w-5 shrink-0 rounded-full"
+            />
+          ) : null}
+          <span data-testid="feed-card-owner" className="truncate">{ownerLogin ?? "—"}</span>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <button

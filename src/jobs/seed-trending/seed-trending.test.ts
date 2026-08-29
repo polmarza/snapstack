@@ -17,6 +17,7 @@ const item = (extra: Partial<SearchRepoItem> = {}): SearchRepoItem => ({
   topics: ["demo", "example"],
   stargazers_count: 420,
   archived: false,
+  owner: { login: "octocat", avatar_url: "https://avatars.githubusercontent.com/u/583231" },
   ...extra,
 });
 
@@ -57,6 +58,8 @@ describe("mapSearchItemToRepoRow", () => {
     expect(row.stars).toBe(420);
     expect(row.languages).toEqual({});
     expect(row.last_synced_at).toBe(AHORA.toISOString());
+    expect(row.owner_login).toBe("octocat");
+    expect(row.owner_avatar_url).toBe("https://avatars.githubusercontent.com/u/583231");
   });
 
   it("M-04/M-10: la card_seed es el hash determinista del ID del repo", () => {
@@ -65,10 +68,15 @@ describe("mapSearchItemToRepoRow", () => {
     expect(mapSearchItemToRepoRow(item(), AHORA).card_seed).toBe(row.card_seed);
   });
 
-  it("M-10: tolera descripción y topics ausentes", () => {
-    const row = mapSearchItemToRepoRow(item({ description: null, topics: undefined }), AHORA);
+  it("M-10: tolera descripción, topics y owner ausentes", () => {
+    const row = mapSearchItemToRepoRow(
+      item({ description: null, topics: undefined, owner: null }),
+      AHORA,
+    );
     expect(row.description).toBeNull();
     expect(row.topics).toEqual([]);
+    expect(row.owner_login).toBeNull();
+    expect(row.owner_avatar_url).toBeNull();
   });
 });
 

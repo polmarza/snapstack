@@ -4,6 +4,8 @@ import type { Db } from "./client";
 export interface RepoRow {
   github_repo_id: number;
   owner_profile_id: string | null;
+  owner_login: string | null;
+  owner_avatar_url: string | null;
   full_name: string;
   description: string | null;
   url: string;

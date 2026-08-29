@@ -14,6 +14,8 @@ const repo = (n: number): FeedRepo =>
     id: `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`,
     github_repo_id: n,
     owner_profile_id: null,
+    owner_login: "dev",
+    owner_avatar_url: null,
     full_name: `dev/repo-${n}`,
     description: null,
     url: `https://github.com/dev/repo-${n}`,
