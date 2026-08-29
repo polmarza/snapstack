@@ -1,8 +1,8 @@
 # Suscribirse a los cambios de un repo
 
 **Estado:** Acordada
-**Requisitos que cierra:** C-06 (se añadirá al PRD al construir; absorbe MEJORA-07 y el punto
-6 del feedback de Pol)
+**Requisitos que cierra:** C-06 (ya declarado en el PRD; absorbe MEJORA-07 y el punto 6 del
+feedback de Pol)
 **Fecha de acuerdo:** 2026-08-29 (pendiente de construir cuando se mergee C-05)
 
 ## Qué se construye
@@ -35,4 +35,8 @@ notificación con el número de commits y un enlace directo al diff (`compare`) 
 
 ## Cobertura
 
-(Se rellena al construir.)
+Rutas previstas; los tests se escriben al construir (la ficha está Acordada, no Verificada).
+
+| Requisito | Se implementa en | Se valida con |
+|-----------|------------------|---------------|
+| C-06 | `supabase/migrations/012_repo_subscriptions.sql`, `src/lib/db/subscriptions.ts`, `src/app/r/[owner]/[name]/`, `src/lib/github/webhooks.ts` | `src/lib/db/subscriptions.test.ts`, `e2e/webhooks.spec.ts` |
