@@ -11,6 +11,7 @@ import {
   removeOwnedRepos,
   selectionLimit,
   SelectionLimitError,
+  RepoOwnedByAnotherProfileError,
   validateSelectionSize,
 } from "@/lib/db/selection";
 import { getGithubToken } from "@/lib/github/token";
@@ -50,6 +51,18 @@ export async function saveSelectionAction(selectedFullNames: string[]): Promise<
       if (!token) return fallo("No GitHub token available. Please sign in with GitHub again.");
       const now = new Date();
       const details = await Promise.all(diff.toAdd.map((name) => fetchRepoDetails(token, name)));
+
+      // Autorización: solo puedes importar repos tuyos. La lista de la pantalla ya
+      // los filtra, pero esta acción se puede invocar con los argumentos que sea, y
+      // la consulta de detalle resuelve cualquier repo público — sin esta comprobación
+      // bastaría con pedir el nombre del repo de otro para colgarlo de tu perfil.
+      const ajeno = details.find(
+        (d) => d.owner.login.toLowerCase() !== profile.username.toLowerCase(),
+      );
+      if (ajeno) {
+        return fallo(`"${ajeno.nameWithOwner}" isn't yours: you can only add your own repos.`);
+      }
+
       const rows = details.map((d) => mapRepoDetailsToRow(d, profile.id, now));
 
       // Filtro básico de contenido (S-01): el repo marcado se rechaza entero.
@@ -60,7 +73,7 @@ export async function saveSelectionAction(selectedFullNames: string[]): Promise<
         );
       }
 
-      await importOwnedRepos(db, rows);
+      await importOwnedRepos(db, rows, profile.id);
     }
 
     await removeOwnedRepos(db, profile.id, diff.toRemove.map((row) => row.github_repo_id));
@@ -70,6 +83,7 @@ export async function saveSelectionAction(selectedFullNames: string[]): Promise<
     return { ok: true, added: diff.toAdd.length, removed: diff.toRemove.length, error: null };
   } catch (error) {
     if (error instanceof SelectionLimitError) return fallo(error.message);
+    if (error instanceof RepoOwnedByAnotherProfileError) return fallo(error.message);
     console.error("[saveSelectionAction]", error);
     return fallo("We couldn't save your selection. Please try again.");
   }

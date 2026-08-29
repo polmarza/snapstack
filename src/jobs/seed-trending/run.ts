@@ -9,6 +9,8 @@ export interface SeedTrendingResult {
   repos: string[];
   /** Descartados por el filtro básico de contenido (S-01). */
   discarded: number;
+  /** Saltados por tener ya dueño: no se devuelven a semilla. */
+  skipped: number;
 }
 
 export interface SeedTrendingOptions extends FetchTrendingOptions {
@@ -26,11 +28,12 @@ export async function runSeedTrending(options: SeedTrendingOptions): Promise<See
   const mapped = items.map((item) => mapSearchItemToRepoRow(item, now));
   // Filtro básico de contenido (S-01): lo marcado no entra al feed.
   const rows = mapped.filter((row) => repoBlockedTerm(row) === null);
-  await upsertRepos(db, rows);
+  const { skipped } = await upsertRepos(db, rows);
 
   return {
-    imported: rows.length,
+    imported: rows.length - skipped,
     repos: rows.map((row) => row.full_name),
     discarded: mapped.length - rows.length,
+    skipped,
   };
 }

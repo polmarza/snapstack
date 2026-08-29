@@ -195,6 +195,19 @@ propios. La App queda para M-08, donde los webhooks la hacen imprescindible.
 flujo de instalación. Verificado que la instancia dev de Clerk expone el token (scopes
 `read:user`, `user:email`, suficientes para datos públicos).
 
+### 2026-08-29 — La propiedad de un repo se verifica en servidor, no se confía al cliente
+**Contexto:** `/security-review` antes del despliegue encontró que `saveSelectionAction`
+aceptaba cualquier lista de `full_name` del cliente. La consulta de detalle
+(`repository(owner, name)`) resuelve cualquier repo público, y el upsert por
+`github_repo_id` sobreescribía la fila entera — dueño incluido.
+**Decisión:** doble comprobación. (1) En la acción: el `owner.login` que devuelve GitHub debe
+coincidir con el username del perfil que importa. (2) En la capa de datos: `importOwnedRepos`
+rechaza cualquier fila que ya pertenezca a otro perfil, y el UPDATE lleva el dueño permitido
+en su propio filtro, de modo que la condición la aplica Postgres.
+**Consecuencias:** las semillas sin dueño se siguen reclamando (comportamiento buscado), pero
+un repo de otro usuario no se puede reasignar. La misma regla se aplicó al seed de trending:
+un repo ya curado por alguien no vuelve a semilla aunque siga en trending.
+
 ### 2026-08-29 — Sin algoritmo de recomendación en v1
 **Contexto:** no hay señal explícita (no hay swipe/like) ni volumen de datos.
 **Decisión:** feed cronológico con filtro por follows. Las señales implícitas (permanencia,

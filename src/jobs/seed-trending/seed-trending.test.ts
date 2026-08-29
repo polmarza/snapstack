@@ -25,10 +25,22 @@ const respuestaOk = (items: SearchRepoItem[]) =>
   new Response(JSON.stringify({ items }), { status: 200 });
 
 /** Db falsa: upsert en memoria con la misma semántica de conflicto por github_repo_id. */
-function fakeDb() {
-  const store = new Map<number, RepoRow>();
+function fakeDb(inicial: RepoRow[] = []) {
+  const store = new Map<number, RepoRow>(inicial.map((r) => [r.github_repo_id, { ...r }]));
   const db = {
     from: (table: string) => ({
+      select: () => ({
+        in: (_col: string, ids: number[]) =>
+          Promise.resolve({
+            data: [...store.values()]
+              .filter((row) => ids.includes(row.github_repo_id))
+              .map((row) => ({
+                github_repo_id: row.github_repo_id,
+                owner_profile_id: row.owner_profile_id,
+              })),
+            error: null,
+          }),
+      }),
       upsert: (rows: RepoRow[], opts: { onConflict: string }) => {
         expect(table).toBe("repos");
         expect(opts.onConflict).toBe("github_repo_id");
@@ -139,6 +151,21 @@ describe("runSeedTrending", () => {
 
     expect(store.size).toBe(1);
     expect(store.get(1296269)?.stars).toBe(250);
+  });
+
+  it("integridad: un repo que ya tiene dueño no vuelve a semilla aunque siga en trending", async () => {
+    const curado = mapSearchItemToRepoRow(item(), AHORA);
+    const { db, store } = fakeDb([
+      { ...curado, owner_profile_id: "perfil-pol", is_seed: false, stars: 1 },
+    ]);
+    const fetchImpl = vi.fn().mockResolvedValue(respuestaOk([item({ stargazers_count: 5000 })]));
+
+    const result = await runSeedTrending({ db, fetchImpl, now: AHORA });
+
+    expect(result.skipped).toBe(1);
+    expect(result.imported).toBe(0);
+    expect(store.get(1296269)?.owner_profile_id).toBe("perfil-pol"); // sigue siendo suyo
+    expect(store.get(1296269)?.is_seed).toBe(false);
   });
 
   it("S-01: los repos que no pasan el filtro de contenido se descartan del seed", async () => {

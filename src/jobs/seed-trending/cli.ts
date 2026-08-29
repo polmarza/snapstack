@@ -51,6 +51,9 @@ async function main() {
   if (result.discarded > 0) {
     console.log(`Descartados por el filtro de contenido: ${result.discarded}`);
   }
+  if (result.skipped > 0) {
+    console.log(`Saltados por tener ya dueño: ${result.skipped}`);
+  }
 }
 
 main().catch((error) => {

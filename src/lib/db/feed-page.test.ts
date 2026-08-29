@@ -72,7 +72,7 @@ function fakeDb(all: FeedRepo[]) {
 
 describe("cursor", () => {
   it("M-06: codifica y decodifica ida y vuelta", () => {
-    const cursor = { t: "2026-08-29T12:00:00.000Z", id: "abc" };
+    const cursor = { t: "2026-08-29T12:00:00.000Z", id: "123e4567-e89b-42d3-a456-426614174000" };
     expect(decodeCursor(encodeCursor(cursor))).toEqual(cursor);
   });
 
@@ -81,6 +81,23 @@ describe("cursor", () => {
     expect(decodeCursor("")).toBeNull();
     expect(decodeCursor("no-es-base64-json")).toBeNull();
     expect(decodeCursor(Buffer.from('{"x":1}').toString("base64url"))).toBeNull();
+  });
+
+  it("seguridad: rechaza valores que no son fecha ISO y uuid — acaban en el filtro de la consulta", () => {
+    const cursor = (t: string, id: string) =>
+      Buffer.from(JSON.stringify({ t, id }), "utf8").toString("base64url");
+
+    // Intento de romper el `or=(...)` de PostgREST con comas y paréntesis.
+    expect(decodeCursor(cursor("2026-08-29T12:00:00.000Z", "abc),status.eq.removed,(id.lt.x"))).toBeNull();
+    expect(decodeCursor(cursor("2026-08-29T12:00:00.000Z,status.eq.removed", "abc"))).toBeNull();
+    // Formatos simplemente inesperados.
+    expect(decodeCursor(cursor("ayer", "123e4567-e89b-42d3-a456-426614174000"))).toBeNull();
+    expect(decodeCursor(cursor("2026-13-45T99:99:99.000Z", "123e4567-e89b-42d3-a456-426614174000"))).toBeNull();
+    expect(decodeCursor(cursor("2026-08-29T12:00:00.000Z", "no-soy-un-uuid"))).toBeNull();
+    // El cursor legítimo sigue pasando.
+    expect(
+      decodeCursor(cursor("2026-08-29T12:00:00.000Z", "123e4567-e89b-42d3-a456-426614174000")),
+    ).toEqual({ t: "2026-08-29T12:00:00.000Z", id: "123e4567-e89b-42d3-a456-426614174000" });
   });
 });
 
