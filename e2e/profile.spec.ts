@@ -40,3 +40,36 @@ test("el pie de una tarjeta con dueño navega al perfil; las semillas no enlazan
   const linkedCards = await page.getByTestId("feed-card-owner-link").count();
   expect(linkedCards).toBeLessThan(totalCards);
 });
+
+test("el perfil muestra tagline, bio y los iconos de enlaces sociales (C-03)", async ({ page }) => {
+  // Siembra por la vía de servicio: el formulario de Settings exige sesión de
+  // Clerk (no automatizable aquí); la lectura pública sí se verifica de punta
+  // a punta.
+  process.loadEnvFile(".env.local");
+  const { createClient } = await import("@supabase/supabase-js");
+  const db = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+  );
+  const { error } = await db
+    .from("profiles")
+    .update({
+      tagline: "Building snapstack in public.",
+      bio: "Curated repos, procedural cards, and a feed of what devs actually build.",
+      social_links: {
+        x: "https://x.com/polmarza",
+        linkedin: "https://www.linkedin.com/in/polmarza/",
+      },
+    })
+    .eq("username", "polmarza");
+  expect(error).toBeNull();
+
+  await page.goto("/u/polmarza");
+  await expect(page.getByTestId("profile-tagline")).toHaveText("Building snapstack in public.");
+  await expect(page.getByTestId("profile-bio")).toContainText("procedural cards");
+  await expect(page.getByTestId("profile-social-x")).toHaveAttribute("href", "https://x.com/polmarza");
+  await expect(page.getByTestId("profile-social-linkedin")).toHaveAttribute(
+    "href",
+    "https://www.linkedin.com/in/polmarza/",
+  );
+});

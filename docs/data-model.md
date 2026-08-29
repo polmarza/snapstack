@@ -18,6 +18,9 @@ Usuario de Snapstack, vinculado a su identidad de Clerk/GitHub.
 | display_name | text | Nombre visible |
 | avatar_url | text | Avatar de GitHub |
 | onboarded_at | timestamptz (nullable) | Cuándo completó o saltó el onboarding; NULL = la home le redirige allí |
+| tagline | text (nullable, ≤ 80) | Una línea bajo el nombre en el perfil (C-03, migración 009) |
+| bio | text (nullable, ≤ 280) | Bio breve bajo la cabecera del perfil (C-03, migración 009) |
+| social_links | jsonb (default `{}`) | `{plataforma: url}` con lista blanca validada en servidor (C-03, migración 009) |
 | created_at | timestamptz | Alta |
 
 ### repos
