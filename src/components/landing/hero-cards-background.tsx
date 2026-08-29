@@ -65,6 +65,9 @@ export function HeroCardsBackground({ repos }: { repos: FeedRepo[] }) {
       </div>
       {/* Velo para que el texto del hero mande sobre las tarjetas. */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/55 to-background" />
+      {/* Bandas de difuminado: las columnas nacen y mueren en el fondo, sin corte recto. */}
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </div>
   );
 }

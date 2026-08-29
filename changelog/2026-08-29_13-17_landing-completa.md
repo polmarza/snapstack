@@ -37,7 +37,13 @@ alineados a la izquierda; "How it works" con el botón real + cursor, dos repos 
 y el contador de pastillas de la app, y estrellas en la ficha del paso 3; y **mínimo `text-lg`
 en todo el texto legible de la landing** (FAQ incluida).
 
-Toda animación respeta `prefers-reduced-motion`. Con sesión, la home no cambia.
+Remate final: la marca del hero pasa al **verde de acento**, las columnas nacen y mueren en
+**bandas de difuminado** arriba y abajo (sin corte recto), y se añade el **footer global**
+discreto — "Made with ❤️ by Pol Marzà in Barcelona" con enlaces a GitHub y LinkedIn — visible
+en todas las páginas, no solo en la landing.
+
+Toda animación respeta `prefers-reduced-motion`. Con sesión, la home no cambia (salvo el
+footer, que es global).
 
 Verificado: 99/99 unit, 21/21 e2e, build y lint en verde; recorrido completo comprobado en
 navegador (5 secciones presentes, 6 FAQs, feed 10→20 tarjetas al hacer scroll) y viewport
