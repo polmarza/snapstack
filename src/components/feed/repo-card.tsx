@@ -98,16 +98,18 @@ export function RepoCard({ repo, showFooter = true }: RepoCardProps) {
           <div className="flex items-center gap-1">
             {/* Indicador pasivo por ahora; será botón de estrella real (GitHub App,
                 permiso Starring) cuando exista la App — ver MEJORA-02. */}
-            <span
+            <Link
+              href={`/r/${repo.full_name}`}
               data-testid="feed-card-stars"
-              className="flex items-center gap-1.5 px-1 font-mono text-sm text-white/75"
+              title="Star it from the repo page"
+              className="flex items-center gap-1.5 px-1 font-mono text-sm text-white/75 transition-colors hover:text-white"
             >
               <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.3">
                 <path d="M8 1.5l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.8l-4 2.1.8-4.5L1.5 6.2l4.5-.6L8 1.5z" strokeLinejoin="round" />
               </svg>
               <span className="sr-only">Stars:</span>
               {repo.stars}
-            </span>
+            </Link>
             <CardMenu repoId={repo.id} />
           </div>
         </div>

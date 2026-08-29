@@ -108,3 +108,63 @@ test("repository.privatized hace desaparecer la ficha del feed (sin fantasmas), 
   expect((await enviar("repository", { action: "publicized", ...payload })).status()).toBe(200);
   expect(await enFeed()).toBe(true);
 });
+
+test("C-06: un push firmado notifica a los suscriptores del repo, con acumulación", async () => {
+  process.loadEnvFile(".env.local");
+  const { createClient } = await import("@supabase/supabase-js");
+  const db = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+  );
+
+  // Suscribir el perfil local de polmarza a un repo semilla.
+  const repo = await repoSemilla();
+  const { data: perfil } = await db.from("profiles").select("id").eq("username", "polmarza").single();
+  const profileId = (perfil as { id: string }).id;
+  const { data: fila } = await db.from("repos").select("id").eq("github_repo_id", repo.github_repo_id).single();
+  const repoId = (fila as { id: string }).id;
+  // Estado limpio: sin suscripción previa ni notificaciones de este repo.
+  await db.from("repo_subscriptions").delete().eq("subscriber_profile_id", profileId).eq("repo_id", repoId);
+  await db.from("notifications").delete().eq("recipient_profile_id", profileId).eq("type", "repo_update");
+  await db.from("repo_subscriptions").insert({ subscriber_profile_id: profileId, repo_id: repoId });
+
+  const push = (commits: number, compare: string) => ({
+    ref: "refs/heads/main",
+    compare,
+    commits: Array.from({ length: commits }, (_, i) => ({ id: `c${i}` })),
+    repository: {
+      id: repo.github_repo_id,
+      full_name: repo.full_name,
+      description: null,
+      html_url: repo.url,
+      language: null,
+      stargazers_count: repo.stars,
+    },
+  });
+
+  const notificaciones = async () => {
+    const { data } = await db
+      .from("notifications")
+      .select("payload, read_at")
+      .eq("recipient_profile_id", profileId)
+      .eq("type", "repo_update");
+    return (data ?? []) as Array<{ payload: { commits: number; compare: string }; read_at: string | null }>;
+  };
+
+  // Primer push: crea la notificación.
+  expect((await enviar("push", push(3, "https://github.com/x/compare/a...b"))).status()).toBe(200);
+  let filas = await notificaciones();
+  expect(filas).toHaveLength(1);
+  expect(filas[0].payload.commits).toBe(3);
+
+  // Segundo push sin leer: acumula en la misma, no apila.
+  expect((await enviar("push", push(2, "https://github.com/x/compare/b...c"))).status()).toBe(200);
+  filas = await notificaciones();
+  expect(filas).toHaveLength(1);
+  expect(filas[0].payload.commits).toBe(5);
+  expect(filas[0].payload.compare).toBe("https://github.com/x/compare/b...c");
+
+  // Limpieza: la suscripción no debe interferir con otras pasadas.
+  await db.from("repo_subscriptions").delete().eq("subscriber_profile_id", profileId).eq("repo_id", repoId);
+  await db.from("notifications").delete().eq("recipient_profile_id", profileId).eq("type", "repo_update");
+});

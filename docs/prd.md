@@ -154,8 +154,16 @@ En v1 son el mismo perfil de persona en dos momentos de uso distintos.
   de detalle, cuando pulsa "Subscribe to changes", entonces cada push a ese repo (con la
   GitHub App instalada) le genera una notificación con el número de commits y enlace directo
   al diff en GitHub; los pushes sobre una notificación no leída se acumulan en ella en vez de
-  apilarse, y el mismo botón cancela la suscripción. Acordado el 2026-08-29 (ficha
-  `suscripcion-a-repos.md`); pendiente de construir.
+  apilarse, y el mismo botón cancela la suscripción. Construido el 2026-08-29 (ficha
+  `suscripcion-a-repos.md`).
+
+- **[C-07] Estrella real desde snapstack** — Dado un usuario con sesión en la página de
+  detalle, cuando pulsa la estrella, entonces se da (o quita) la estrella real en GitHub en
+  su nombre, vía token user-to-server de la GitHub App limitado al permiso *Starring* (nunca
+  scopes anchos); la primera vez se pide autorizar la App y se vuelve al repo. Los tokens se
+  guardan cifrados (AES-256-GCM). Sin la App configurada en el entorno, el contador queda
+  pasivo. En las tarjetas, la estrella enlaza al detalle. Construido el 2026-08-29 (ficha
+  `estrella-real.md`; era MEJORA-02); su verificación de flujo exige configurar la App.
 
 ### WON'T (esta versión)
 
