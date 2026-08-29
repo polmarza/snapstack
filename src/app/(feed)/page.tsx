@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { AuthControls } from "@/components/auth/auth-controls";
@@ -10,6 +11,7 @@ import { HeroCardsBackground } from "@/components/landing/hero-cards-background"
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { LandingCta } from "@/components/landing/landing-cta";
 import { LanguageMarquee } from "@/components/landing/language-marquee";
+import { RepoCardSkeleton } from "@/components/skeleton/skeleton";
 import { createServiceClient } from "@/lib/db/client";
 import { annotateFollowed, listFeedPage, type FeedPage } from "@/lib/db/feed-page";
 import { listFollowedIds } from "@/lib/db/follows";
@@ -44,13 +46,74 @@ interface HomeProps {
   searchParams: Promise<{ filter?: string }>;
 }
 
+/**
+ * El cuerpo del feed con sesión, como componente propio: vive dentro de un
+ * <Suspense key={pestaña}> para que cambiar entre All y Following enseñe el
+ * esqueleto mientras carga (loading.tsx no se re-dispara cuando solo cambian
+ * los searchParams de la misma ruta).
+ */
+async function FeedBody({
+  followingView,
+  followedIds,
+  viewerProfileId,
+}: {
+  followingView: boolean;
+  followedIds: string[];
+  viewerProfileId: string | null;
+}) {
+  let page: FeedPage | null = null;
+  try {
+    const db = createServiceClient();
+    page = await listFeedPage(db, null, undefined, followingView ? { ownerIn: followedIds } : {});
+    page = annotateFollowed(page, new Set(followedIds), viewerProfileId);
+  } catch {
+    page = null;
+  }
+
+  if (page === null) {
+    return (
+      <p data-testid="feed-unavailable" className="text-error">
+        The feed is unavailable right now. Check back soon.
+      </p>
+    );
+  }
+  if (page.repos.length === 0) {
+    return (
+      <p data-testid="feed-empty" className="text-content-secondary">
+        {followingView
+          ? "You're not following anyone yet. Explore the feed and follow the devs you like."
+          : "No repos in the feed yet."}
+      </p>
+    );
+  }
+  return (
+    <FeedList
+      key={followingView ? "following" : "all"}
+      initialRepos={page.repos}
+      initialCursor={page.nextCursor}
+      filter={followingView ? "following" : undefined}
+    />
+  );
+}
+
+function FeedBodySkeleton() {
+  return (
+    <div className="flex flex-col gap-6" aria-hidden>
+      <RepoCardSkeleton />
+      <RepoCardSkeleton />
+    </div>
+  );
+}
+
 export default async function Home({ searchParams }: HomeProps) {
   const { filter } = await searchParams;
 
   let page: FeedPage | null = null;
   let signedIn = false;
-  let followingView = false;
+  let sessionOk = true;
   let needsOnboarding = false;
+  let viewerProfileId: string | null = null;
+  let followedIds: string[] = [];
   try {
     const db = createServiceClient();
     const user = await currentUser();
@@ -58,16 +121,17 @@ export default async function Home({ searchParams }: HomeProps) {
     await ensureProfile(db, user).catch(() => null);
     const profile = user ? await getProfileByClerkId(db, user.id) : null;
     signedIn = profile !== null;
+    viewerProfileId = profile?.id ?? null;
     needsOnboarding = profile !== null && !profile.onboarded_at;
+    followedIds = profile ? await listFollowedIds(db, profile.id) : [];
 
-    const followedIds = profile ? await listFollowedIds(db, profile.id) : null;
-    followingView = filter === "following" && profile !== null;
-
-    page = await listFeedPage(db, null, undefined, followingView ? { ownerIn: followedIds ?? [] } : {});
-    if (followedIds) page = annotateFollowed(page, new Set(followedIds));
+    // Sin sesión, la landing necesita su muestra de fichas ya resuelta.
+    if (!signedIn) page = await listFeedPage(db);
   } catch {
     page = null;
+    sessionOk = false;
   }
+  const followingView = filter === "following" && signedIn;
 
   // Usuario nuevo: al onboarding hasta que lo complete o lo salte (marca de la
   // migración 008). Fuera del try: redirect() lanza una excepción interna de
@@ -163,24 +227,19 @@ export default async function Home({ searchParams }: HomeProps) {
         </nav>
       ) : null}
 
-      {page === null ? (
+      {signedIn && sessionOk ? (
+        <Suspense key={followingView ? "following" : "all"} fallback={<FeedBodySkeleton />}>
+          <FeedBody
+            followingView={followingView}
+            followedIds={followedIds}
+            viewerProfileId={viewerProfileId}
+          />
+        </Suspense>
+      ) : !sessionOk ? (
         <p data-testid="feed-unavailable" className="text-error">
           The feed is unavailable right now. Check back soon.
         </p>
-      ) : page.repos.length === 0 ? (
-        <p data-testid="feed-empty" className="text-content-secondary">
-          {followingView
-            ? "You're not following anyone yet. Explore the feed and follow the devs you like."
-            : "No repos in the feed yet."}
-        </p>
-      ) : (
-        <FeedList
-          key={followingView ? "following" : "all"}
-          initialRepos={page.repos}
-          initialCursor={page.nextCursor}
-          filter={followingView ? "following" : undefined}
-        />
-      )}
+      ) : null}
       </div>
     </main>
   );

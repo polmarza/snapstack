@@ -41,6 +41,8 @@ importados sin login del autor); si el autor se registra después, el repo puede
 | topics | text[] | `repositoryTopics` declarados por el autor |
 | stars | integer | Contador de stars, actualizado por webhook `watch` |
 | click_count | integer | Clicks hacia el repo. Desnormalizado de `signals` (migración 007): el feed lo pinta en cada tarjeta y agregar la tabla de señales en cada carga no escala |
+| readme_md | text (nullable, ≤ 200k) | README cacheado para el detalle (C-05, migración 011); NULL = sin README, filtrado o aún no traído |
+| readme_fetched_at | timestamptz (nullable) | Cuándo se intentó traer; NULL = pendiente de backfill |
 | card_seed | text | Semilla determinista del fondo (hash de github_repo_id) |
 | status | text | `active` / `removed` (borrado o privado en GitHub, ver webhook `repository`) |
 | is_seed | boolean | true si entró por el import de trending |

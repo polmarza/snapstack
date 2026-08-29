@@ -19,6 +19,9 @@ export interface RepoRow {
   status: "active" | "removed";
   is_seed: boolean;
   last_synced_at: string;
+  /** README cacheado para la página de detalle (C-05, migración 011). */
+  readme_md?: string | null;
+  readme_fetched_at?: string | null;
 }
 
 /**
@@ -62,4 +65,25 @@ export async function listActiveRepos(db: Db, limit = 50): Promise<RepoRow[]> {
     .limit(limit);
   if (error) throw new Error(`Error al listar repos: ${error.message}`);
   return (data ?? []) as RepoRow[];
+}
+
+/**
+ * Repo activo por su full_name, para la página de detalle (C-05). La búsqueda
+ * es case-insensitive (GitHub trata los nombres así en URLs); los comodines de
+ * LIKE se escapan porque owner/name llegan de la URL.
+ */
+export async function getActiveRepoByFullName(
+  db: Db,
+  owner: string,
+  name: string,
+): Promise<(RepoRow & { id: string }) | null> {
+  const escape = (s: string) => s.replace(/[\\%_]/g, (m) => `\\${m}`);
+  const { data, error } = await db
+    .from("repos")
+    .select("*")
+    .ilike("full_name", `${escape(owner)}/${escape(name)}`)
+    .eq("status", "active")
+    .maybeSingle();
+  if (error) throw new Error(`Error al leer el repo: ${error.message}`);
+  return (data as (RepoRow & { id: string }) | null) ?? null;
 }

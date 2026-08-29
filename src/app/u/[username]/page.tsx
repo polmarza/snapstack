@@ -180,7 +180,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {repos.map((repo) => (
-            <RepoCard key={repo.id} repo={repo} />
+            <RepoCard key={repo.id} repo={repo} showFooter={false} />
           ))}
         </div>
       )}

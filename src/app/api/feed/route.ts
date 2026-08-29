@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       undefined,
       filter === "following" ? { ownerIn: followedIds ?? [] } : {},
     );
-    if (followedIds) page = annotateFollowed(page, new Set(followedIds));
+    if (followedIds && profile) page = annotateFollowed(page, new Set(followedIds), profile.id);
 
     return NextResponse.json(page);
   } catch (error) {

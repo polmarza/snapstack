@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "verificar-cobertura": "node scripts/verificar-cobertura.mjs",
     "regen:linguist": "node scripts/regen-linguist-colors.mjs",
-    "seed:trending": "tsx src/jobs/seed-trending/cli.ts"
+    "seed:trending": "tsx src/jobs/seed-trending/cli.ts",
+    "backfill:readmes": "tsx src/jobs/backfill-readmes/cli.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.8.2",
@@ -24,6 +25,8 @@
     "next": "^16.3.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "simple-icons": "^16.28.0"
   },
   "devDependencies": {

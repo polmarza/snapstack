@@ -39,16 +39,20 @@ test("la paginación del feed encadena páginas sin duplicar ni saltar fichas", 
   expect(cursor).toBeNull(); // y el final es explícito
 });
 
-test("la tarjeta muestra autor y enlace al repo, sin desplegables", async ({ page }) => {
+test("la tarjeta muestra autor, stats dentro del degradado y navega al detalle", async ({ page }) => {
   await page.goto("/");
   const primera = page.getByTestId("feed-card").first();
   await expect(primera).toBeVisible();
 
   await expect(primera.getByTestId("feed-card-owner")).toBeVisible();
   await expect(primera.getByTestId("feed-card-stars")).toBeVisible();
+  // Clicks dentro del degradado; el pie queda para el autor.
+  await expect(primera.getByTestId("feed-card-clicks")).toBeVisible();
 
-  const href = await primera.getByTestId("feed-card-repo-link").getAttribute("href");
-  expect(href).toMatch(/^https:\/\/github\.com\//);
+  // El título enlaza al detalle; "View on GitHub" ya solo existe allí.
+  const href = await primera.getByTestId("feed-card-detail-link").getAttribute("href");
+  expect(href).toMatch(/^\/r\//);
+  await expect(primera.getByTestId("feed-card-repo-link")).toHaveCount(0);
 
   // Ya no hay nada plegado: todo lo visible está a la vista.
   await expect(primera.getByTestId("feed-card-expand")).toHaveCount(0);

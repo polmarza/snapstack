@@ -104,27 +104,25 @@ consultando su estado (haría falta un `GET /api/follows?profileId=`). Se descar
 ahora por ser cirugía sin beneficio medible antes del lanzamiento. Al retomarlo, medir antes
 y después con el build de producción (`curl -D-` sobre `/u/<usuario>`).
 
-### [MEJORA-03] Página de detalle del repo con README
-**Área:** Frontend / Backend
-**Prioridad estimada:** Media
-**Origen:** Idea de Pol tras mergear M-06 (2026-08-29)
-
-Pulsar una ficha abre la página del repo con su README renderizado (la tarjeta muestra solo el
-"about"). Mejor página de detalle que inline en el feed: SEO, y es donde vive la señal de
-click de M-09. Letra pequeña obligatoria: el README es contenido de terceros → sanitizar HTML
-(XSS), reescribir links/imágenes relativos a raw.githubusercontent, límites de tamaño, mayor
-superficie de moderación (S-01) y límites de caché de los GitHub API Terms. El README ya
-estaba previsto para embeddings (C-01), así que traerlo sirve doble.
-
 ### [MEJORA-07] Seguir repos individuales
 **Área:** Producto / Backend
 **Prioridad estimada:** Media
 **Origen:** Idea de Pol al planificar la página de detalle (2026-08-29)
 
-Además de seguir a un dev, poder seguir un repo concreto desde su futura página de detalle
-(MEJORA-03): un botón "Follow repo" que suscribe solo a la actividad de ese repo. Encaja con
+Además de seguir a un dev, poder seguir un repo concreto desde su página de detalle (C-05): un botón "Follow repo" que suscribe solo a la actividad de ese repo. Encaja con
 las notificaciones de actividad (punto 6 del feedback) y con su silenciado granular: seguir
 un repo y mutear un repo son las dos caras del mismo control fino. A resolver al construirlo:
 tabla propia (`repo_follows`) o generalizar `follows` con un tipo; qué emite notificación
 (push, release, stars…); y cómo se refleja en el filtro Following del feed (¿los repos
-seguidos aparecen aunque no sigas al autor?). Construir junto a MEJORA-03 o justo después.
+seguidos aparecen aunque no sigas al autor?). La página de detalle ya existe (C-05): construible cuando se quiera.
+
+### [MEJORA-08] Apartado de actividad (commits y PRs) en el detalle
+**Área:** Producto / Backend
+**Prioridad estimada:** Media
+**Origen:** Idea de Pol al pedir las suscripciones a repos (2026-08-29)
+
+Bajo el README del detalle, una lista de la actividad reciente del repo: commits (del payload
+del webhook `push`) y PRs (exige añadir el evento `pull_request` y el permiso *Pull requests:
+read* a la GitHub App). Necesita tabla propia (`repo_events`) porque hoy no se almacena
+ningún evento, solo se actualiza el estado del repo. Con la ficha `suscripcion-a-repos.md`
+hecha, la notificación podría enlazar aquí en vez de a GitHub.

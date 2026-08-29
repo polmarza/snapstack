@@ -142,6 +142,21 @@ En v1 son el mismo perfil de persona en dos momentos de uso distintos.
   `notificaciones-follows.md`); la actividad de repos seguidos y el silenciado granular
   quedan para una feature posterior sobre esta base.
 
+- **[C-05] Página de detalle del repo** — Dado cualquier repo activo del feed (con dueño o
+  semilla), cuando se visita `/r/<owner>/<repo>` (o se pulsa el título de su tarjeta),
+  entonces se ve la ficha en grande con stats, autor con Follow, enlace a GitHub (que emite
+  `click_repo`) y el README renderizado de forma segura: sin HTML crudo interpretado, enlaces
+  e imágenes relativos reescritos al repo en GitHub, esquemas peligrosos anulados y tope de
+  tamaño. El README se cachea al importar o con `pnpm backfill:readmes`; un repo inexistente
+  o retirado da 404. Añadido el 2026-08-29 (ficha `detalle-repo.md`; era MEJORA-03).
+
+- **[C-06] Suscripción a los cambios de un repo** — Dado un usuario con sesión en la página
+  de detalle, cuando pulsa "Subscribe to changes", entonces cada push a ese repo (con la
+  GitHub App instalada) le genera una notificación con el número de commits y enlace directo
+  al diff en GitHub; los pushes sobre una notificación no leída se acumulan en ella en vez de
+  apilarse, y el mismo botón cancela la suscripción. Acordado el 2026-08-29 (ficha
+  `suscripcion-a-repos.md`); pendiente de construir.
+
 ### WON'T (esta versión)
 
 - Swipe o señal explícita de like/dislike sobre tarjetas.
