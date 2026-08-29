@@ -10,19 +10,18 @@
 
 Todo lo marcado MUST en `prd.md`:
 
-- [ ] M-01 Login con GitHub (Clerk)
-- [ ] M-02 Selección manual de repos con límite (v1: 5, configurable)
-- [ ] M-03 Gestión de la selección después del onboarding
-- [ ] M-04 Ficha visual generada (fondo procedural determinista + `@vercel/og`)
-- [ ] M-05 Perfil público
-- [ ] M-06 Feed de scroll infinito cronológico
-- [ ] M-07 Follows y filtro "solo seguidos"
-- [ ] M-08 Sincronización por webhooks (GitHub App: `push`, `watch`, `repository`)
-- [ ] M-09 Instrumentación de señales implícitas (sin ranking encima)
-- [ ] M-10 Semilla de contenido: import de repos trending
-- [ ] M-11 Borrado de cuenta completo
-- [ ] S-01 Moderación ligera (filtro básico + reporte) — entra en Fase 1 si no retrasa el
-      lanzamiento; si no, primera cosa de Fase 2
+- [x] M-01 Login con GitHub (Clerk)
+- [x] M-02 Selección manual de repos con límite (v1: 5, configurable)
+- [x] M-03 Gestión de la selección después del onboarding
+- [x] M-04 Ficha visual generada (fondo procedural determinista + `@vercel/og`)
+- [x] M-05 Perfil público
+- [x] M-06 Feed de scroll infinito cronológico
+- [ ] M-07 Follows y filtro "solo seguidos" ← **lo único pendiente de Fase 1**
+- [x] M-08 Sincronización por webhooks (endpoint hecho; la GitHub App se crea al desplegar)
+- [x] M-09 Instrumentación de señales implícitas (sin ranking encima)
+- [x] M-10 Semilla de contenido: import de repos trending
+- [x] M-11 Borrado de cuenta completo
+- [x] S-01 Moderación ligera (filtro básico + reporte)
 
 **Objetivo de validación:** comprobar que el modelo perfil + feed genera uso pasivo recurrente
 (gente que vuelve a hacer scroll y sigue a devs) y que los devs se molestan en curar su

@@ -48,6 +48,9 @@ async function main() {
 
   console.log(`Importados ${result.imported} repos trending (${remote ? "REMOTO" : "local"}):`);
   for (const name of result.repos) console.log(`  - ${name}`);
+  if (result.discarded > 0) {
+    console.log(`Descartados por el filtro de contenido: ${result.discarded}`);
+  }
 }
 
 main().catch((error) => {
