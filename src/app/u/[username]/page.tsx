@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { currentUser } from "@clerk/nextjs/server";
 import { RepoCard } from "@/components/feed/repo-card";
+import { FollowButton } from "@/components/follow/follow-button";
 import { createServiceClient } from "@/lib/db/client";
 import type { FeedRepo } from "@/lib/db/feed-page";
-import { getProfileByUsername } from "@/lib/db/profiles";
+import { isFollowing } from "@/lib/db/follows";
+import { getProfileByClerkId, getProfileByUsername } from "@/lib/db/profiles";
 import { listOwnedActiveRepos } from "@/lib/db/selection";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +42,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const repos = (await listOwnedActiveRepos(db, profile.id)) as FeedRepo[];
   repos.sort((a, b) => b.imported_at.localeCompare(a.imported_at));
+
+  // Botón Follow: solo con sesión y sobre perfiles ajenos.
+  const user = await currentUser();
+  const viewer = user ? await getProfileByClerkId(db, user.id) : null;
+  const canFollow = viewer !== null && viewer.id !== profile.id;
+  const alreadyFollowing = canFollow ? await isFollowing(db, viewer.id, profile.id) : false;
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
@@ -76,6 +85,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             </span>
           </p>
         </div>
+        {canFollow ? (
+          <div className="ml-auto shrink-0">
+            <FollowButton profileId={profile.id} initialFollowing={alreadyFollowing} />
+          </div>
+        ) : null}
       </header>
 
       {repos.length === 0 ? (

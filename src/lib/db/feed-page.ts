@@ -27,7 +27,12 @@ export interface FeedPage {
 }
 
 /** Fila del feed: RepoRow más el campo de orden y el id que necesita el cursor. */
-export type FeedRepo = RepoRow & { id: string; imported_at: string };
+export type FeedRepo = RepoRow & {
+  id: string;
+  imported_at: string;
+  /** true/false con sesión (¿sigo al dueño?); ausente sin sesión o sin dueño. */
+  owner_followed?: boolean;
+};
 
 export function encodeCursor(cursor: FeedCursor): string {
   return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
@@ -61,11 +66,22 @@ export function pageFromRows(rows: FeedRepo[], limit: number): FeedPage {
   };
 }
 
+export interface FeedFilter {
+  /** Restringe el feed a repos de estos dueños (filtro "Following", M-07). */
+  ownerIn?: string[];
+}
+
 export async function listFeedPage(
   db: Db,
   cursorToken?: string | null,
   limit = FEED_PAGE_SIZE,
+  filter: FeedFilter = {},
 ): Promise<FeedPage> {
+  // Sin seguidos, el resultado es el vacío explícito — sin tocar la base.
+  if (filter.ownerIn && filter.ownerIn.length === 0) {
+    return { repos: [], nextCursor: null };
+  }
+
   const cursor = decodeCursor(cursorToken);
 
   let query = db
@@ -75,6 +91,10 @@ export async function listFeedPage(
     .order(FEED_ORDER_FIELD, { ascending: false })
     .order("id", { ascending: false })
     .limit(limit + 1);
+
+  if (filter.ownerIn) {
+    query = query.in("owner_profile_id", filter.ownerIn);
+  }
 
   if (cursor) {
     // Keyset: (t, id) estrictamente menores que el último elemento servido.
@@ -86,4 +106,16 @@ export async function listFeedPage(
   const { data, error } = await query;
   if (error) throw new Error(`Error al paginar el feed: ${error.message}`);
   return pageFromRows((data ?? []) as FeedRepo[], limit);
+}
+
+/** Anota cada tarjeta con si el visitante sigue a su dueño (para el botón Follow). */
+export function annotateFollowed(page: FeedPage, followedIds: Set<string>): FeedPage {
+  return {
+    ...page,
+    repos: page.repos.map((repo) =>
+      repo.owner_profile_id
+        ? { ...repo, owner_followed: followedIds.has(repo.owner_profile_id) }
+        : repo,
+    ),
+  };
 }
