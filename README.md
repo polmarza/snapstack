@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/assets/og-home.png" alt="snapstack — Your best work, worth showing off." width="820">
+  <img src=".github/assets/hero.png" alt="snapstack — Your best work, worth showing off. El hero de la landing con las fichas del feed al fondo." width="820">
 </p>
 
 <p align="center">
