@@ -18,17 +18,25 @@ GitHub deja **instalación + autorización de la estrella** hechas de un solo cl
 - **Instalar no puede automatizarse del todo:** GitHub no tiene API para instalar Apps en
   nombre del usuario (consentimiento explícito por diseño). El máximo real es un viaje único,
   y es lo que se construye.
-- **`profiles.github_installation_id`** (migración 015): la fuente de verdad de "¿la tiene
-  instalada?". Se rellena por dos vías redundantes: el **webhook `installation`**
-  (created/deleted, emparejado por el id de cuenta de GitHub — cubre instalaciones hechas
-  directamente en GitHub) y el **Setup URL** (`/api/github/setup`), que además canjea el
-  `code` que GitHub adjunta y guarda los tokens de la estrella (C-07) en el mismo viaje.
+- **`profiles.github_installation_id`** (migración 015) guarda el estado, y se mantiene por
+  **tres vías**, porque ninguna basta sola:
+  1. **Webhook `installation`** (created/deleted/suspend/permisos), emparejado por id de
+     cuenta de GitHub — cubre instalaciones hechas directamente en GitHub.
+  2. **Webhook `installation_repositories`**: el que llega al cambiar los repos cubiertos de
+     una instalación **que ya existía**. Sin él, "Connect" sobre una App ya instalada no
+     dejaba rastro (fallo real en el estreno de Pol).
+  3. **Comprobación contra GitHub** (`GET /user/installations` con el token de usuario,
+     emparejando por `app_slug`) al abrir Settings o la selección: corrige en los dos
+     sentidos y repara instalaciones anteriores al handler. Es la única vía que no depende de
+     que un webhook llegara en su momento.
+  El **Setup URL** (`/api/github/setup`) además canjea el `code` que GitHub adjunta y guarda
+  los tokens de la estrella (C-07) en el mismo viaje.
 - El webhook `installation` llega siempre a las Apps (no exige suscripción) y se despacha
   antes de exigir `repository` en el payload.
-- El banner (`InstallAppBanner`) es server-rendered y tiene **dos caras**: invitación
-  mientras no hay instalación, y una línea discreta cuando ya la hay. No desaparece del todo
-  a propósito: una instalación con "Only select repositories" no cubre los repos que se
-  añadan después, y sin recordatorio nadie se entera hasta echar en falta las notificaciones.
+- **El estado permanente vive en Settings** (`GithubAppSection`): conectado o no, con el
+  botón que corresponda y el recordatorio de que los repos añadidos después hay que incluirlos.
+  La selección de repos solo lleva el **aviso mientras falta conectar** (`InstallAppBanner`),
+  que desaparece al conectar — allí, una vez hecho, no queda nada que hacer.
   La invitación **recomienda "All repositories"** por ser la opción de una sola vez, con la
   comparación completa en un modal (`InstallScopeDialog`, `<dialog>` nativo) — una tarjeta por
   alcance con su ilustración SVG: en la primera todos los repos dentro del marco de cobertura,
@@ -47,7 +55,7 @@ GitHub deja **instalación + autorización de la estrella** hechas de un solo cl
 
 | Requisito | Se implementa en | Se valida con |
 |-----------|------------------|---------------|
-| C-08 | `supabase/migrations/015_profiles_installation.sql`, `src/lib/github/webhooks.ts`, `src/app/api/github/setup/route.ts`, `src/components/repo/install-app-banner.tsx`, `src/components/repo/install-scope-dialog.tsx` | `src/lib/github/webhooks.test.ts`, `src/components/repo/install-app-banner.test.tsx`, `src/components/repo/install-scope-dialog.test.tsx`, `e2e/webhooks.spec.ts` |
+| C-08 | `supabase/migrations/015_profiles_installation.sql`, `src/lib/github/webhooks.ts`, `src/lib/db/installation.ts`, `src/app/api/github/setup/route.ts`, `src/components/account/github-app-section.tsx`, `src/components/repo/install-app-banner.tsx`, `src/components/repo/install-scope-dialog.tsx` | `src/lib/github/webhooks.test.ts`, `src/components/account/github-app-section.test.tsx`, `src/components/repo/install-app-banner.test.tsx`, `src/components/repo/install-scope-dialog.test.tsx`, `e2e/webhooks.spec.ts` |
 
 Los unitarios cubren el despacho del webhook `installation` (created registra el id en el
 perfil correcto por id de cuenta; deleted lo limpia; cuentas sin perfil no hacen nada) y las

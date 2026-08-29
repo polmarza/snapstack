@@ -70,3 +70,38 @@ export function refreshAccessToken(
 ): Promise<GithubAppTokens> {
   return tokenRequest({ grant_type: "refresh_token", refresh_token: refreshToken }, fetchImpl);
 }
+
+export interface UserInstallation {
+  id: number;
+  appSlug: string;
+}
+
+/**
+ * Instalaciones de Apps visibles para el usuario (C-08), con su token
+ * user-to-server. Es la fuente de verdad más fiable que tenemos: los webhooks
+ * pueden haberse perdido (App instalada antes de que existiera el handler) o
+ * no repetirse (actualizar una instalación no reemite `installation.created`).
+ */
+export async function listUserInstallations(
+  token: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<UserInstallation[]> {
+  const response = await fetchImpl("https://api.github.com/user/installations?per_page=100", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`GitHub devolvió ${response.status} al listar instalaciones`);
+  }
+  const body = (await response.json()) as {
+    installations?: Array<{ id?: number; app_slug?: string }>;
+  };
+  return (body.installations ?? [])
+    .filter((i): i is { id: number; app_slug: string } =>
+      typeof i.id === "number" && typeof i.app_slug === "string",
+    )
+    .map((i) => ({ id: i.id, appSlug: i.app_slug }));
+}

@@ -5,6 +5,8 @@ import { SignOutButton } from "@clerk/nextjs";
 import { LogOut } from "lucide-react";
 import { DeleteAccount } from "@/components/account/delete-account";
 import { ProfileForm } from "@/components/account/profile-form";
+import { GithubAppSection } from "@/components/account/github-app-section";
+import { syncInstallationState } from "@/lib/db/installation";
 import { createServiceClient } from "@/lib/db/client";
 import { getProfileByClerkId } from "@/lib/db/profiles";
 import { parseStoredSocialLinks } from "@/lib/profile/social-links";
@@ -15,7 +17,16 @@ export default async function AccountSettingsPage() {
   const user = await currentUser();
   if (!user) redirect("/");
 
-  const profile = await getProfileByClerkId(createServiceClient(), user.id).catch(() => null);
+  const db = createServiceClient();
+  const profile = await getProfileByClerkId(db, user.id).catch(() => null);
+
+  // El estado real de la instalación se comprueba aquí (C-08): los webhooks
+  // pueden haberse perdido, y actualizar una instalación no reemite el alta.
+  const installationId = profile
+    ? await syncInstallationState(db, profile.id, profile.github_installation_id ?? null).catch(
+        () => profile.github_installation_id ?? null,
+      )
+    : null;
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
@@ -29,6 +40,8 @@ export default async function AccountSettingsPage() {
           .
         </p>
       </header>
+
+      {profile ? <GithubAppSection installed={installationId != null} /> : null}
 
       {profile ? (
         <ProfileForm

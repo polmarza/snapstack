@@ -24,14 +24,15 @@ describe("InstallAppBanner (C-08)", () => {
     expect(screen.getByTestId("install-scope-open")).toBeTruthy();
   });
 
-  it("instalada: línea discreta que recuerda incluir los repos nuevos", () => {
-    render(<InstallAppBanner installed />);
-    expect(screen.queryByTestId("install-app-banner")).toBeNull();
-    const linea = screen.getByTestId("install-app-connected");
-    expect(linea.textContent).toContain("connected");
-    expect(linea.textContent).toContain("added later");
-    expect(screen.getByTestId("install-app-manage-link").getAttribute("href")).toBe(
-      "https://github.com/settings/installations",
+  it("instalada: el aviso desaparece — su sitio permanente es Settings", () => {
+    const { container } = render(<InstallAppBanner installed />);
+    expect(container.innerHTML).toBe("");
+  });
+
+  it("sin instalar: enlaza también a Settings, donde vive la gestión", () => {
+    render(<InstallAppBanner />);
+    expect(screen.getByTestId("install-app-settings-link").getAttribute("href")).toBe(
+      "/settings/account",
     );
   });
 

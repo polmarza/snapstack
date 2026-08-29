@@ -200,3 +200,34 @@ test("C-08: el evento installation firmado registra y retira la instalación del
   expect((await enviar("installation", payload("deleted"))).status()).toBe(200);
   expect(await instalacion()).toBeNull();
 });
+
+test("C-08: installation_repositories registra la instalación (App ya instalada, repos cambiados)", async () => {
+  process.loadEnvFile(".env.local");
+  const { createClient } = await import("@supabase/supabase-js");
+  const db = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+  );
+  const { data } = await db.from("profiles").select("id, github_id").eq("username", "polmarza").single();
+  const perfil = data as { id: string; github_id: number };
+
+  // Estado de partida: sin instalación registrada, como quien la instaló antes
+  // de que existiera el handler.
+  await db.from("profiles").update({ github_installation_id: null }).eq("id", perfil.id);
+
+  const res = await enviar("installation_repositories", {
+    action: "added",
+    installation: { id: 515151, account: { id: perfil.github_id } },
+    repositories_added: [],
+  });
+  expect(res.status()).toBe(200);
+
+  const { data: fila } = await db
+    .from("profiles")
+    .select("github_installation_id")
+    .eq("id", perfil.id)
+    .single();
+  expect((fila as { github_installation_id: number | null }).github_installation_id).toBe(515151);
+
+  await db.from("profiles").update({ github_installation_id: null }).eq("id", perfil.id);
+});

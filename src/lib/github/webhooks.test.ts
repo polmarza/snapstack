@@ -160,6 +160,18 @@ describe("handleGithubEvent: installation (C-08)", () => {
     expect(sinPerfil.handled).toBe(true); // el update simplemente no encuentra fila
   });
 
+  it("installation_repositories registra la instalación al cambiar los repos cubiertos", async () => {
+    // El caso real: la App ya estaba instalada, así que `installation.created`
+    // no se reemite — solo llega este evento.
+    const { db, perfiles } = fakeProfilesDb();
+    const result = await handleGithubEvent(db, "installation_repositories", {
+      action: "added",
+      installation: { id: 9001, account: { id: 111 } },
+    });
+    expect(result.handled).toBe(true);
+    expect(perfiles[0].github_installation_id).toBe(9001);
+  });
+
   it("un payload incompleto o una acción desconocida se ignoran", async () => {
     const { db } = fakeProfilesDb();
     expect((await handleGithubEvent(db, "installation", { action: "created" })).handled).toBe(false);

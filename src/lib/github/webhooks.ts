@@ -82,9 +82,12 @@ export async function handleGithubEvent(
   eventName: string,
   payload: Record<string, unknown>,
 ): Promise<WebhookResult> {
-  // `installation` no lleva `repository`: se despacha antes de exigirlo (C-08).
-  if (eventName === "installation") {
-    return handleInstallationEvent(db, payload);
+  // Los eventos de instalación no llevan `repository`: se despachan antes de
+  // exigirlo (C-08). `installation_repositories` es el que llega cuando se
+  // cambian los repos cubiertos de una instalación que ya existía — sin él,
+  // actualizar la instalación no dejaba rastro.
+  if (eventName === "installation" || eventName === "installation_repositories") {
+    return handleInstallationEvent(db, eventName, payload);
   }
 
   const repo = repoOf(payload);
@@ -185,6 +188,7 @@ async function notifySubscribersOfPush(
  */
 async function handleInstallationEvent(
   db: Db,
+  eventName: string,
   payload: Record<string, unknown>,
 ): Promise<WebhookResult> {
   const action = String(payload.action ?? "");
@@ -195,6 +199,17 @@ async function handleInstallationEvent(
   const accountId = installation?.account?.id;
   if (typeof installationId !== "number" || typeof accountId !== "number") {
     return { handled: false, action: "installation: payload incompleto" };
+  }
+
+  // Cambiar los repos cubiertos confirma que la instalación sigue viva: sirve
+  // igual para registrarla si nos habíamos perdido su alta.
+  if (eventName === "installation_repositories") {
+    const { error } = await db
+      .from("profiles")
+      .update({ github_installation_id: installationId })
+      .eq("github_id", accountId);
+    if (error) throw new Error(`Error al registrar la instalación: ${error.message}`);
+    return { handled: true, action: `installation_repositories.${action}: registrada` };
   }
 
   if (action === "created" || action === "unsuspend" || action === "new_permissions_accepted") {

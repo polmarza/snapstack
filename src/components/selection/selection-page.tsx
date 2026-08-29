@@ -8,6 +8,7 @@ import { listPublicRepos } from "@/lib/github/user-repos";
 import { skipOnboardingAction } from "@/app/onboarding/actions";
 import { RepoSelector } from "./repo-selector";
 import { InstallAppBanner } from "@/components/repo/install-app-banner";
+import { syncInstallationState } from "@/lib/db/installation";
 
 /**
  * Página de selección compartida por /onboarding y /settings/repos (M-02/M-03).
@@ -42,6 +43,14 @@ export async function SelectionPage({
     loadError = "We couldn't list your GitHub repos. Reload, or sign in with GitHub again.";
   }
 
+  // Aquí aterriza el Setup URL tras instalar: comprobar el estado real evita
+  // que el aviso siga puesto cuando la instalación ya existe (C-08).
+  const installationId = await syncInstallationState(
+    db,
+    profile.id,
+    profile.github_installation_id ?? null,
+  ).catch(() => profile.github_installation_id ?? null);
+
   const current = await listOwnedActiveRepos(db, profile.id);
   const initialSelected = current.map((row) => row.full_name);
 
@@ -69,10 +78,9 @@ export async function SelectionPage({
         ) : null}
       </header>
 
-      {/* C-08: el estado de la App, siempre presente en la selección — es el
-          momento natural (acabas de decidir qué repos son los tuyos) y, ya
-          instalada, recuerda que los repos nuevos hay que incluirlos. */}
-      <InstallAppBanner installed={profile.github_installation_id != null} />
+      {/* C-08: aviso solo mientras falte conectar; el estado permanente y su
+          gestión viven en Settings. */}
+      <InstallAppBanner installed={installationId != null} />
 
       {loadError || !items ? (
         <p data-testid="selection-error" className="text-error">{loadError}</p>
