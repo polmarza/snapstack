@@ -56,3 +56,23 @@ export async function isFollowing(db: Db, followerId: string, followedId: string
   if (error) throw new Error(`Error al comprobar follow: ${error.message}`);
   return data !== null;
 }
+
+export interface FollowCounts {
+  followers: number;
+  following: number;
+}
+
+/**
+ * Contadores del perfil: cuántos le siguen y a cuántos sigue. Dos counts
+ * `head` (sin filas) en paralelo; con los volúmenes de v1 no hace falta
+ * desnormalizar.
+ */
+export async function getFollowCounts(db: Db, profileId: string): Promise<FollowCounts> {
+  const [followers, following] = await Promise.all([
+    db.from("follows").select("*", { count: "exact", head: true }).eq("followed_id", profileId),
+    db.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", profileId),
+  ]);
+  if (followers.error) throw new Error(`Error al contar followers: ${followers.error.message}`);
+  if (following.error) throw new Error(`Error al contar seguidos: ${following.error.message}`);
+  return { followers: followers.count ?? 0, following: following.count ?? 0 };
+}

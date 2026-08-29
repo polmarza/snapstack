@@ -5,7 +5,7 @@ import { RepoCard } from "@/components/feed/repo-card";
 import { FollowButton } from "@/components/follow/follow-button";
 import { createServiceClient } from "@/lib/db/client";
 import type { FeedRepo } from "@/lib/db/feed-page";
-import { isFollowing } from "@/lib/db/follows";
+import { getFollowCounts, isFollowing } from "@/lib/db/follows";
 import { getProfileByClerkId, getProfileByUsername } from "@/lib/db/profiles";
 import { listOwnedActiveRepos } from "@/lib/db/selection";
 
@@ -80,6 +80,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const repos = (await listOwnedActiveRepos(db, profile.id)) as FeedRepo[];
   repos.sort((a, b) => b.imported_at.localeCompare(a.imported_at));
+  const counts = await getFollowCounts(db, profile.id);
 
   // Botón Follow: solo con sesión y sobre perfiles ajenos.
   const user = await currentUser();
@@ -122,11 +123,15 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             <span className="font-mono">
               {repos.length} {repos.length === 1 ? "repo" : "repos"}
             </span>
+            <span data-testid="profile-follow-counts" className="font-mono">
+              {counts.followers} {counts.followers === 1 ? "follower" : "followers"} ·{" "}
+              {counts.following} following
+            </span>
           </p>
         </div>
         {canFollow ? (
           <div className="ml-auto shrink-0">
-            <FollowButton profileId={profile.id} initialFollowing={alreadyFollowing} />
+            <FollowButton profileId={profile.id} initialFollowing={alreadyFollowing} refreshOnToggle />
           </div>
         ) : null}
       </header>

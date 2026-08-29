@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { Db } from "./client";
-import { setFollowing, listFollowedIds, SelfFollowError } from "./follows";
+import { setFollowing, listFollowedIds, getFollowCounts, SelfFollowError } from "./follows";
 import { listFeedPage, type FeedRepo } from "./feed-page";
 
 /** Db falsa de follows: upsert con dedupe y delete por par. */
@@ -126,5 +126,40 @@ describe("listFeedPage con filtro Following", () => {
     const db = { from: () => { throw new Error("no debería consultarse"); } } as unknown as Db;
     const page = await listFeedPage(db, null, 10, { ownerIn: [] });
     expect(page).toEqual({ repos: [], nextCursor: null });
+  });
+});
+
+/** Db falsa de counts: select head+count filtrado por columna. */
+function fakeCountsDb(rows: Array<{ follower_id: string; followed_id: string }>) {
+  return {
+    from: (table: string) => ({
+      select: (_cols: string, opts: { count: string; head: boolean }) => {
+        expect(table).toBe("follows");
+        expect(opts).toMatchObject({ count: "exact", head: true });
+        return {
+          eq: (col: "follower_id" | "followed_id", value: string) =>
+            Promise.resolve({
+              count: rows.filter((row) => row[col] === value).length,
+              error: null,
+            }),
+        };
+      },
+    }),
+  } as unknown as Db;
+}
+
+describe("getFollowCounts", () => {
+  it("separa followers (le siguen) de following (a los que sigue)", async () => {
+    const db = fakeCountsDb([
+      { follower_id: "pol", followed_id: "a" },
+      { follower_id: "pol", followed_id: "b" },
+      { follower_id: "c", followed_id: "pol" },
+    ]);
+    expect(await getFollowCounts(db, "pol")).toEqual({ followers: 1, following: 2 });
+  });
+
+  it("un perfil sin follows devuelve ceros, no null", async () => {
+    const db = fakeCountsDb([]);
+    expect(await getFollowCounts(db, "nadie")).toEqual({ followers: 0, following: 0 });
   });
 });
