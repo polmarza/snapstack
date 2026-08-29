@@ -37,7 +37,7 @@ export function WhySnapstack() {
 
       <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3">
         {PUNTOS.map(({ Icon, title, text }) => (
-          <div key={title} className="flex flex-col gap-3">
+          <div key={title} className="flex flex-col items-center gap-3 text-center">
             <Icon size={22} strokeWidth={1.75} aria-hidden className="text-content-secondary" />
             <h3 className="font-mono text-base font-bold">{title}</h3>
             <p className="text-base leading-relaxed text-content-secondary">{text}</p>

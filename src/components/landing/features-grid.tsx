@@ -59,7 +59,7 @@ export function FeaturesGrid() {
           <article
             key={title}
             data-testid="landing-feature-card"
-            className="flex flex-col gap-3 rounded-xl border border-edge bg-surface p-5"
+            className="flex flex-col items-center gap-3 rounded-xl border border-edge bg-surface p-5 text-center"
           >
             <Icon size={22} strokeWidth={1.75} aria-hidden className="text-primary" />
             <h3 className="font-mono text-base font-bold">{title}</h3>
