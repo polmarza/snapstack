@@ -6,7 +6,7 @@ import type { Db } from "./client";
  * feedback, futura) se monte encima sin migrar nada.
  */
 
-export type NotificationType = "new_follower";
+export type NotificationType = "new_follower" | "repo_update";
 
 export interface NotificationRow {
   id: string;
@@ -92,4 +92,58 @@ export async function markAllNotificationsRead(db: Db, profileId: string): Promi
     .eq("recipient_profile_id", profileId)
     .is("read_at", null);
   if (error) throw new Error(`Error al marcar leídas: ${error.message}`);
+}
+
+export interface RepoUpdatePayload {
+  repo_id: string;
+  full_name: string;
+  /** Commits acumulados desde la última vez que se leyó. */
+  commits: number;
+  /** Diff del último push (o del rango acumulado si GitHub lo da). */
+  compare: string;
+  ref: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Notificación de push para un suscriptor (C-06). Anti-ruido: si ya tiene una
+ * repo_update NO leída del mismo repo, se acumula sobre ella (suma commits,
+ * compare más reciente) en vez de apilar una por push. Las leídas no se tocan:
+ * un push nuevo tras leer abre notificación nueva.
+ */
+export async function notifyRepoUpdate(
+  db: Db,
+  recipientProfileId: string,
+  push: RepoUpdatePayload,
+): Promise<void> {
+  const { data: existing, error: readError } = await db
+    .from("notifications")
+    .select("id, payload")
+    .eq("recipient_profile_id", recipientProfileId)
+    .eq("type", "repo_update")
+    .eq("payload->>repo_id", push.repo_id)
+    .is("read_at", null)
+    .maybeSingle();
+  if (readError) throw new Error(`Error al buscar la notificación: ${readError.message}`);
+
+  if (existing) {
+    const previous = (existing as { payload: RepoUpdatePayload }).payload;
+    const { error } = await db
+      .from("notifications")
+      .update({
+        payload: { ...push, commits: (previous.commits ?? 0) + push.commits },
+        created_at: new Date().toISOString(),
+      })
+      .eq("id", (existing as { id: string }).id);
+    if (error) throw new Error(`Error al acumular la notificación: ${error.message}`);
+    return;
+  }
+
+  const { error } = await db.from("notifications").insert({
+    recipient_profile_id: recipientProfileId,
+    actor_profile_id: null,
+    type: "repo_update",
+    payload: push,
+  });
+  if (error) throw new Error(`Error al crear la notificación: ${error.message}`);
 }

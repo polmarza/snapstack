@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
-import { BellOff } from "lucide-react";
+import { BellOff, GitCommitHorizontal } from "lucide-react";
 import { MarkReadOnOpen } from "@/components/notifications/mark-read-on-open";
 import { createServiceClient } from "@/lib/db/client";
-import { listNotifications, type NotificationWithActor } from "@/lib/db/notifications";
+import { listNotifications, type NotificationWithActor, type RepoUpdatePayload } from "@/lib/db/notifications";
 import { getProfileByClerkId } from "@/lib/db/profiles";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,49 @@ function timeAgo(iso: string, now = Date.now()): string {
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   if (s < 86400 * 30) return `${Math.floor(s / 86400)}d ago`;
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** Push en un repo suscrito (C-06): enlace al repo y al diff en GitHub. */
+function RepoUpdateNotification({ n }: { n: NotificationWithActor }) {
+  const payload = n.payload as unknown as RepoUpdatePayload;
+  const unread = n.read_at === null;
+  return (
+    <li
+      data-testid="notification-item"
+      data-unread={unread}
+      className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${
+        unread ? "border-primary/40 bg-primary/5" : "border-edge"
+      }`}
+    >
+      <span
+        aria-hidden
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-edge text-content-secondary"
+      >
+        <GitCommitHorizontal size={18} strokeWidth={1.75} />
+      </span>
+      <p className="min-w-0 flex-1 text-sm">
+        <Link href={`/r/${payload.full_name}`} className="font-medium hover:underline">
+          {payload.full_name}
+        </Link>{" "}
+        <span className="text-content-secondary">
+          was updated — {payload.commits} new {payload.commits === 1 ? "commit" : "commits"} ·
+        </span>{" "}
+        <a
+          href={payload.compare}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="notification-compare-link"
+          className="text-primary hover:underline"
+        >
+          see the changes ↗
+        </a>
+      </p>
+      <span className="flex shrink-0 items-center gap-2">
+        <time className="font-mono text-xs text-content-secondary">{timeAgo(n.created_at)}</time>
+        {unread ? <span aria-hidden className="h-2 w-2 rounded-full bg-primary" /> : null}
+      </span>
+    </li>
+  );
 }
 
 function FollowNotification({ n }: { n: NotificationWithActor }) {
@@ -94,9 +137,13 @@ export default async function NotificationsPage() {
         </div>
       ) : (
         <ul data-testid="notifications-list" className="flex flex-col gap-2">
-          {notifications.map((n) => (
-            <FollowNotification key={n.id} n={n} />
-          ))}
+          {notifications.map((n) =>
+            n.type === "repo_update" ? (
+              <RepoUpdateNotification key={n.id} n={n} />
+            ) : (
+              <FollowNotification key={n.id} n={n} />
+            ),
+          )}
         </ul>
       )}
     </main>

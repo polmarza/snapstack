@@ -6,6 +6,8 @@
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Db } from "@/lib/db/client";
+import { notifyRepoUpdate } from "@/lib/db/notifications";
+import { listSubscriberIds } from "@/lib/db/subscriptions";
 
 /** Firma HMAC SHA-256 de GitHub (X-Hub-Signature-256), en tiempo constante. */
 export function verifyGithubSignature(
@@ -84,9 +86,18 @@ export async function handleGithubEvent(
   if (!repo) return { handled: false, action: "sin repository en el payload" };
 
   switch (eventName) {
-    case "push":
+    case "push": {
       await updateRepoData(db, repo);
-      return { handled: true, action: "push: datos refrescados" };
+      // C-06: notificar a los suscriptores del repo. En su propio try para que
+      // un fallo aquí no haga reintentar a GitHub el sync entero.
+      let notified = 0;
+      try {
+        notified = await notifySubscribersOfPush(db, repo.id, payload);
+      } catch (error) {
+        console.error("[webhooks] notificación de push", error);
+      }
+      return { handled: true, action: `push: datos refrescados (${notified} suscriptores avisados)` };
+    }
 
     // `star` es el evento moderno; `watch` (action: started) es el nombre legado del PRD.
     case "star":
@@ -120,4 +131,43 @@ export async function handleGithubEvent(
     default:
       return { handled: false, action: `evento ${eventName}: ignorado` };
   }
+}
+
+/**
+ * Aviso de push a los suscriptores (C-06): busca el repo por su id de GitHub y
+ * acumula/crea la notificación de cada suscriptor con los datos del payload
+ * (commits y enlace al diff). Sin commits (borrado de rama, etc.), no molesta.
+ */
+async function notifySubscribersOfPush(
+  db: Db,
+  githubRepoId: number,
+  payload: Record<string, unknown>,
+): Promise<number> {
+  const commits = Array.isArray(payload.commits) ? payload.commits.length : 0;
+  if (commits === 0) return 0;
+
+  const { data, error } = await db
+    .from("repos")
+    .select("id, full_name, url, status")
+    .eq("github_repo_id", githubRepoId)
+    .maybeSingle();
+  if (error) throw new Error(`Error al buscar el repo: ${error.message}`);
+  const row = data as { id: string; full_name: string; url: string; status: string } | null;
+  if (!row || row.status !== "active") return 0;
+
+  const subscribers = await listSubscriberIds(db, row.id);
+  if (subscribers.length === 0) return 0;
+
+  const compare = typeof payload.compare === "string" ? payload.compare : row.url;
+  const ref = typeof payload.ref === "string" ? payload.ref : "";
+  for (const recipientId of subscribers) {
+    await notifyRepoUpdate(db, recipientId, {
+      repo_id: row.id,
+      full_name: row.full_name,
+      commits,
+      compare,
+      ref,
+    });
+  }
+  return subscribers.length;
 }

@@ -71,6 +71,13 @@ test("el título de una tarjeta del feed navega al detalle", async ({ page }) =>
   await expect(page.getByTestId("repo-detail-card")).toBeVisible();
 });
 
+test("sin sesión no hay botón de suscripción", async ({ page }) => {
+  const seed = await unaSemilla();
+  await page.goto(`/r/${seed.full_name}`);
+  await expect(page.getByTestId("repo-detail-card")).toBeVisible();
+  await expect(page.getByTestId("subscribe-button")).toHaveCount(0);
+});
+
 test("un repo inexistente muestra la 404", async ({ page }) => {
   // Con loading.tsx la respuesta llega en streaming (status 200 + notFound
   // dentro del stream): se comprueba la página 404 renderizada, no el status.

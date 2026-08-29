@@ -70,10 +70,30 @@ para siempre). Cascada con `profiles` en ambos extremos: la baja de cuenta no de
 | id | uuid (PK) | Identificador |
 | recipient_profile_id | uuid (FK → profiles) | Quién la recibe |
 | actor_profile_id | uuid (FK → profiles, nullable) | Quién la provoca |
-| type | text (check) | `new_follower` (v1) |
+| type | text (check) | `new_follower` \| `repo_update` (migración 013) |
 | payload | jsonb (default `{}`) | Datos extra del tipo; vacío en `new_follower` |
 | created_at | timestamptz | Cuándo ocurrió |
 | read_at | timestamptz (nullable) | NULL = no leída (índice parcial para el badge) |
+
+### github_app_tokens
+Tokens user-to-server de la GitHub App (C-07, migración 014), cifrados en aplicación
+(AES-256-GCM, clave en el entorno). RLS sin políticas; cascada con profiles.
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| profile_id | uuid (PK, FK → profiles) | Dueño del token |
+| access_token_enc | text | Access token cifrado |
+| refresh_token_enc | text (nullable) | Refresh token cifrado, si la App emite expiración |
+| access_expires_at | timestamptz (nullable) | NULL = no expira |
+| updated_at | timestamptz | Último guardado/refresh |
+
+### repo_subscriptions
+Suscripciones a los pushes de un repo (C-06, migración 013). Opt-in por repo; RLS sin
+políticas (solo service role). Cascada con profiles y repos.
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| subscriber_profile_id | uuid (PK, FK → profiles) | Quién se suscribe |
+| repo_id | uuid (PK, FK → repos) | A qué repo |
+| created_at | timestamptz | Alta |
 
 ### signals
 Señales implícitas del feed. Solo instrumentación en v1: ningún ranking las consume.
@@ -133,6 +153,26 @@ El acceso a datos pasa por el servidor Next.js (service role); RLS actúa como s
 
 ### follows
 - SELECT: público. INSERT / DELETE: solo como `follower_id` el propio usuario.
+
+### github_app_tokens
+Tokens user-to-server de la GitHub App (C-07, migración 014), cifrados en aplicación
+(AES-256-GCM, clave en el entorno). RLS sin políticas; cascada con profiles.
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| profile_id | uuid (PK, FK → profiles) | Dueño del token |
+| access_token_enc | text | Access token cifrado |
+| refresh_token_enc | text (nullable) | Refresh token cifrado, si la App emite expiración |
+| access_expires_at | timestamptz (nullable) | NULL = no expira |
+| updated_at | timestamptz | Último guardado/refresh |
+
+### repo_subscriptions
+Suscripciones a los pushes de un repo (C-06, migración 013). Opt-in por repo; RLS sin
+políticas (solo service role). Cascada con profiles y repos.
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| subscriber_profile_id | uuid (PK, FK → profiles) | Quién se suscribe |
+| repo_id | uuid (PK, FK → repos) | A qué repo |
+| created_at | timestamptz | Alta |
 
 ### signals
 - INSERT: cualquier sesión (o anónimo vía servidor). SELECT: solo sistema — no se exponen.

@@ -1,9 +1,9 @@
 # Suscribirse a los cambios de un repo
 
-**Estado:** Acordada
+**Estado:** Verificada
 **Requisitos que cierra:** C-06 (ya declarado en el PRD; absorbe MEJORA-07 y el punto 6 del
 feedback de Pol)
-**Fecha de acuerdo:** 2026-08-29 (pendiente de construir cuando se mergee C-05)
+**Fecha de acuerdo:** 2026-08-29 (construida el mismo día, tras mergear C-05)
 
 ## Qué se construye
 
@@ -35,8 +35,12 @@ notificación con el número de commits y un enlace directo al diff (`compare`) 
 
 ## Cobertura
 
-Rutas previstas; los tests se escriben al construir (la ficha está Acordada, no Verificada).
-
 | Requisito | Se implementa en | Se valida con |
 |-----------|------------------|---------------|
-| C-06 | `supabase/migrations/012_repo_subscriptions.sql`, `src/lib/db/subscriptions.ts`, `src/app/r/[owner]/[name]/`, `src/lib/github/webhooks.ts` | `src/lib/db/subscriptions.test.ts`, `e2e/webhooks.spec.ts` |
+| C-06 | `supabase/migrations/013_repo_subscriptions.sql`, `src/lib/db/subscriptions.ts`, `src/lib/db/notifications.ts`, `src/lib/github/webhooks.ts`, `src/components/repo/subscribe-button.tsx` | `src/lib/db/subscriptions.test.ts`, `src/lib/db/notifications.test.ts`, `e2e/webhooks.spec.ts`, `e2e/repo-detail.spec.ts` |
+
+Los unitarios cubren el toggle idempotente, el listado de suscriptores, la creación de la
+notificación por push y la acumulación anti-ruido (suma de commits, compare más reciente,
+las leídas no se tocan, repos distintos no se mezclan). El e2e, contra el server y la base
+reales: dos pushes firmados → una sola notificación acumulada para el suscriptor; y sin
+sesión el botón no existe. El toggle con sesión queda para la pasada manual de Pol.

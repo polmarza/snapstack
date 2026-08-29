@@ -6,9 +6,15 @@ import { FollowButton } from "@/components/follow/follow-button";
 import { CardBackgroundLayer } from "@/components/feed/card-background";
 import { ReadmeMarkdown } from "@/components/repo/readme-markdown";
 import { RepoGithubLink } from "@/components/repo/repo-github-link";
+import { SubscribeButton } from "@/components/repo/subscribe-button";
 import { cardBackground, languageColor } from "@/lib/card-seed";
 import { createServiceClient } from "@/lib/db/client";
 import { isFollowing } from "@/lib/db/follows";
+import { isSubscribed } from "@/lib/db/subscriptions";
+import { getGithubAppToken } from "@/lib/db/github-app-tokens";
+import { githubAppConfigured } from "@/lib/github/app-oauth";
+import { isStarred } from "@/lib/github/starring";
+import { StarButton } from "@/components/repo/star-button";
 import { getProfileByClerkId } from "@/lib/db/profiles";
 import { getActiveRepoByFullName } from "@/lib/db/repos";
 
@@ -70,6 +76,20 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
     viewer !== null && repo.owner_profile_id !== null && viewer.id !== repo.owner_profile_id;
   const alreadyFollowing =
     canFollow && repo.owner_profile_id ? await isFollowing(db, viewer.id, repo.owner_profile_id) : false;
+  const alreadySubscribed = viewer ? await isSubscribed(db, viewer.id, repo.id) : false;
+
+  // Estrella real (C-07): solo con la App configurada y sesión. Con token, se
+  // consulta el estado inicial; sin él, el primer click lleva a conectar.
+  const starEnabled = githubAppConfigured() && viewer !== null;
+  let initialStarred: boolean | null = null;
+  if (starEnabled && viewer) {
+    try {
+      const token = await getGithubAppToken(db, viewer.id);
+      if (token) initialStarred = await isStarred(token, repo.full_name);
+    } catch {
+      initialStarred = null;
+    }
+  }
 
   const background = cardBackground(String(repo.github_repo_id), repo.primary_language);
   const repoName = repo.full_name.split("/").slice(1).join("/");
@@ -94,16 +114,24 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
               />
               <span className="font-mono text-sm text-white/75">{repo.primary_language ?? "—"}</span>
             </div>
-            <span
-              data-testid="repo-detail-stars"
-              className="flex items-center gap-1.5 font-mono text-sm text-white/75"
-            >
-              <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.3">
-                <path d="M8 1.5l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.8l-4 2.1.8-4.5L1.5 6.2l4.5-.6L8 1.5z" strokeLinejoin="round" />
-              </svg>
-              <span className="sr-only">Stars:</span>
-              {repo.stars}
-            </span>
+            {starEnabled ? (
+              <StarButton
+                fullName={repo.full_name}
+                initialStars={repo.stars}
+                initialStarred={initialStarred}
+              />
+            ) : (
+              <span
+                data-testid="repo-detail-stars"
+                className="flex items-center gap-1.5 font-mono text-sm text-white/75"
+              >
+                <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.3">
+                  <path d="M8 1.5l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.8l-4 2.1.8-4.5L1.5 6.2l4.5-.6L8 1.5z" strokeLinejoin="round" />
+                </svg>
+                <span className="sr-only">Stars:</span>
+                {repo.stars}
+              </span>
+            )}
           </div>
           <div className="relative flex flex-col gap-2">
             <h1 className="break-words font-mono text-3xl font-bold text-white sm:text-4xl">{repoName}</h1>
@@ -170,6 +198,14 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
             </li>
           ))}
         </ul>
+      ) : null}
+
+      {/* Suscripción (C-06): entre la info y el README, donde acaba el vistazo
+          y empieza la lectura. Solo con sesión (el propio botón se oculta). */}
+      {viewer ? (
+        <div className="mt-6">
+          <SubscribeButton repoId={repo.id} initialSubscribed={alreadySubscribed} />
+        </div>
       ) : null}
 
       <section className="mt-8">
