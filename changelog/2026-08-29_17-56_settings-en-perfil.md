@@ -6,8 +6,11 @@
 
 ## Qué se hizo
 
-- La barra inferior de móvil deja de mostrar "Settings" (quedaba con 6 items y va a seguir
-  creciendo). En desktop, la barra lateral no cambia.
+- La barra inferior de móvil deja de mostrar "Settings" y "Sign out" (quedaba con 6 items y
+  va a seguir creciendo): queda en 4 — Feed, Profile, Alerts, Repos. En desktop, la barra
+  lateral no cambia.
+- "Sign out" pasa a una sección "Session" en `/settings/account`, justo antes de la zona de
+  borrado de cuenta.
 - El perfil propio muestra un botón "Edit profile" (icono de engranaje) donde los demás ven
   el botón Follow, enlazando a `/settings/account`. En móvil es ahora la puerta a Settings;
   en desktop convive con la barra lateral.

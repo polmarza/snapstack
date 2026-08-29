@@ -145,15 +145,8 @@ export function AppNav({
             {label}
           </Link>
         ))}
-        <SignOutButton>
-          <button
-            type="button"
-            className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] text-content-secondary"
-          >
-            <LogOut size={20} strokeWidth={1.75} aria-hidden />
-            Sign out
-          </button>
-        </SignOutButton>
+        {/* Sign out vive en Settings (y en la barra lateral de desktop):
+            barra móvil de 4 items, con hueco para crecer. */}
       </nav>
     </>
   );
