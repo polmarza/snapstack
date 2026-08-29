@@ -47,3 +47,27 @@ test("la landing enseña el stack con sus logos y enlaza al código", async ({ p
     "https://github.com/polmarza/snapstack",
   );
 });
+
+test("la landing lleva navegación: centrada en el hero y fija tras pasarlo", async ({ page }) => {
+  await page.goto("/");
+
+  // En el hero: los enlaces, sin barra fija a la vista.
+  await expect(page.getByTestId("landing-nav-hero")).toBeVisible();
+  await expect(page.getByTestId("landing-nav-sticky")).toHaveAttribute("data-visible", "false");
+
+  // Pasado el hero, la barra fija entra con su marca y su botón de entrar.
+  await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.2));
+  const fija = page.getByTestId("landing-nav-sticky");
+  await expect(fija).toHaveAttribute("data-visible", "true");
+  await expect(fija.getByTestId("sign-in-button")).toBeVisible();
+
+  // Y los enlaces llevan a su sección, sin que la barra tape el titular.
+  await fija.getByTestId("landing-nav-stack").click();
+  await expect(page.getByRole("heading", { name: "How it's built" })).toBeInViewport();
+  const tapado = await page.evaluate(() => {
+    const h = document.querySelector("#stack h2")!.getBoundingClientRect();
+    const nav = document.querySelector('[data-testid="landing-nav-sticky"]')!.getBoundingClientRect();
+    return h.top < nav.bottom;
+  });
+  expect(tapado).toBe(false);
+});

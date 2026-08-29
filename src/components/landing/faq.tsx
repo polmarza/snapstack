@@ -35,7 +35,7 @@ const FAQS: Array<{ q: string; a: string }> = [
 
 export function Faq() {
   return (
-    <section data-testid="landing-faq" className="mx-auto max-w-2xl px-4 py-20 sm:px-6">
+    <section id="faq" data-testid="landing-faq" className="mx-auto max-w-2xl scroll-mt-20 px-4 py-20 sm:px-6">
       <h2 className="text-center font-mono text-3xl font-bold">Questions, answered</h2>
       <div className="mt-10 flex flex-col gap-3">
         {FAQS.map((item) => (

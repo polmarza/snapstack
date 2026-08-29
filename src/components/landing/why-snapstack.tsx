@@ -26,7 +26,7 @@ const PUNTOS = [
 
 export function WhySnapstack() {
   return (
-    <section data-testid="landing-why" className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
+    <section id="why" data-testid="landing-why" className="mx-auto max-w-5xl scroll-mt-20 px-4 py-20 sm:px-6">
       <h2 className="text-center font-mono text-3xl font-bold">
         Your best work is in there, somewhere
       </h2>

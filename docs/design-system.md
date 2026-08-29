@@ -129,8 +129,14 @@ Los diagramas explicativos van en SVG inline, con las variables de color del tem
 
 ## Estructura de la landing
 
-El orden cuenta una historia y no debería reordenarse sin motivo:
+El orden cuenta una historia y no debería reordenarse sin motivo. Cada sección lleva `id` y
+`scroll-mt-20` para que la navegación pueda saltar a ella sin que la barra fija tape el
+titular:
 
+0. **Navegación** (`LandingNav`) — centrada y sin fondo dentro del hero (solo los enlaces:
+   el hero ya trae su botón de entrar); al pasar el hero se vuelve fija arriba, con el fondo
+   de la app, la marca a la izquierda y el botón de entrar a la derecha, donde ya no es
+   redundante. El cambio lo dispara un IntersectionObserver sobre el propio hero.
 1. **Hero** — marca, promesa y entrada, con las fichas reales del feed al fondo.
 2. **Marquee de lenguajes** — señal de que dentro hay stacks de verdad.
 3. **Por qué** (`WhySnapstack`) — el problema con el que el visitante ya convive, en tres

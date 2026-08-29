@@ -116,7 +116,7 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
+    <section id="start" data-testid="landing-start" className="mx-auto max-w-5xl scroll-mt-20 px-4 py-20 sm:px-6">
       <h2 className="text-center font-mono text-3xl font-bold">Getting started</h2>
       <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
         {STEPS.map((step, i) => (

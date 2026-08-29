@@ -39,7 +39,7 @@ const REPO_URL = "https://github.com/polmarza/snapstack";
 
 export function BuiltWith() {
   return (
-    <section data-testid="landing-stack" className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
+    <section id="stack" data-testid="landing-stack" className="mx-auto max-w-5xl scroll-mt-20 px-4 py-20 sm:px-6">
       <h2 className="text-center font-mono text-3xl font-bold">How it&apos;s built</h2>
       <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-content-secondary">
         You&apos;re a developer — you were going to check anyway. The code is public from the

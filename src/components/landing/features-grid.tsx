@@ -48,7 +48,7 @@ const FEATURES = [
 
 export function FeaturesGrid() {
   return (
-    <section data-testid="landing-features" className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
+    <section id="features" data-testid="landing-features" className="mx-auto max-w-5xl scroll-mt-20 px-4 py-20 sm:px-6">
       <h2 className="text-center font-mono text-3xl font-bold">What you get</h2>
       <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-content-secondary">
         Everything here is built around one idea: fewer repos, better shown.
