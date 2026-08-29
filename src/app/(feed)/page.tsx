@@ -33,13 +33,8 @@ export const metadata: Metadata = {
     siteName: "snapstack",
     title: "snapstack — what devs are building",
     description: TAGLINE,
-    images: [
-      `/api/og?${new URLSearchParams({
-        repoId: "snapstack",
-        name: "snapstack",
-        description: TAGLINE,
-      })}`,
-    ],
+    // La portada replica el hero de la landing, congelado (/api/og/home).
+    images: ["/api/og/home"],
   },
 };
 

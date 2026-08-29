@@ -31,6 +31,11 @@ capas *recortadas por máscara SVG*: el trazo es un agujero real y por la siluet
 haya detrás; y las **tarjetas del hero suben de presencia** (opacidad 30→50 y velo más ligero),
 que en móvil apenas se veían.
 
+Y la **og:image de la home replica el hero, congelado** (`/api/og/home`): la misma retícula
+de mini-fichas procedurales con desfases verticales que imitan la deriva, velo y marca
+centrada. Semillas fijas → determinista → cacheable por CDN. Lección de Satori por el camino:
+no soporta el atajo `inset`, los cuatro offsets van explícitos o el velo colapsa.
+
 Verificado: 99/99 unit, 21/21 e2e, build y lint en verde. El flujo con sesión (redirección,
 skip, lenguaje manual) queda para el repaso de Pol — requiere sus credenciales.
 
