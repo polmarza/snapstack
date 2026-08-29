@@ -69,9 +69,10 @@ export async function SelectionPage({
         ) : null}
       </header>
 
-      {/* C-08: mientras la App no esté instalada, la selección lo recuerda —
-          es el momento natural: acabas de decidir qué repos son los tuyos. */}
-      {profile.github_installation_id == null ? <InstallAppBanner /> : null}
+      {/* C-08: el estado de la App, siempre presente en la selección — es el
+          momento natural (acabas de decidir qué repos son los tuyos) y, ya
+          instalada, recuerda que los repos nuevos hay que incluirlos. */}
+      <InstallAppBanner installed={profile.github_installation_id != null} />
 
       {loadError || !items ? (
         <p data-testid="selection-error" className="text-error">{loadError}</p>
