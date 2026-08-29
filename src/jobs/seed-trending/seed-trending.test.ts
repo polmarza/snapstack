@@ -141,6 +141,22 @@ describe("runSeedTrending", () => {
     expect(store.get(1296269)?.stars).toBe(250);
   });
 
+  it("S-01: los repos que no pasan el filtro de contenido se descartan del seed", async () => {
+    const { db, store } = fakeDb();
+    const fetchImpl = vi.fn().mockResolvedValue(
+      respuestaOk([
+        item(),
+        item({ id: 2, full_name: "x/mega-porn-scraper", description: null }),
+      ]),
+    );
+
+    const result = await runSeedTrending({ db, fetchImpl, now: AHORA });
+
+    expect(result.imported).toBe(1);
+    expect(result.discarded).toBe(1);
+    expect(store.has(2)).toBe(false);
+  });
+
   it("M-10: si la API falla, no se escribe nada", async () => {
     const { db, store } = fakeDb();
     const fetchImpl = vi.fn().mockResolvedValue(new Response("x", { status: 500, statusText: "err" }));

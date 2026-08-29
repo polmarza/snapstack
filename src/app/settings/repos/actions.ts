@@ -15,6 +15,7 @@ import {
 } from "@/lib/db/selection";
 import { getGithubToken } from "@/lib/github/token";
 import { fetchRepoDetails, mapRepoDetailsToRow } from "@/lib/github/user-repos";
+import { repoBlockedTerm } from "@/lib/moderation/moderation";
 
 export interface SaveSelectionResult {
   ok: boolean;
@@ -49,7 +50,17 @@ export async function saveSelectionAction(selectedFullNames: string[]): Promise<
       if (!token) return fallo("No GitHub token available. Please sign in with GitHub again.");
       const now = new Date();
       const details = await Promise.all(diff.toAdd.map((name) => fetchRepoDetails(token, name)));
-      await importOwnedRepos(db, details.map((d) => mapRepoDetailsToRow(d, profile.id, now)));
+      const rows = details.map((d) => mapRepoDetailsToRow(d, profile.id, now));
+
+      // Filtro básico de contenido (S-01): el repo marcado se rechaza entero.
+      const bloqueado = rows.find((row) => repoBlockedTerm(row) !== null);
+      if (bloqueado) {
+        return fallo(
+          `"${bloqueado.full_name}" can't be imported: it doesn't meet the content policy.`,
+        );
+      }
+
+      await importOwnedRepos(db, rows);
     }
 
     await removeOwnedRepos(db, profile.id, diff.toRemove.map((row) => row.github_repo_id));

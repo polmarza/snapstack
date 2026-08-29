@@ -67,7 +67,8 @@ src/
 ├── lib/
 │   ├── card-seed/        → ✅ Semilla determinista, colores Linguist vendorizados, paleta
 │   ├── github/           → ✅ Cliente GraphQL, token OAuth vía Clerk, listado/importación, verificación y handlers de webhooks
-│   ├── db/               → ✅ Cliente Supabase (service role), queries de repos, profiles, selección y señales
+│   ├── db/               → ✅ Cliente Supabase (service role), queries de repos, profiles, selección, señales y reportes
+│   ├── moderation/       → ✅ Filtro básico de contenido (S-01): lista corta + límites de palabra
 │   └── signals/          → ✅ Tipos/validación de señales y tracker de cliente (dwell, expand, click)
 ├── jobs/
 │   └── seed-trending/    → ✅ Import manual de trending (pnpm seed:trending); Inngest/Trigger.dev ⏳

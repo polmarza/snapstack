@@ -6,6 +6,7 @@ import { cardBackground, languageColor } from "@/lib/card-seed";
 import type { FeedRepo } from "@/lib/db/feed-page";
 import { dwellEnter, dwellLeave, trackSignal } from "@/lib/signals/tracker";
 import { CardBackgroundLayer } from "./card-background";
+import { ReportButton } from "./report-button";
 
 /**
  * Tarjeta del feed (M-06). El fondo es el de M-04 pintado en CSS: texto real,
@@ -162,6 +163,9 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
           ) : (
             <p className="text-sm text-content-secondary">No topics declared.</p>
           )}
+          <div className="mt-3">
+            <ReportButton repoId={repo.id} />
+          </div>
         </div>
       ) : null}
     </article>
