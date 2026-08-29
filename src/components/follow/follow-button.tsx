@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { setFollowingAction } from "@/app/api/follows/actions";
 import { trackSignal } from "@/lib/signals/tracker";
@@ -11,11 +12,20 @@ interface FollowButtonProps {
   /** Con repo de contexto (tarjeta), seguir emite la señal follow_author (M-09). */
   signalRepoId?: string;
   size?: "sm" | "md";
+  /** En el perfil: re-renderiza el servidor al alternar para refrescar los contadores. */
+  refreshOnToggle?: boolean;
 }
 
 /** Toggle Follow/Following (M-07). Solo visible con sesión. */
-export function FollowButton({ profileId, initialFollowing, signalRepoId, size = "md" }: FollowButtonProps) {
+export function FollowButton({
+  profileId,
+  initialFollowing,
+  signalRepoId,
+  size = "md",
+  refreshOnToggle = false,
+}: FollowButtonProps) {
   const { isSignedIn } = useAuth();
+  const router = useRouter();
   const [following, setFollowing] = useState(initialFollowing);
   const [pending, startTransition] = useTransition();
 
@@ -31,6 +41,7 @@ export function FollowButton({ profileId, initialFollowing, signalRepoId, size =
         return;
       }
       if (next && signalRepoId) trackSignal({ repoId: signalRepoId, type: "follow_author" });
+      if (refreshOnToggle) router.refresh();
     });
   };
 

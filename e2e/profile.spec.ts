@@ -12,6 +12,8 @@ test("el perfil público muestra la identidad y las fichas de los repos seleccio
   await expect(page.getByTestId("profile-username")).toHaveText("@polmarza");
   const cards = page.getByTestId("feed-card");
   expect(await cards.count()).toBeGreaterThan(0);
+  // Contadores de follows: siempre visibles, con el formato "N followers · N following".
+  await expect(page.getByTestId("profile-follow-counts")).toHaveText(/^\d+ followers? · \d+ following$/);
 });
 
 test("un username inexistente devuelve 404", async ({ page }) => {
