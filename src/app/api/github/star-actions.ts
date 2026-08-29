@@ -12,11 +12,20 @@ export interface StarResult {
   /** true → el cliente debe llevar al usuario a /api/github/connect. */
   needsConnect: boolean;
   error: string | null;
+  /** Dónde se arregla el error, si tiene arreglo: el aviso pinta un botón. */
+  fixUrl?: string;
+  fixLabel?: string;
 }
 
 /** Da o quita la estrella real en GitHub (C-07). */
 export async function setStarAction(fullName: string, starred: boolean): Promise<StarResult> {
-  const fallo = (error: string): StarResult => ({ ok: false, starred: !starred, needsConnect: false, error });
+  const fallo = (error: string, fix?: { url: string; label: string }): StarResult => ({
+    ok: false,
+    starred: !starred,
+    needsConnect: false,
+    error,
+    ...(fix ? { fixUrl: fix.url, fixLabel: fix.label } : {}),
+  });
 
   try {
     const user = await currentUser();
@@ -39,7 +48,8 @@ export async function setStarAction(fullName: string, starred: boolean): Promise
       }
       if (error instanceof GithubMissingPermissionError) {
         return fallo(
-          "GitHub rejected it: the app's Starring permission is missing or pending approval (github.com/settings/installations).",
+          "GitHub blocked this: the app's Starring permission is waiting for your approval.",
+          { url: "https://github.com/settings/installations", label: "Review on GitHub" },
         );
       }
       throw error;
