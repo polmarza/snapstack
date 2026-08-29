@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { cardBackground, languageColor } from "@/lib/card-seed";
 import type { FeedRepo } from "@/lib/db/feed-page";
 import { dwellEnter, dwellLeave, trackSignal } from "@/lib/signals/tracker";
@@ -130,10 +131,19 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
                 return !v;
               })
             }
-            className="text-sm text-content-secondary hover:text-content"
+            className="rounded-lg p-1 text-content-secondary transition-colors hover:text-content"
             aria-expanded={expanded}
+            aria-label={expanded ? "Hide details" : "Show details"}
+            title={expanded ? "Hide details" : "Show details"}
           >
-            {expanded ? "Less" : "More"}
+            {/* Sin la palabra "More": al lado de "View on GitHub" sobraba. El
+                chevron mantiene el acceso a topics, reporte y follow. */}
+            <ChevronDown
+              size={18}
+              strokeWidth={2}
+              aria-hidden
+              className={`transition-transform ${expanded ? "rotate-180" : ""}`}
+            />
           </button>
           <a
             href={repo.url}

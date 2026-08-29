@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { RepoCard } from "@/components/feed/repo-card";
@@ -95,11 +94,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         dangerouslySetInnerHTML={{ __html: profileJsonLd(profile) }}
       />
 
-      <Link href="/" className="font-mono text-sm text-content-secondary hover:text-content">
-        ← Back to feed
-      </Link>
-
-      <header data-testid="profile-header" className="mt-6 mb-8 flex items-center gap-4">
+      <header data-testid="profile-header" className="mb-8 flex items-center gap-4">
         {profile.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element -- avatar de GitHub, sin optimización
           <img
