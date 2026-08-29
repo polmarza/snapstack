@@ -47,6 +47,25 @@ el estado starred/no-starred por tarjeta sin batch endpoint (consulta lazy al ex
 cache propio + webhook `watch` para reconciliar). Al priorizarla, promover a `docs/prd.md`
 como S-02 con su criterio de aceptación.
 
+### [MEJORA-04] Hacer cacheables el feed y los perfiles (rendimiento y SEO)
+**Área:** Frontend / Infraestructura
+**Prioridad estimada:** Media (sube en cuanto haya tráfico)
+**Origen:** Intento fallido durante la preparación de producción (2026-08-29)
+
+Hoy toda página va con `force-dynamic`: cada visita golpea la base de datos y el TTFB entra
+directo en las Core Web Vitals. Se intentó ISR (`revalidate = 60`) en los perfiles y **no
+funciona tal como está el código**: los componentes cliente de la tarjeta (`FollowButton`,
+`ReportButton`) llaman a `useAuth()` durante el render, lo que obliga a Next a renderizar la
+ruta bajo demanda; la respuesta sale con `Cache-Control: private, no-store` aunque se declare
+`revalidate`. Comprobado con un build de producción real, y no lo arregla sacar la ruta del
+matcher del middleware de Clerk.
+
+Lo que haría falta: que esos botones no resuelvan sesión durante el render del servidor —
+renderizarlos solo tras montar, o que la página no los incluya y se hidraten aparte
+consultando su estado (haría falta un `GET /api/follows?profileId=`). Se descartó hacerlo
+ahora por ser cirugía sin beneficio medible antes del lanzamiento. Al retomarlo, medir antes
+y después con el build de producción (`curl -D-` sobre `/u/<usuario>`).
+
 ### [MEJORA-03] Página de detalle del repo con README
 **Área:** Frontend / Backend
 **Prioridad estimada:** Media

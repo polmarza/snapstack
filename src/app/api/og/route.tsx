@@ -35,19 +35,23 @@ function Card({ input }: { input: CardInput }) {
         />
       ))}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <div
-          style={{
-            width: 22,
-            height: 22,
-            borderRadius: 9999,
-            backgroundColor: languageColor,
-          }}
-        />
-        <span style={{ fontSize: 30, color: "rgba(255,255,255,0.75)" }}>
-          {language ?? "—"}
-        </span>
-      </div>
+      {/* Sin lenguaje no se pinta el chip: en una imagen que se comparte, un
+          guion suelto es ruido. El hueco se mantiene para no mover el texto. */}
+      {language ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 9999,
+              backgroundColor: languageColor,
+            }}
+          />
+          <span style={{ fontSize: 30, color: "rgba(255,255,255,0.75)" }}>{language}</span>
+        </div>
+      ) : (
+        <div style={{ display: "flex" }} />
+      )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <span style={{ fontSize: 72, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.1 }}>
