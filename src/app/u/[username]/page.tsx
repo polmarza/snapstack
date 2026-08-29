@@ -11,7 +11,7 @@ import { listOwnedActiveRepos } from "@/lib/db/selection";
 
 /**
  * Dinámica. Se intentó cachearla con ISR y no es posible tal como está: los
- * componentes cliente de la tarjeta (`FollowButton`, `ReportButton`) llaman a
+ * componentes cliente de la tarjeta (`FollowButton`, `CardMenu`) llaman a
  * `useAuth()`, y eso obliga a Next a renderizar la ruta bajo demanda por mucho
  * `revalidate` que se declare. Cachearla exigiría que esos botones no resuelvan
  * sesión durante el render del servidor (ver MEJORA-04 en `mejoras/backlog.md`).

@@ -66,7 +66,7 @@ export function AppNav({ username }: { username: string }) {
 
         <div className="mt-auto flex flex-col gap-3">
           {/* En desktop la donación vive aquí; en móvil, en la cabecera. */}
-          <DonateButton className="px-3" />
+          <DonateButton className="w-full" />
           <SignOutButton>
             <button
               type="button"

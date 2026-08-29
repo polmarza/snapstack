@@ -37,14 +37,17 @@ test("el scroll carga más páginas sin recargar y el fin del feed es explícito
   expect(new Set(ids).size).toBe(ids.length);
 });
 
-test("la tarjeta se expande con los detalles y enlaza al repo", async ({ page }) => {
+test("la tarjeta muestra autor y enlace al repo, sin desplegables", async ({ page }) => {
   await page.goto("/");
   const primera = page.getByTestId("feed-card").first();
   await expect(primera).toBeVisible();
 
-  await primera.getByTestId("feed-card-expand").click();
-  await expect(primera.getByTestId("feed-card-details")).toBeVisible();
+  await expect(primera.getByTestId("feed-card-owner")).toBeVisible();
+  await expect(primera.getByTestId("feed-card-stars")).toBeVisible();
 
   const href = await primera.getByTestId("feed-card-repo-link").getAttribute("href");
   expect(href).toMatch(/^https:\/\/github\.com\//);
+
+  // Ya no hay nada plegado: todo lo visible está a la vista.
+  await expect(primera.getByTestId("feed-card-expand")).toHaveCount(0);
 });
