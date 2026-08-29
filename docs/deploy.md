@@ -28,7 +28,17 @@ El proyecto remoto ya existe; falta el esquema.
    for f in supabase/migrations/*.sql; do psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$f"; done
    ```
 
-2. **Comprobar** que están las 6 tablas y sus políticas:
+   > **Aplicadas el 2026-08-29 con el bucle de `psql`** (7 migraciones, `001` a `007`), no con
+   > `supabase db push`: el CLI espera nombres con marca de tiempo y los nuestros son `001_…`.
+   > Consecuencia: `supabase_migrations.schema_migrations` no las registra, así que las
+   > siguientes migraciones se aplican por el mismo camino. Un `db push` a ciegas intentaría
+   > recrearlo todo y fallaría (que es un fallo seguro, no destructivo).
+   >
+   > Nota de conexión: la cadena **directa** (`db.<ref>.supabase.co`) solo publica IPv6 y no
+   > sirve desde redes sin IPv6. Hay que usar la del **Session pooler**
+   > (`…pooler.supabase.com:5432`), que va por IPv4.
+
+2. **Comprobar** que están las tablas y sus políticas:
 
    ```bash
    psql "$DATABASE_URL" -c "\dt public.*"
