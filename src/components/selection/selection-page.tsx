@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/db/client";
@@ -46,25 +45,9 @@ export async function SelectionPage({
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <div className="flex items-center justify-between">
-        <Link
-          href="/"
-          data-testid="back-to-feed"
-          className="font-mono text-sm text-content-secondary hover:text-content"
-        >
-          ← Back to feed
-        </Link>
-        {mode === "settings" ? (
-          <Link
-            href="/settings/account"
-            data-testid="account-link"
-            className="font-mono text-sm text-content-secondary hover:text-content"
-          >
-            Account
-          </Link>
-        ) : null}
-      </div>
-      <header className="mt-4 mb-6">
+      {/* Sin enlaces de vuelta: la navegación (lateral en desktop, inferior en
+          móvil) ya lleva a cualquier sitio desde cualquier página. */}
+      <header className="mb-6">
         <h1 className="font-mono text-2xl font-bold">{title}</h1>
         <p className="mt-1 text-sm text-content-secondary">{intro}</p>
       </header>

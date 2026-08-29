@@ -5,11 +5,17 @@ import { createServiceClient } from "@/lib/db/client";
 import { getProfileByClerkId } from "@/lib/db/profiles";
 import { AppNav } from "./app-nav";
 import { DonateButton } from "./donate-button";
+import { HideOnHome } from "./hide-on-home";
 
 /**
- * Marco común de la app: controles de sesión y donación arriba a la derecha en
- * todas las páginas, y la navegación (lateral en desktop, inferior en móvil)
- * solo con sesión. El contenido se desplaza para no quedar debajo.
+ * Marco común de la app. Cambia según haya sesión o no:
+ *
+ * - **Con sesión**: navegación (lateral en desktop, inferior en móvil) y, en
+ *   móvil, una cabecera con la marca y la donación. En desktop no hace falta
+ *   cabecera: la barra lateral lo lleva todo.
+ * - **Sin sesión**: cabecera con marca y botón de entrar, salvo en la home,
+ *   donde eso lo cubre el héroe de la landing. La donación no se muestra: a
+ *   quien todavía no conoce el producto solo le distrae.
  */
 export async function AppShell({ children }: { children: React.ReactNode }) {
   let username: string | null = null;
@@ -23,26 +29,38 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     username = null; // sin perfil resuelto, la app se comporta como anónima
   }
 
+  const wordmark = (
+    <Link
+      href="/"
+      data-testid="header-wordmark"
+      className="font-mono text-xl font-bold lowercase"
+    >
+      snapstack
+    </Link>
+  );
+
   return (
     <>
       {username ? <AppNav username={username} /> : null}
 
       <div className={username ? "lg:pl-56" : ""}>
-        {/* La marca vive en la cabecera, en la misma línea que los botones. Con
-            sesión en desktop se oculta: ya la lleva la barra lateral. */}
-        <header className="flex items-center gap-3 px-4 pt-4 sm:px-6">
-          <Link
-            href="/"
-            data-testid="header-wordmark"
-            className={`font-mono text-xl font-bold lowercase ${username ? "lg:hidden" : ""}`}
-          >
-            snapstack
-          </Link>
-          <div className="ml-auto flex items-center gap-3">
-            <DonateButton />
-            <AuthControls />
-          </div>
-        </header>
+        {username ? (
+          <header className="flex items-center gap-3 px-4 pt-4 sm:px-6 lg:hidden">
+            {wordmark}
+            <div className="ml-auto flex items-center gap-3">
+              <DonateButton />
+            </div>
+          </header>
+        ) : (
+          <HideOnHome>
+            <header className="flex items-center gap-3 px-4 pt-4 sm:px-6">
+              {wordmark}
+              <div className="ml-auto flex items-center gap-3">
+                <AuthControls />
+              </div>
+            </header>
+          </HideOnHome>
+        )}
 
         {/* Hueco inferior para la barra de navegación de móvil. */}
         <div className={username ? "pb-24 lg:pb-0" : ""}>{children}</div>

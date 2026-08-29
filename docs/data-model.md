@@ -36,6 +36,7 @@ importados sin login del autor); si el autor se registra después, el repo puede
 | languages | jsonb | Desglose de lenguajes por bytes (GraphQL `languages`) |
 | topics | text[] | `repositoryTopics` declarados por el autor |
 | stars | integer | Contador de stars, actualizado por webhook `watch` |
+| click_count | integer | Clicks hacia el repo. Desnormalizado de `signals` (migración 007): el feed lo pinta en cada tarjeta y agregar la tabla de señales en cada carga no escala |
 | card_seed | text | Semilla determinista del fondo (hash de github_repo_id) |
 | status | text | `active` / `removed` (borrado o privado en GitHub, ver webhook `repository`) |
 | is_seed | boolean | true si entró por el import de trending |
@@ -131,6 +132,7 @@ El acceso a datos pasa por el servidor Next.js (service role); RLS actúa como s
 | 2026-08-29 | `supabase/migrations/004_signals.sql` | Tabla `signals` con check de tipo y cap de value; RLS sin políticas (solo service role) |
 | 2026-08-29 | `supabase/migrations/005_reports.sql` | Tabla `reports` con índice único (reporter, repo); RLS sin políticas (solo service role) |
 | 2026-08-29 | `supabase/migrations/006_follows.sql` | Tabla `follows` (PK compuesta, check anti auto-follow, cascada); RLS de lectura pública |
+| 2026-08-29 | `supabase/migrations/007_repo_click_count.sql` | `repos.click_count` (desnormalizado desde `signals`, con relleno) y función `increment_repo_clicks` |
 
 ---
 

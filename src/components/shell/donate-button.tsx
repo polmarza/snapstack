@@ -1,23 +1,27 @@
+import { ArrowRight, Coffee } from "lucide-react";
+
 /**
- * Botón de Buy Me a Coffee de Pol. Se usa su imagen oficial (la que genera su
- * button-api), con la altura acotada para que case con el resto de la cabecera.
+ * Enlace de donación a Buy Me a Coffee, con el verde de marca (el mismo del
+ * favicon) y el contenido oscuro encima.
+ *
+ * Es un botón propio y no la imagen de su button-api por dos motivos: el
+ * contador de apoyos venía sobre un fondo de otro tono que su API no deja
+ * configurar, y así no hay una petición externa en cada carga. El contrapunto
+ * es que se pierde ese contador: recuperarlo exigiría la API autenticada de
+ * Buy Me a Coffee (token personal) y cachear la cifra.
  */
-export function DonateButton() {
+export function DonateButton({ className = "" }: { className?: string }) {
   return (
     <a
       href="https://www.buymeacoffee.com/polmarza"
       target="_blank"
       rel="noopener noreferrer"
       data-testid="donate-button"
-      aria-label="Buy me a coffee"
-      className="shrink-0"
+      className={`flex h-9 shrink-0 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-background transition-opacity hover:opacity-90 ${className}`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- imagen servida por Buy Me a Coffee */}
-      <img
-        src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=⭐&slug=polmarza&button_colour=5F7FFF&font_colour=ffffff&font_family=Poppins&outline_colour=000000&coffee_colour=FFDD00"
-        alt="Buy me a coffee"
-        className="h-9 w-auto rounded-lg"
-      />
+      <Coffee size={16} strokeWidth={2.25} aria-hidden />
+      Donate
+      <ArrowRight size={16} strokeWidth={2.25} aria-hidden className="ml-auto" />
     </a>
   );
 }

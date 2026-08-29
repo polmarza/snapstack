@@ -13,6 +13,8 @@ export interface RepoRow {
   languages: Record<string, number>;
   topics: string[];
   stars: number;
+  /** Clicks hacia el repo (señales `click_repo`), desnormalizado. Ver migración 007. */
+  click_count?: number;
   card_seed: string;
   status: "active" | "removed";
   is_seed: boolean;

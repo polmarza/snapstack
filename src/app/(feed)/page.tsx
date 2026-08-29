@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
+import { AuthControls } from "@/components/auth/auth-controls";
 import { FeedList } from "@/components/feed/feed-list";
 import { createServiceClient } from "@/lib/db/client";
 import { annotateFollowed, listFeedPage, type FeedPage } from "@/lib/db/feed-page";
@@ -64,10 +65,27 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      {/* La marca visible está en la cabecera de AppShell. Aquí queda el h1 solo
-          para lectores de pantalla y buscadores: la home no debe quedarse sin
-          encabezado de nivel 1. */}
-      <h1 className="sr-only">snapstack — {TAGLINE}</h1>
+      {signedIn ? (
+        // Con sesión la marca está en la navegación; el h1 se mantiene para
+        // lectores de pantalla y buscadores, que no deben quedarse sin él.
+        <h1 className="sr-only">snapstack — {TAGLINE}</h1>
+      ) : (
+        <section data-testid="landing-hero" className="mb-12 flex flex-col items-center text-center">
+          <h1 data-testid="hero-wordmark" className="font-mono text-5xl font-bold lowercase sm:text-6xl">
+            snapstack
+          </h1>
+          <p className="mt-4 max-w-md text-lg text-content">
+            Your best work, worth showing off.
+          </p>
+          <p className="mt-2 max-w-md text-content-secondary">
+            Pick the repos you&apos;re proud of and let them speak for you — and see what other
+            devs are building.
+          </p>
+          <div className="mt-8">
+            <AuthControls size="lg" />
+          </div>
+        </section>
+      )}
 
       {signedIn ? (
         <nav data-testid="feed-tabs" className="mb-6 flex gap-2 font-mono text-sm">

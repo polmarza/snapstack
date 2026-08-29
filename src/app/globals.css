@@ -20,3 +20,15 @@ body {
   background-color: var(--color-background);
   color: var(--color-content);
 }
+
+/*
+ * Tailwind v4 cambió el estilo base de los botones a `cursor: default`, así que
+ * ningún botón de la app mostraba la manita al pasar por encima. Se restaura
+ * aquí, para todos, en lugar de ir poniendo `cursor-pointer` uno a uno.
+ */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}

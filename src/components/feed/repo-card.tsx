@@ -1,21 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { cardBackground, languageColor } from "@/lib/card-seed";
 import type { FeedRepo } from "@/lib/db/feed-page";
 import { dwellEnter, dwellLeave, trackSignal } from "@/lib/signals/tracker";
 import { FollowButton } from "@/components/follow/follow-button";
 import { CardBackgroundLayer } from "./card-background";
-import { ReportButton } from "./report-button";
+import { CardMenu } from "./card-menu";
 
 /**
  * Tarjeta del feed (M-06). El fondo es el de M-04 pintado en CSS: texto real,
  * legible a cualquier ancho (en móvil la tarjeta es más vertical). La imagen de
  * /api/og queda para og:image y embeds, no para el feed.
+ *
+ * Todo está a la vista: no hay desplegable. Los topics solo aparecen si los hay,
+ * el follow va junto al autor y reportar vive en el menú de la esquina.
  */
 export function RepoCard({ repo }: { repo: FeedRepo }) {
-  const [expanded, setExpanded] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
   const background = useMemo(
     () => cardBackground(String(repo.github_repo_id), repo.primary_language),
@@ -47,6 +49,22 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
     : [null, repo.full_name];
   const ownerLogin = repo.owner_login ?? ownerFromName;
 
+  const identity = (
+    <>
+      {repo.owner_avatar_url ? (
+        // eslint-disable-next-line @next/next/no-img-element -- avatar pequeño de GitHub, sin optimización
+        <img
+          src={repo.owner_avatar_url}
+          alt=""
+          width={20}
+          height={20}
+          className="h-5 w-5 shrink-0 rounded-full"
+        />
+      ) : null}
+      <span data-testid="feed-card-owner" className="truncate">{ownerLogin ?? "—"}</span>
+    </>
+  );
+
   return (
     <article
       ref={articleRef}
@@ -56,7 +74,8 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
     >
       <div className="relative flex aspect-[4/5] flex-col justify-between p-6 sm:aspect-[1.9/1] sm:p-8">
         <CardBackgroundLayer background={background} />
-        <div className="relative flex items-center justify-between gap-2">
+
+        <div className="relative flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <span
               aria-hidden
@@ -67,46 +86,49 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
               {repo.primary_language ?? "—"}
             </span>
           </div>
-          {/* Indicador pasivo por ahora; será botón de estrella real (GitHub App,
-              permiso Starring) cuando exista login — ver MEJORA-02. */}
-          <span data-testid="feed-card-stars" className="flex items-center gap-1.5 font-mono text-sm text-white/75">
-            <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.3">
-              <path d="M8 1.5l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.8l-4 2.1.8-4.5L1.5 6.2l4.5-.6L8 1.5z" strokeLinejoin="round" />
-            </svg>
-            <span className="sr-only">Stars:</span>
-            {repo.stars}
-          </span>
+
+          <div className="flex items-center gap-1">
+            {/* Indicador pasivo por ahora; será botón de estrella real (GitHub App,
+                permiso Starring) cuando exista la App — ver MEJORA-02. */}
+            <span
+              data-testid="feed-card-stars"
+              className="flex items-center gap-1.5 px-1 font-mono text-sm text-white/75"
+            >
+              <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.3">
+                <path d="M8 1.5l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.8l-4 2.1.8-4.5L1.5 6.2l4.5-.6L8 1.5z" strokeLinejoin="round" />
+              </svg>
+              <span className="sr-only">Stars:</span>
+              {repo.stars}
+            </span>
+            <CardMenu repoId={repo.id} />
+          </div>
         </div>
+
         <div className="relative flex flex-col gap-2">
           <h2 className="font-mono text-2xl font-bold text-white sm:text-3xl">{name}</h2>
           {repo.description ? (
-            <p className={`text-white/70 sm:text-lg ${expanded ? "" : "line-clamp-2"}`}>
-              {repo.description}
-            </p>
+            <p className="line-clamp-3 text-white/70 sm:text-lg">{repo.description}</p>
           ) : null}
         </div>
       </div>
 
+      {/* Topics: si no hay, no se pinta nada — ni la fila ni un texto vacío. */}
+      {repo.topics.length > 0 ? (
+        <ul data-testid="feed-card-topics" className="flex flex-wrap gap-2 px-4 pt-3">
+          {repo.topics.slice(0, 5).map((topic) => (
+            <li
+              key={topic}
+              className="rounded-full border border-edge px-2.5 py-0.5 font-mono text-xs text-content-secondary"
+            >
+              {topic}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
       <div className="flex items-center justify-between gap-3 px-4 py-3">
-        {(() => {
-          const identity = (
-            <>
-              {repo.owner_avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element -- avatar pequeño de GitHub, sin optimización
-                <img
-                  src={repo.owner_avatar_url}
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="h-5 w-5 shrink-0 rounded-full"
-                />
-              ) : null}
-              <span data-testid="feed-card-owner" className="truncate">{ownerLogin ?? "—"}</span>
-            </>
-          );
-          // Solo los repos con dueño en Snapstack enlazan a un perfil; las
-          // semillas del trending no tienen perfil que abrir.
-          return repo.owner_profile_id && repo.owner_login ? (
+        <div className="flex min-w-0 items-center gap-3">
+          {repo.owner_profile_id && repo.owner_login ? (
             <Link
               href={`/u/${repo.owner_login}`}
               data-testid="feed-card-owner-link"
@@ -118,23 +140,28 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
             <div className="flex min-w-0 items-center gap-2 font-mono text-sm text-content-secondary">
               {identity}
             </div>
-          );
-        })()}
+          )}
+
+          {/* El follow, junto al autor: es a la persona a quien se sigue. */}
+          {repo.owner_profile_id && repo.owner_followed !== undefined ? (
+            <FollowButton
+              profileId={repo.owner_profile_id}
+              initialFollowing={repo.owner_followed}
+              signalRepoId={repo.id}
+              size="sm"
+            />
+          ) : null}
+        </div>
+
         <div className="flex shrink-0 items-center gap-3">
-          <button
-            type="button"
-            data-testid="feed-card-expand"
-            onClick={() =>
-              setExpanded((v) => {
-                if (!v) trackSignal({ repoId: repo.id, type: "expand" });
-                return !v;
-              })
-            }
-            className="text-sm text-content-secondary hover:text-content"
-            aria-expanded={expanded}
+          {/* Clicks reales acumulados (señal click_repo, contador de la migración 007). */}
+          <span
+            data-testid="feed-card-clicks"
+            className="font-mono text-xs text-content-secondary"
+            title="Clicks through to GitHub"
           >
-            {expanded ? "Less" : "More"}
-          </button>
+            clicks {repo.click_count ?? 0}
+          </span>
           <a
             href={repo.url}
             target="_blank"
@@ -147,36 +174,6 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
           </a>
         </div>
       </div>
-
-      {expanded ? (
-        <div data-testid="feed-card-details" className="border-t border-edge px-4 py-3">
-          {repo.topics.length > 0 ? (
-            <ul className="flex flex-wrap gap-2">
-              {repo.topics.map((topic) => (
-                <li
-                  key={topic}
-                  className="rounded-full border border-edge px-3 py-1 font-mono text-xs text-content-secondary"
-                >
-                  {topic}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-content-secondary">No topics declared.</p>
-          )}
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <ReportButton repoId={repo.id} />
-            {repo.owner_profile_id && repo.owner_followed !== undefined ? (
-              <FollowButton
-                profileId={repo.owner_profile_id}
-                initialFollowing={repo.owner_followed}
-                signalRepoId={repo.id}
-                size="sm"
-              />
-            ) : null}
-          </div>
-        </div>
-      ) : null}
     </article>
   );
 }
