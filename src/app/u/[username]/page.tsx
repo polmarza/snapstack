@@ -29,23 +29,23 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
   if (!profile) return { title: "Profile not found" };
 
   const name = profile.display_name ?? profile.username;
-  const description = `What ${name} is building — their curated GitHub repos on Snapstack.`;
+  const description = `What ${name} is building — their curated GitHub repos on snapstack.`;
   const og = new URLSearchParams({
     repoId: profile.username,
     name: profile.username,
-    description: `${name} on Snapstack — a curated selection of their repos`,
+    description: `${name} on snapstack — a curated selection of their repos`,
   });
 
   return {
-    title: `${profile.username} · Snapstack`,
+    title: `${profile.username} · snapstack`,
     description,
     // Canónica: evita que /u/x?utm_source=… se indexe como página distinta.
     alternates: { canonical: `/u/${profile.username}` },
     openGraph: {
       type: "profile",
-      siteName: "Snapstack",
+      siteName: "snapstack",
       url: `/u/${profile.username}`,
-      title: `${profile.username} · Snapstack`,
+      title: `${profile.username} · snapstack`,
       description,
       images: [`/api/og?${og.toString()}`],
     },
