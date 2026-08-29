@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { cardBackground, languageColor } from "@/lib/card-seed";
 import type { FeedRepo } from "@/lib/db/feed-page";
@@ -62,19 +63,38 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
       </div>
 
       <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <div className="flex min-w-0 items-center gap-2 font-mono text-sm text-content-secondary">
-          {repo.owner_avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element -- avatar pequeño de GitHub, sin optimización
-            <img
-              src={repo.owner_avatar_url}
-              alt=""
-              width={20}
-              height={20}
-              className="h-5 w-5 shrink-0 rounded-full"
-            />
-          ) : null}
-          <span data-testid="feed-card-owner" className="truncate">{ownerLogin ?? "—"}</span>
-        </div>
+        {(() => {
+          const identity = (
+            <>
+              {repo.owner_avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element -- avatar pequeño de GitHub, sin optimización
+                <img
+                  src={repo.owner_avatar_url}
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="h-5 w-5 shrink-0 rounded-full"
+                />
+              ) : null}
+              <span data-testid="feed-card-owner" className="truncate">{ownerLogin ?? "—"}</span>
+            </>
+          );
+          // Solo los repos con dueño en Snapstack enlazan a un perfil; las
+          // semillas del trending no tienen perfil que abrir.
+          return repo.owner_profile_id && repo.owner_login ? (
+            <Link
+              href={`/u/${repo.owner_login}`}
+              data-testid="feed-card-owner-link"
+              className="flex min-w-0 items-center gap-2 font-mono text-sm text-content-secondary hover:text-content"
+            >
+              {identity}
+            </Link>
+          ) : (
+            <div className="flex min-w-0 items-center gap-2 font-mono text-sm text-content-secondary">
+              {identity}
+            </div>
+          );
+        })()}
         <div className="flex shrink-0 items-center gap-3">
           <button
             type="button"

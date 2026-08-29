@@ -67,3 +67,13 @@ export async function getProfileByClerkId(
   if (error) throw new Error(`Error al leer el perfil: ${error.message}`);
   return (data as (ProfileRow & { id: string }) | null) ?? null;
 }
+
+/** Perfil público por username (login de GitHub, la URL de /u/[username]). */
+export async function getProfileByUsername(
+  db: Db,
+  username: string,
+): Promise<(ProfileRow & { id: string }) | null> {
+  const { data, error } = await db.from("profiles").select("*").eq("username", username).maybeSingle();
+  if (error) throw new Error(`Error al leer el perfil: ${error.message}`);
+  return (data as (ProfileRow & { id: string }) | null) ?? null;
+}
