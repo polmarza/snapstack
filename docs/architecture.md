@@ -49,7 +49,7 @@ src/
 │   ├── page.tsx          → ✅ Feed de scroll infinito (M-06)
 │   ├── dev/cards/        → ✅ Demo local de fichas sobre fixtures
 │   ├── dev/seed/         → ✅ Demo local de los repos semilla importados (lee de la DB)
-│   ├── u/[username]/     → ⏳ Perfil público
+│   ├── u/[username]/     → ✅ Perfil público (M-05): identidad + grid de fichas, og:image propia
 │   ├── onboarding/       → ✅ Selección de repos tras el login (M-02)
 │   ├── settings/repos/   → ✅ Gestión de la selección + server action de importación (M-03)
 │   ├── settings/         → ⏳ Baja de cuenta y resto de ajustes

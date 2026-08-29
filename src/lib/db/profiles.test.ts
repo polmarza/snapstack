@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import type { Db } from "./client";
-import { ensureProfile, mapClerkUserToProfile, type ClerkUserLike, type ProfileRow } from "./profiles";
+import {
+  ensureProfile,
+  mapClerkUserToProfile,
+  getProfileByUsername,
+  type ClerkUserLike,
+  type ProfileRow,
+} from "./profiles";
 
 const clerkUser = (extra: Partial<ClerkUserLike> = {}): ClerkUserLike => ({
   id: "user_2abc",
@@ -82,5 +88,35 @@ describe("ensureProfile", () => {
     const row = await ensureProfile(db, null);
     expect(row).toBeNull();
     expect(store.size).toBe(0);
+  });
+});
+
+describe("getProfileByUsername", () => {
+  const fakeDbConPerfil = (perfil: (ProfileRow & { id: string }) | null) =>
+    ({
+      from: () => ({
+        select: () => ({
+          eq: (col: string, valor: string) => ({
+            maybeSingle: () =>
+              Promise.resolve({
+                data: perfil && col === "username" && perfil.username === valor ? perfil : null,
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    }) as unknown as Db;
+
+  const perfil = { id: "uuid-1", ...mapClerkUserToProfile(clerkUser()) };
+
+  it("M-05: encuentra el perfil por su username (login de GitHub)", async () => {
+    const encontrado = await getProfileByUsername(fakeDbConPerfil(perfil), "polmarza");
+    expect(encontrado?.id).toBe("uuid-1");
+    expect(encontrado?.username).toBe("polmarza");
+  });
+
+  it("M-05: un username inexistente devuelve null (la página hace 404)", async () => {
+    expect(await getProfileByUsername(fakeDbConPerfil(perfil), "nadie")).toBeNull();
+    expect(await getProfileByUsername(fakeDbConPerfil(null), "polmarza")).toBeNull();
   });
 });
