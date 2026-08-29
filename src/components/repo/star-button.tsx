@@ -23,7 +23,7 @@ export function StarButton({ fullName, initialStars, initialStarred }: StarButto
   const pathname = usePathname();
   const [starred, setStarred] = useState(initialStarred ?? false);
   const [stars, setStars] = useState(initialStars);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ text: string; url?: string; label?: string } | null>(null);
   const [pending, startTransition] = useTransition();
   const autoFired = useRef(false);
 
@@ -44,7 +44,11 @@ export function StarButton({ fullName, initialStars, initialStarred }: StarButto
       if (!result.ok) {
         setStarred(!next);
         setStars((s) => s + (next ? -1 : 1));
-        setError(result.error);
+        setError(
+          result.error
+            ? { text: result.error, url: result.fixUrl, label: result.fixLabel }
+            : null,
+        );
       }
     });
   };
@@ -93,9 +97,22 @@ export function StarButton({ fullName, initialStars, initialStarred }: StarButto
         <span
           data-testid="star-error"
           role="alert"
-          className="absolute right-0 top-full z-10 mt-2 w-64 rounded-lg border border-error bg-background px-3 py-2 text-left font-sans text-xs text-error shadow-lg"
+          className="absolute right-0 top-full z-10 mt-2 flex w-64 flex-col items-start gap-2 rounded-lg border border-error bg-background px-3 py-2 text-left font-sans text-xs text-error shadow-lg"
         >
-          {error}
+          {error.text}
+          {error.url ? (
+            // Botón, no URL en el texto: en móvil una dirección escrita no se
+            // puede seguir sin copiarla a mano.
+            <a
+              href={error.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="star-error-fix"
+              className="rounded-md bg-error px-2.5 py-1 font-medium text-background transition-opacity hover:opacity-90"
+            >
+              {error.label ?? "Fix on GitHub"} ↗
+            </a>
+          ) : null}
         </span>
       ) : null}
     </span>
