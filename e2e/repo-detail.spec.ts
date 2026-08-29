@@ -37,6 +37,12 @@ test("el README se renderiza como markdown seguro: sin HTML crudo y con enlaces 
   );
   const seed = await unaSemilla();
   const readme = [
+    // Cabecera típica de README: banner HTML + divisoria. Debe desaparecer
+    // entera del render (ni texto fuente, ni la raya colgando).
+    '<p align="center"><img src="banner.png" alt="x"></p>',
+    "",
+    "---",
+    "",
     "# Titulo E2E",
     "",
     '<script>document.title = "xss"</script>',
@@ -60,6 +66,8 @@ test("el README se renderiza como markdown seguro: sin HTML crudo y con enlaces 
     "href",
     `https://github.com/${seed.full_name}/blob/HEAD/docs/guia.md`,
   );
+  // La divisoria que separaba el banner eliminado no queda colgando.
+  expect(await zona.locator("hr").count()).toBe(0);
 });
 
 test("el título de una tarjeta del feed navega al detalle", async ({ page }) => {
@@ -84,4 +92,16 @@ test("un repo inexistente muestra la 404", async ({ page }) => {
   await page.goto("/r/nadie/este-repo-no-existe");
   await expect(page.getByRole("heading", { name: "404" })).toBeVisible();
   await expect(page.getByTestId("repo-detail-card")).toHaveCount(0);
+});
+
+test("el detalle de un repo con dueño enseña sus stats, y a un anónimo le ofrece Follow (login)", async ({ page }) => {
+  await page.goto("/r/polmarza/snapstack");
+  await expect(page.getByTestId("repo-detail-owner-stats")).toContainText("repos");
+  await expect(page.getByTestId("repo-detail-owner-stats")).toContainText("follower");
+  // Sin sesión, el botón existe igual: el click abre el login de Clerk.
+  await expect(page.getByTestId("follow-button-signin")).toBeVisible();
+  // Y la botonera de acciones está completa para anónimos (menos suscribirse).
+  await expect(page.getByTestId("clone-button")).toBeVisible();
+  await expect(page.getByTestId("repo-detail-github-link")).toBeVisible();
+  await expect(page.getByTestId("subscribe-button")).toHaveCount(0);
 });

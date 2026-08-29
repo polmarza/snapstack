@@ -8,18 +8,27 @@ interface MdNode {
 }
 
 /**
- * Elimina los nodos de HTML crudo del árbol markdown. react-markdown no los
- * interpreta (bien), pero los pintaría como texto fuente: los banners `<p
- * align=center>` típicos de cabecera quedarían como chatarra visible. Fuera.
+ * Saneado del árbol markdown para README de terceros:
+ * 1. Fuera los nodos de HTML crudo — react-markdown no los interpreta (bien),
+ *    pero los pintaría como texto fuente (los banners `<p align=center>`).
+ * 2. Fuera los párrafos que quedan vacíos tras el punto 1.
+ * 3. Fuera las líneas divisorias (`---`) que quedan colgando al principio:
+ *    solían separar un banner ya eliminado del contenido, y sueltas en
+ *    cabecera solo ensucian.
  */
-function stripHtmlNodes() {
+function cleanupTree() {
   return (tree: MdNode) => {
     const walk = (node: MdNode) => {
       if (!node.children) return;
-      node.children = node.children.filter((child) => child.type !== "html");
+      node.children = node.children.filter(
+        (child) =>
+          child.type !== "html" &&
+          !(child.type === "paragraph" && (child.children?.length ?? 0) === 0),
+      );
       node.children.forEach(walk);
     };
     walk(tree);
+    while (tree.children?.[0]?.type === "thematicBreak") tree.children.shift();
   };
 }
 
@@ -33,7 +42,7 @@ export function ReadmeMarkdown({ markdown, fullName }: { markdown: string; fullN
   return (
     <div data-testid="repo-readme" className="readme text-[15px] leading-relaxed">
       <Markdown
-        remarkPlugins={[remarkGfm, stripHtmlNodes]}
+        remarkPlugins={[remarkGfm, cleanupTree]}
         urlTransform={(url, key) => resolveReadmeUrl(url, fullName, key === "src" ? "image" : "link")}
         components={{
           h1: (p) => <h2 className="mb-3 mt-8 border-b border-edge pb-2 font-mono text-xl font-bold first:mt-0">{p.children}</h2>,
