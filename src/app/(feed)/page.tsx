@@ -33,6 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "snapstack",
+    url: "/",
     title: "snapstack — what devs are building",
     description: TAGLINE,
     // La portada es una captura real del hero (1200x630, misma imagen que la

@@ -7,9 +7,11 @@ import { CardBackgroundLayer } from "@/components/feed/card-background";
 import { ReadmeMarkdown } from "@/components/repo/readme-markdown";
 import { RepoGithubLink } from "@/components/repo/repo-github-link";
 import { SubscribeButton } from "@/components/repo/subscribe-button";
+import { CloneButton } from "@/components/repo/clone-button";
 import { cardBackground, languageColor } from "@/lib/card-seed";
 import { createServiceClient } from "@/lib/db/client";
-import { isFollowing } from "@/lib/db/follows";
+import { getFollowCounts, isFollowing } from "@/lib/db/follows";
+import { listOwnedActiveRepos } from "@/lib/db/selection";
 import { isSubscribed } from "@/lib/db/subscriptions";
 import { getGithubAppToken } from "@/lib/db/github-app-tokens";
 import { githubAppConfigured } from "@/lib/github/app-oauth";
@@ -69,13 +71,30 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
   const repo = await getActiveRepoByFullName(db, owner, name).catch(() => null);
   if (!repo) notFound();
 
-  // Follow del autor, como en la tarjeta: solo si el repo tiene dueño en snapstack.
+  // Follow del autor: visible siempre que el repo tenga dueño y no seas tú —
+  // también sin sesión (ahí el click abre el login). Con dueño, sus stats.
   const user = await currentUser();
   const viewer = user ? await getProfileByClerkId(db, user.id) : null;
-  const canFollow =
-    viewer !== null && repo.owner_profile_id !== null && viewer.id !== repo.owner_profile_id;
+  const isOwner = viewer !== null && viewer.id === repo.owner_profile_id;
+  const showFollow = repo.owner_profile_id !== null && !isOwner;
   const alreadyFollowing =
-    canFollow && repo.owner_profile_id ? await isFollowing(db, viewer.id, repo.owner_profile_id) : false;
+    viewer && showFollow && repo.owner_profile_id
+      ? await isFollowing(db, viewer.id, repo.owner_profile_id)
+      : false;
+
+  let ownerStats: { repos: number; stars: number; followers: number; following: number } | null = null;
+  if (repo.owner_profile_id) {
+    const [ownerRepos, counts] = await Promise.all([
+      listOwnedActiveRepos(db, repo.owner_profile_id),
+      getFollowCounts(db, repo.owner_profile_id),
+    ]);
+    ownerStats = {
+      repos: ownerRepos.length,
+      stars: ownerRepos.reduce((sum, r) => sum + ((r as { stars?: number }).stars ?? 0), 0),
+      followers: counts.followers,
+      following: counts.following,
+    };
+  }
   const alreadySubscribed = viewer ? await isSubscribed(db, viewer.id, repo.id) : false;
 
   // Estrella real (C-07): solo con la App configurada y sesión. Con token, se
@@ -140,18 +159,17 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
         </div>
       </div>
 
-      {/* La info del repo, entre dos divisorias y con algo más de aire que en
-          la tarjeta; el Follow va justo bajo el username. */}
+      {/* Sección 1: el dueño con sus números, Follow a la derecha. */}
       <div
         data-testid="repo-detail-meta"
-        className="mt-5 flex flex-wrap items-center justify-between gap-4 border-y border-edge py-4"
+        className="mt-5 flex flex-wrap items-center justify-between gap-4 border-b border-edge pb-4"
       >
         <div className="flex min-w-0 items-center gap-3">
           {repo.owner_avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element -- avatar de GitHub, sin optimización
             <img src={repo.owner_avatar_url} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-full border border-edge" />
           ) : null}
-          <div className="flex min-w-0 flex-col items-start gap-1.5">
+          <div className="flex min-w-0 flex-col items-start gap-0.5">
             {repo.owner_profile_id && repo.owner_login ? (
               <Link
                 href={`/u/${repo.owner_login}`}
@@ -165,21 +183,42 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
                 {repo.owner_login ?? repo.full_name.split("/")[0]}
               </span>
             )}
-            {canFollow && repo.owner_profile_id ? (
-              <FollowButton
-                profileId={repo.owner_profile_id}
-                initialFollowing={alreadyFollowing}
-                signalRepoId={repo.id}
-                size="sm"
-              />
+            {ownerStats ? (
+              <span
+                data-testid="repo-detail-owner-stats"
+                className="flex flex-wrap gap-x-3 font-mono text-xs text-content-secondary"
+              >
+                <span>{ownerStats.repos} {ownerStats.repos === 1 ? "repo" : "repos"}</span>
+                <span>★ {ownerStats.stars}</span>
+                <span>{ownerStats.followers} {ownerStats.followers === 1 ? "follower" : "followers"}</span>
+                <span>{ownerStats.following} following</span>
+              </span>
             ) : null}
           </div>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1.5">
-          <RepoGithubLink repoId={repo.id} url={repo.url} />
+        {showFollow && repo.owner_profile_id ? (
+          <div className="shrink-0">
+            <FollowButton
+              profileId={repo.owner_profile_id}
+              initialFollowing={alreadyFollowing}
+              signalRepoId={repo.id}
+              anonPrompt
+            />
+          </div>
+        ) : null}
+      </div>
+
+      {/* Sección 2: el repo y sus acciones — GitHub en primario, clonar al
+          portapapeles y la suscripción. Los clicks, de testigo a la derecha. */}
+      <div data-testid="repo-detail-actions" className="border-b border-edge py-5">
+        <h2 className="break-words font-mono text-2xl font-bold">{repoName}</h2>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <RepoGithubLink repoId={repo.id} url={repo.url} variant="button" />
+          <CloneButton url={repo.url} />
+          {viewer ? <SubscribeButton repoId={repo.id} initialSubscribed={alreadySubscribed} /> : null}
           <span
             data-testid="repo-detail-clicks"
-            className="font-mono text-sm text-content-secondary"
+            className="ml-auto font-mono text-xs text-content-secondary"
             title="Clicks through to GitHub"
           >
             clicks {repo.click_count ?? 0}
@@ -198,14 +237,6 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
             </li>
           ))}
         </ul>
-      ) : null}
-
-      {/* Suscripción (C-06): entre la info y el README, donde acaba el vistazo
-          y empieza la lectura. Solo con sesión (el propio botón se oculta). */}
-      {viewer ? (
-        <div className="mt-6">
-          <SubscribeButton repoId={repo.id} initialSubscribed={alreadySubscribed} />
-        </div>
       ) : null}
 
       <section className="mt-8">

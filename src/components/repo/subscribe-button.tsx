@@ -43,7 +43,7 @@ export function SubscribeButton({ repoId, initialSubscribed }: { repoId: string;
       ) : (
         <Bell size={16} strokeWidth={1.75} aria-hidden />
       )}
-      {subscribed ? "Subscribed to changes" : "Subscribe to changes"}
+      {subscribed ? "Unsubscribe" : "Subscribe to changes"}
     </button>
   );
 }

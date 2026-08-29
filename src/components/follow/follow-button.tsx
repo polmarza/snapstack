@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { SignInButton, useAuth } from "@clerk/nextjs";
 import { setFollowingAction } from "@/app/api/follows/actions";
 import { trackSignal } from "@/lib/signals/tracker";
 
@@ -14,6 +14,8 @@ interface FollowButtonProps {
   size?: "sm" | "md";
   /** En el perfil: re-renderiza el servidor al alternar para refrescar los contadores. */
   refreshOnToggle?: boolean;
+  /** Sin sesión: en vez de desaparecer, el botón abre el login de Clerk (detalle, C-05). */
+  anonPrompt?: boolean;
 }
 
 /** Toggle Follow/Following (M-07). Solo visible con sesión. */
@@ -23,13 +25,30 @@ export function FollowButton({
   signalRepoId,
   size = "md",
   refreshOnToggle = false,
+  anonPrompt = false,
 }: FollowButtonProps) {
   const { isSignedIn } = useAuth();
   const router = useRouter();
   const [following, setFollowing] = useState(initialFollowing);
   const [pending, startTransition] = useTransition();
 
-  if (!isSignedIn) return null;
+  const padding = size === "sm" ? "px-3 py-1 text-xs" : "px-4 py-2 text-sm";
+
+  if (!isSignedIn) {
+    if (!anonPrompt) return null;
+    // Anónimo: el botón existe igual y el click abre el login (modal de Clerk).
+    return (
+      <SignInButton mode="modal">
+        <button
+          type="button"
+          data-testid="follow-button-signin"
+          className={`rounded-lg border border-primary font-medium text-primary transition-colors hover:bg-primary/10 ${padding}`}
+        >
+          Follow
+        </button>
+      </SignInButton>
+    );
+  }
 
   const toggle = () => {
     const next = !following;
@@ -45,7 +64,6 @@ export function FollowButton({
     });
   };
 
-  const padding = size === "sm" ? "px-3 py-1 text-xs" : "px-4 py-2 text-sm";
   return (
     <button
       type="button"
