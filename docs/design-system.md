@@ -139,4 +139,7 @@ El orden cuenta una historia y no debería reordenarse sin motivo:
    producto (el límite de cinco, el determinismo, el orden barajado), no una promesa.
 5. **Cómo empezar** (`HowItWorks`) — los tres pasos con sus gráficos.
 6. **Preguntas** (`Faq`) — las dudas que frenan el registro (permisos, precio, borrado).
-7. **Muestra del feed y CTA** — la prueba de que está vivo, y la puerta.
+7. **Muestra del feed y CTA** — la prueba de que está vivo, y la puerta. El CTA cierra **a
+   sangre**: ancho completo, fondo en el verde de marca, sin bordes ni esquinas redondeadas y
+   pegado al footer (que solo ahí pierde su margen y su línea). Sobre el verde, el texto va en
+   el color de fondo y el botón cambia de blanco a oscuro (`AuthControls tone="onPrimary"`).
