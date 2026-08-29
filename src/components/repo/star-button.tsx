@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { setStarAction } from "@/app/api/github/star-actions";
@@ -14,55 +14,90 @@ interface StarButtonProps {
 
 /**
  * Estrella real (C-07): pulsar da/quita la estrella en GitHub en tu nombre.
- * Optimista con el contador; si falta autorización, redirige al OAuth de la
- * App y vuelve aquí. Sin sesión, el detalle pinta el contador pasivo.
+ * Optimista con el contador. Sin autorización, redirige al OAuth de la App con
+ * `?star=1` en la vuelta: al aterrizar de nuevo aquí, la estrella pendiente se
+ * da sola — sin segundo click. Los errores se enseñan, no se tragan.
  */
 export function StarButton({ fullName, initialStars, initialStarred }: StarButtonProps) {
   const { isSignedIn } = useAuth();
   const pathname = usePathname();
   const [starred, setStarred] = useState(initialStarred ?? false);
   const [stars, setStars] = useState(initialStars);
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const autoFired = useRef(false);
 
-  if (!isSignedIn) return null;
-
-  const toggle = () => {
-    const next = !starred;
+  const apply = (next: boolean) => {
+    setError(null);
     setStarred(next);
     setStars((s) => s + (next ? 1 : -1));
     startTransition(async () => {
       const result = await setStarAction(fullName, next);
       if (result.needsConnect) {
-        window.location.assign(`/api/github/connect?from=${encodeURIComponent(pathname)}`);
+        // Navegación de documento completo a propósito: el endpoint fija las
+        // cookies del OAuth y redirige a GitHub — el router de Next no pinta
+        // nada aquí.
+        const returnTo = `${pathname}?star=1`;
+        window.location.href = `/api/github/connect?from=${encodeURIComponent(returnTo)}`;
         return;
       }
       if (!result.ok) {
         setStarred(!next);
         setStars((s) => s + (next ? -1 : 1));
+        setError(result.error);
       }
     });
   };
 
+  // Vuelta del OAuth con la estrella pendiente (?star=1): darla sola, una vez,
+  // y limpiar la URL para que recargar no repita el gesto.
+  useEffect(() => {
+    if (autoFired.current || !isSignedIn) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("star") !== "1") return;
+    autoFired.current = true;
+    params.delete("star");
+    const query = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    // La estrella pendiente se retoma fuera del render del efecto: es la misma
+    // interacción del usuario, diferida por el viaje a GitHub.
+    if (initialStarred !== true) setTimeout(() => apply(true), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al montar
+  }, [isSignedIn]);
+
+  if (!isSignedIn) return null;
+
   return (
-    <button
-      type="button"
-      data-testid="star-button"
-      data-starred={starred}
-      onClick={toggle}
-      disabled={pending}
-      title={starred ? "Unstar on GitHub" : "Star on GitHub"}
-      className="flex cursor-pointer items-center gap-1.5 font-mono text-sm text-white/75 transition-colors hover:text-white disabled:opacity-50"
-    >
-      <svg
-        aria-hidden
-        viewBox="0 0 16 16"
-        className={`h-4 w-4 ${starred ? "fill-current" : "fill-none"} stroke-current`}
-        strokeWidth="1.3"
+    <span className="relative">
+      <button
+        type="button"
+        data-testid="star-button"
+        data-starred={starred}
+        onClick={() => apply(!starred)}
+        disabled={pending}
+        title={starred ? "Unstar on GitHub" : "Star on GitHub"}
+        className="flex cursor-pointer items-center gap-1.5 font-mono text-sm text-white/75 transition-colors hover:text-white disabled:opacity-50"
       >
-        <path d="M8 1.5l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.8l-4 2.1.8-4.5L1.5 6.2l4.5-.6L8 1.5z" strokeLinejoin="round" />
-      </svg>
-      <span className="sr-only">{starred ? "Starred" : "Star"}:</span>
-      {stars}
-    </button>
+        <svg
+          aria-hidden
+          viewBox="0 0 16 16"
+          className={`h-4 w-4 ${starred ? "fill-current" : "fill-none"} stroke-current`}
+          strokeWidth="1.3"
+        >
+          <path d="M8 1.5l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.8l-4 2.1.8-4.5L1.5 6.2l4.5-.6L8 1.5z" strokeLinejoin="round" />
+        </svg>
+        <span className="sr-only">{starred ? "Starred" : "Star"}:</span>
+        {stars}
+      </button>
+      {error ? (
+        <span
+          data-testid="star-error"
+          role="alert"
+          className="absolute right-0 top-full z-10 mt-2 w-64 rounded-lg border border-error bg-background px-3 py-2 text-left font-sans text-xs text-error shadow-lg"
+        >
+          {error}
+        </span>
+      ) : null}
+    </span>
   );
 }

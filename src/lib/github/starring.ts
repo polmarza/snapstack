@@ -14,6 +14,13 @@ export class GithubTokenRevokedError extends Error {
   }
 }
 
+/** 403: la App no tiene (o la instalación no ha aprobado) el permiso Starring. */
+export class GithubMissingPermissionError extends Error {
+  constructor() {
+    super("GitHub rechazó la petición por falta de permiso");
+  }
+}
+
 function assertFullName(fullName: string): void {
   if (!FULL_NAME_RE.test(fullName)) throw new Error(`full_name inesperado: ${fullName}`);
 }
@@ -37,6 +44,7 @@ export async function isStarred(
   if (response.status === 204) return true;
   if (response.status === 404) return false;
   if (response.status === 401) throw new GithubTokenRevokedError();
+  if (response.status === 403) throw new GithubMissingPermissionError();
   throw new Error(`GitHub devolvió ${response.status} al consultar la estrella`);
 }
 
@@ -54,5 +62,6 @@ export async function setStar(
   });
   if (response.status === 204) return;
   if (response.status === 401) throw new GithubTokenRevokedError();
+  if (response.status === 403) throw new GithubMissingPermissionError();
   throw new Error(`GitHub devolvió ${response.status} al ${starred ? "dar" : "quitar"} la estrella`);
 }
