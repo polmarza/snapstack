@@ -38,10 +38,19 @@ export const metadata: Metadata = {
     url: "/",
     title: "snapstack — what devs are building",
     description: TAGLINE,
-    // La portada es una captura real del hero (1200x630, misma imagen que la
-    // cabecera del README): la versión procedural de /api/og/home quedaba
-    // recortada y con el texto pisando las tarjetas.
-    images: ["/og-home.png"],
+    // La portada es una captura real del hero (misma imagen que la cabecera
+    // del README). El nombre lleva versión a propósito: Facebook, WhatsApp y
+    // compañía cachean la imagen por URL, así que recapturar exige renombrar
+    // (y actualizar esta referencia) para que se re-descargue. Las medidas
+    // ayudan a los scrapers a componer la tarjeta sin esperar a la imagen.
+    images: [
+      {
+        url: "/og-home-v2.png",
+        width: 1200,
+        height: 630,
+        alt: "snapstack — your best work, worth showing off",
+      },
+    ],
   },
 };
 
