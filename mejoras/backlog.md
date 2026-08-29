@@ -33,6 +33,22 @@ pasa con los repos semilla, que no tienen webhooks (¿refresco periódico del sc
 Decidir al construir M-08. El cursor de paginación de M-06 ya queda parametrizado para que el
 cambio de campo de orden sea barato.
 
+### [MEJORA-06] Recuperar el contador de apoyos de Buy Me a Coffee
+**Área:** Frontend / Backend
+**Prioridad estimada:** Baja (revisar cuando haya bastantes apoyos)
+**Origen:** Pol echó de menos el corazón con la cifra al pasar a botón propio (2026-08-29)
+
+La imagen del button-api de Buy Me a Coffee traía un contador de apoyos; al hacer el botón
+propio (para poder darle la identidad del sitio) se perdió, porque esa cifra la pinta su
+servicio dentro de la imagen y no hay endpoint público para consultarla.
+
+Para recuperarla haría falta: token personal de la cuenta de Buy Me a Coffee en variable de
+entorno, llamada a su API autenticada y **caché** de la cifra (nada de pedirla en cada carga).
+Es una integración pequeña pero real, con su mantenimiento.
+
+Criterio para retomarlo: cuando el número sume como prueba social. Con pocos apoyos, enseñar
+la cifra resta más de lo que aporta.
+
 ### [MEJORA-05] Filtro del feed por stack (lenguajes y topics)
 **Área:** Frontend / Backend / UX
 **Prioridad estimada:** Media (cuando haya volumen de repos)

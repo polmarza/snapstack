@@ -39,9 +39,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             snapstack
           </Link>
           <div className="ml-auto flex items-center gap-3">
+            <AuthControls />
             {/* Con sesión, en desktop la donación vive en la barra lateral. */}
             <DonateButton className={username ? "lg:hidden" : ""} />
-            <AuthControls />
           </div>
         </header>
 

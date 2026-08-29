@@ -22,7 +22,7 @@ export function AuthControls() {
           <button
             type="button"
             data-testid="sign-in-button"
-            className="flex shrink-0 items-center gap-2 rounded-lg border border-edge px-4 py-2 text-sm hover:border-primary"
+            className="flex h-9 shrink-0 items-center gap-2 rounded-lg bg-white px-4 text-sm font-medium text-background"
           >
             <GithubMark />
             Sign in
