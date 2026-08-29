@@ -117,7 +117,7 @@ const STEPS = [
 export function HowItWorks() {
   return (
     <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
-      <h2 className="text-center font-mono text-3xl font-bold">How it works</h2>
+      <h2 className="text-center font-mono text-3xl font-bold">Getting started</h2>
       <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
         {STEPS.map((step, i) => (
           <div key={step.title} className="flex flex-col rounded-2xl border border-edge bg-surface p-6">

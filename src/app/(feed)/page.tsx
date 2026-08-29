@@ -9,6 +9,8 @@ import { RepoCard } from "@/components/feed/repo-card";
 import { Faq } from "@/components/landing/faq";
 import { HeroCardsBackground } from "@/components/landing/hero-cards-background";
 import { HowItWorks } from "@/components/landing/how-it-works";
+import { WhySnapstack } from "@/components/landing/why-snapstack";
+import { FeaturesGrid } from "@/components/landing/features-grid";
 import { LandingCta } from "@/components/landing/landing-cta";
 import { LanguageMarquee } from "@/components/landing/language-marquee";
 import { RepoCardSkeleton } from "@/components/skeleton/skeleton";
@@ -181,6 +183,9 @@ export default async function Home({ searchParams }: HomeProps) {
           </section>
 
           <LanguageMarquee />
+          {/* Primero por qué importa, luego qué hay, y al final cómo empezar. */}
+          <WhySnapstack />
+          <FeaturesGrid />
           <HowItWorks />
           <Faq />
 

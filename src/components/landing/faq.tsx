@@ -13,7 +13,7 @@ const FAQS: Array<{ q: string; a: string }> = [
   },
   {
     q: "What can snapstack do to my GitHub account?",
-    a: "Read, and only read. We list your public repos so you can pick which ones to show; we never write, star, follow or touch anything on your behalf.",
+    a: "Read, by default. We list your public repos so you can pick which ones to show, and we never write to your code. The one exception is starring: if you press the star on a repo, snapstack asks for your permission once and then stars it on GitHub as you — that is the only thing it ever does on your behalf, and you can revoke it whenever you like.",
   },
   {
     q: "Why only five repos?",

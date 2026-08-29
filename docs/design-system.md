@@ -124,3 +124,19 @@ propio `<dialog>`.
 Los diagramas explicativos van en SVG inline, con las variables de color del tema
 (`var(--color-primary)`, `var(--color-content-secondary)`) en vez de valores fijos, y llevan
 `role="img"` con `aria-label` — son contenido, no decoración.
+
+---
+
+## Estructura de la landing
+
+El orden cuenta una historia y no debería reordenarse sin motivo:
+
+1. **Hero** — marca, promesa y entrada, con las fichas reales del feed al fondo.
+2. **Marquee de lenguajes** — señal de que dentro hay stacks de verdad.
+3. **Por qué** (`WhySnapstack`) — el problema con el que el visitante ya convive, en tres
+   puntos concretos, antes de hablar de funcionalidades.
+4. **Qué hay** (`FeaturesGrid`) — seis fichas, cada una contando una decisión real del
+   producto (el límite de cinco, el determinismo, el orden barajado), no una promesa.
+5. **Cómo empezar** (`HowItWorks`) — los tres pasos con sus gráficos.
+6. **Preguntas** (`Faq`) — las dudas que frenan el registro (permisos, precio, borrado).
+7. **Muestra del feed y CTA** — la prueba de que está vivo, y la puerta.
