@@ -11,6 +11,7 @@ import { HeroCardsBackground } from "@/components/landing/hero-cards-background"
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { WhySnapstack } from "@/components/landing/why-snapstack";
 import { FeaturesGrid } from "@/components/landing/features-grid";
+import { BuiltWith } from "@/components/landing/built-with";
 import { LandingCta } from "@/components/landing/landing-cta";
 import { LanguageMarquee } from "@/components/landing/language-marquee";
 import { RepoCardSkeleton } from "@/components/skeleton/skeleton";
@@ -196,6 +197,7 @@ export default async function Home({ searchParams }: HomeProps) {
           <WhySnapstack />
           <FeaturesGrid />
           <HowItWorks />
+          <BuiltWith />
           <Faq />
 
           {/* Muestra del feed: 3 fichas y una cuarta desvaneciéndose — "hay más".

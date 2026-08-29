@@ -138,5 +138,9 @@ El orden cuenta una historia y no debería reordenarse sin motivo:
 4. **Qué hay** (`FeaturesGrid`) — seis fichas, cada una contando una decisión real del
    producto (el límite de cinco, el determinismo, el orden barajado), no una promesa.
 5. **Cómo empezar** (`HowItWorks`) — los tres pasos con sus gráficos.
-6. **Preguntas** (`Faq`) — las dudas que frenan el registro (permisos, precio, borrado).
-7. **Muestra del feed y CTA** — la prueba de que está vivo, y la puerta.
+6. **Cómo está construido** (`BuiltWith`) — el stack con sus logos y el enlace al código. La
+   landing habla a devs: enseñar de qué está hecho es información útil, y el repo público es
+   argumento de confianza. Los logos salen de `simple-icons` (ya instalada), monocromos —
+   varias marcas son negras y desaparecerían sobre el fondo oscuro.
+7. **Preguntas** (`Faq`) — las dudas que frenan el registro (permisos, precio, borrado).
+8. **Muestra del feed y CTA** — la prueba de que está vivo, y la puerta.
