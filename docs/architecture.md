@@ -56,7 +56,7 @@ src/
 │   └── api/
 │       ├── og/               → ✅ Generación de fichas con @vercel/og (og:image/embeds)
 │       ├── feed/             → ✅ Paginación del feed por cursor keyset
-│       ├── webhooks/github/  → ⏳ Recepción de webhooks de la GitHub App
+│       ├── webhooks/github/  → ✅ Webhooks de GitHub (M-08): firma HMAC + sync desde payload
 │       └── signals/          → ✅ Registro de señales implícitas (M-09; solo escritura)
 ├── components/
 │   ├── auth/             → ✅ AuthControls (entrar con GitHub / menú de usuario / Mis repos)
@@ -65,7 +65,7 @@ src/
 ├── proxy.ts              → ✅ clerkMiddleware (sesión en todas las rutas; ninguna exige login aún)
 ├── lib/
 │   ├── card-seed/        → ✅ Semilla determinista, colores Linguist vendorizados, paleta
-│   ├── github/           → ✅ Cliente GraphQL, token OAuth vía Clerk, listado/importación; GitHub App ⏳ (M-08)
+│   ├── github/           → ✅ Cliente GraphQL, token OAuth vía Clerk, listado/importación, verificación y handlers de webhooks
 │   ├── db/               → ✅ Cliente Supabase (service role), queries de repos, profiles, selección y señales
 │   └── signals/          → ✅ Tipos/validación de señales y tracker de cliente (dwell, expand, click)
 ├── jobs/
@@ -99,8 +99,12 @@ o aplicar migraciones con `DATABASE_URL`, que lanza Pol).
 
 ## Integraciones externas
 
-- **GitHub (GitHub App):** fuente de todos los datos de repos. Webhooks: `push`,
-  `watch` (stars), `repository` (borrado y cambio de visibilidad → retirar contenido).
+- **GitHub:** fuente de todos los datos de repos. Webhooks activos en
+  `/api/webhooks/github` (M-08): `push` (refresco de datos), `star`/`watch` (stars),
+  `repository` (deleted/privatized → retirar contenido; publicized → reactivar; renamed →
+  refrescar). Firma HMAC SHA-256 obligatoria (`GITHUB_WEBHOOK_SECRET`); el endpoint solo
+  actualiza, nunca inserta. La sincronización usa los datos del propio payload — sin llamadas
+  a la API ni tokens.
 - **Clerk:** autenticación y gestión de sesión.
 - **Supabase:** Postgres + pgvector. Ver `data-model.md`.
 - **Inngest o Trigger.dev:** import inicial, generación de fichas, import de trending.
@@ -129,6 +133,23 @@ Code pide aprobar los servidores de proyecto y autenticarse con `/mcp`.
 - Variables de entorno por entorno en Vercel; en local, `.env.local` (ver `.env.example`).
 - **Quién despliega:** Pol, desde Vercel (merge a `main` publica). El agente prepara y explica,
   no publica (ver "Límites de ejecución" en CLAUDE.md).
+
+### GitHub App (pendiente: se crea el día del primer deploy)
+
+El endpoint de webhooks ya existe y es agnóstico de quién entrega; la GitHub App es la pieza
+de entrega en producción. Checklist para cuando haya URL pública:
+
+1. Crear la App en GitHub (Settings → Developer settings → GitHub Apps): nombre "Snapstack",
+   webhook URL `https://snapstack.sh/api/webhooks/github`, secret nuevo (→
+   `GITHUB_WEBHOOK_SECRET` en Vercel, distinto del de dev).
+2. Permisos: Contents read-only (lo exige el evento push), Metadata read-only. Sin permisos
+   de escritura.
+3. Eventos suscritos: `push`, `star`, `repository`.
+4. Instalación por usuario en **solo sus repos seleccionados** (el instalador nativo de
+   GitHub); enlazar `https://github.com/apps/<slug>/installations/new` desde la pantalla de
+   selección tras guardar.
+5. La private key de la App no se usa en v1 (la sync va por payload): guardarla solo si se
+   añaden llamadas API como instalación (p. ej., refresco de `languages` por bytes).
 
 ---
 
