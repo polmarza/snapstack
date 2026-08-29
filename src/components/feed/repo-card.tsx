@@ -47,7 +47,7 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
             <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.3">
               <path d="M8 1.5l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.8l-4 2.1.8-4.5L1.5 6.2l4.5-.6L8 1.5z" strokeLinejoin="round" />
             </svg>
-            <span className="sr-only">Estrellas:</span>
+            <span className="sr-only">Stars:</span>
             {repo.stars}
           </span>
         </div>
@@ -83,7 +83,7 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
             className="text-sm text-content-secondary hover:text-content"
             aria-expanded={expanded}
           >
-            {expanded ? "Menos" : "Más"}
+            {expanded ? "Less" : "More"}
           </button>
           <a
             href={repo.url}
@@ -92,7 +92,7 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
             data-testid="feed-card-repo-link"
             className="text-sm text-primary hover:underline"
           >
-            Ver en GitHub ↗
+            View on GitHub ↗
           </a>
         </div>
       </div>
@@ -111,7 +111,7 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-content-secondary">Sin topics declarados.</p>
+            <p className="text-sm text-content-secondary">No topics declared.</p>
           )}
         </div>
       ) : null}

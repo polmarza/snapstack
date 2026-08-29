@@ -13,7 +13,8 @@ export function selectionLimit(): number {
 
 export class SelectionLimitError extends Error {
   constructor(limit: number) {
-    super(`La selección supera el límite de ${limit} repos por perfil`);
+    // Mensaje visible en la UI → inglés (english-first).
+    super(`Your selection exceeds the limit of ${limit} repos per profile`);
   }
 }
 

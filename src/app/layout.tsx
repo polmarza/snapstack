@@ -9,13 +9,13 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jet
 export const metadata: Metadata = {
   title: "Snapstack",
   description:
-    "Perfil curado de tus repos de GitHub + feed visual para descubrir qué construyen otros devs.",
+    "A curated profile for your GitHub repos + a visual feed to discover what other devs are building.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="es" className={`${geist.variable} ${jetbrainsMono.variable}`}>
+      <html lang="en" className={`${geist.variable} ${jetbrainsMono.variable}`}>
         <body className="font-sans antialiased">{children}</body>
       </html>
     </ClerkProvider>

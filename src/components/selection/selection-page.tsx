@@ -38,7 +38,7 @@ export async function SelectionPage({
     if (!token) throw new Error("Sin token de GitHub");
     items = await listPublicRepos(token);
   } catch {
-    loadError = "No se pudieron listar tus repos de GitHub. Recarga, o vuelve a entrar con GitHub.";
+    loadError = "We couldn't list your GitHub repos. Reload, or sign in with GitHub again.";
   }
 
   const current = await listOwnedActiveRepos(db, profile.id);
@@ -51,7 +51,7 @@ export async function SelectionPage({
         data-testid="back-to-feed"
         className="font-mono text-sm text-content-secondary hover:text-content"
       >
-        ← Volver al feed
+        ← Back to feed
       </Link>
       <header className="mt-4 mb-6">
         <h1 className="font-mono text-2xl font-bold">{title}</h1>
@@ -62,7 +62,7 @@ export async function SelectionPage({
         <p data-testid="selection-error" className="text-error">{loadError}</p>
       ) : items.length === 0 ? (
         <p data-testid="selection-empty" className="text-content-secondary">
-          No encontramos repos públicos (los forks no cuentan) en tu cuenta de GitHub.
+          We found no public repos (forks don&apos;t count) on your GitHub account.
         </p>
       ) : (
         <RepoSelector items={items} initialSelected={initialSelected} limit={limit} mode={mode} />

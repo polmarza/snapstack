@@ -6,8 +6,8 @@ export default function OnboardingPage() {
   return (
     <SelectionPage
       mode="onboarding"
-      title="Elige qué enseñar"
-      intro="Tus repos públicos de GitHub. Elige los que definen lo que construyes — la curación es la gracia: máximo el límite indicado."
+      title="Pick what to show"
+      intro="Your public GitHub repos. Choose the ones that define what you build — curation is the point."
     />
   );
 }

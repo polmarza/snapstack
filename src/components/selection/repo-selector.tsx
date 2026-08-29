@@ -47,7 +47,7 @@ export function RepoSelector({ items, initialSelected, limit, mode }: RepoSelect
       if (mode === "onboarding") {
         router.push("/");
       } else {
-        setMessage(`Guardado: ${result.added} añadido(s), ${result.removed} quitado(s).`);
+        setMessage(`Saved: ${result.added} added, ${result.removed} removed.`);
         router.refresh();
       }
     });
@@ -76,7 +76,7 @@ export function RepoSelector({ items, initialSelected, limit, mode }: RepoSelect
           disabled={pending || !dirty}
           className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
         >
-          {pending ? "Guardando…" : mode === "onboarding" ? "Importar selección" : "Guardar cambios"}
+          {pending ? "Saving…" : mode === "onboarding" ? "Import selection" : "Save changes"}
         </button>
       </div>
 
@@ -135,8 +135,8 @@ export function RepoSelector({ items, initialSelected, limit, mode }: RepoSelect
                       data-testid="selection-warning-about"
                       className="mt-1 block text-sm text-warning"
                     >
-                      ⚠ Sin descripción — la ficha saldrá sin texto. Rellena el “About” del repo
-                      en GitHub y vuelve a guardarlo.
+                      ⚠ No description — the card will render without text. Fill in the repo&apos;s
+                      “About” on GitHub, then save it again here.
                     </span>
                   )}
                   <span className="mt-2 flex items-center gap-1.5 font-mono text-xs text-content-secondary">
@@ -145,7 +145,7 @@ export function RepoSelector({ items, initialSelected, limit, mode }: RepoSelect
                       className="h-2.5 w-2.5 rounded-full"
                       style={{ backgroundColor: languageColor(item.primaryLanguage) }}
                     />
-                    {item.primaryLanguage ?? "sin lenguaje detectado"}
+                    {item.primaryLanguage ?? "no language detected"}
                   </span>
                 </span>
               </label>

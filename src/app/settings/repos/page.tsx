@@ -6,8 +6,8 @@ export default function SettingsReposPage() {
   return (
     <SelectionPage
       mode="settings"
-      title="Mis repos"
-      intro="Añade o quita repos de tu selección. Los que quites desaparecen del feed y de tu perfil."
+      title="My repos"
+      intro="Add or remove repos from your selection. Removed repos disappear from the feed and your profile."
     />
   );
 }

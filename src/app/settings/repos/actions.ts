@@ -33,12 +33,12 @@ export async function saveSelectionAction(selectedFullNames: string[]): Promise<
 
   try {
     const user = await currentUser();
-    if (!user) return fallo("Sesión no válida. Vuelve a entrar.");
+    if (!user) return fallo("Invalid session. Please sign in again.");
 
     const db = createServiceClient();
     await ensureProfile(db, user);
     const profile = await getProfileByClerkId(db, user.id);
-    if (!profile) return fallo("No se encontró tu perfil.");
+    if (!profile) return fallo("We couldn't find your profile.");
 
     const current = await listOwnedActiveRepos(db, profile.id);
     const diff = computeSelectionDiff(current, selectedFullNames);
@@ -46,7 +46,7 @@ export async function saveSelectionAction(selectedFullNames: string[]): Promise<
 
     if (diff.toAdd.length > 0) {
       const token = await getGithubToken(user.id);
-      if (!token) return fallo("No hay token de GitHub disponible. Vuelve a entrar con GitHub.");
+      if (!token) return fallo("No GitHub token available. Please sign in with GitHub again.");
       const now = new Date();
       const details = await Promise.all(diff.toAdd.map((name) => fetchRepoDetails(token, name)));
       await importOwnedRepos(db, details.map((d) => mapRepoDetailsToRow(d, profile.id, now)));
@@ -60,6 +60,6 @@ export async function saveSelectionAction(selectedFullNames: string[]): Promise<
   } catch (error) {
     if (error instanceof SelectionLimitError) return fallo(error.message);
     console.error("[saveSelectionAction]", error);
-    return fallo("No se pudo guardar la selección. Inténtalo de nuevo.");
+    return fallo("We couldn't save your selection. Please try again.");
   }
 }
