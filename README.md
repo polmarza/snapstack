@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/assets/og-home.png" alt="snapstack — Your best work, worth showing off." width="820">
+  <img src=".github/assets/hero.png" alt="snapstack — Your best work, worth showing off. El hero de la landing con las fichas del feed al fondo." width="820">
 </p>
 
 <p align="center">
@@ -21,10 +21,6 @@ mano** hasta 5 repos — los que definen lo que construyes, no un volcado de tod
 cada uno se convierte en una **ficha visual generada proceduralmente**. El conjunto se navega
 en un feed de scroll infinito: sin swipe, sin likes. La intención es social y pasiva: seguir a
 un dev y ver qué construye.
-
-<p align="center">
-  <img src=".github/assets/hero.png" alt="La landing de snapstack: el hero con las fichas reales del feed derivando al fondo" width="820">
-</p>
 
 ## Las fichas: mismo repo, misma ficha, siempre
 
