@@ -52,13 +52,14 @@ src/
 │   ├── u/[username]/     → ✅ Perfil público (M-05): identidad + grid de fichas, og:image propia
 │   ├── onboarding/       → ✅ Selección de repos tras el login (M-02)
 │   ├── settings/repos/   → ✅ Gestión de la selección + server action de importación (M-03)
-│   ├── settings/         → ⏳ Baja de cuenta y resto de ajustes
+│   ├── settings/account/ → ✅ Baja de cuenta (M-11): borrado real DB→Clerk con cascada
 │   └── api/
 │       ├── og/               → ✅ Generación de fichas con @vercel/og (og:image/embeds)
 │       ├── feed/             → ✅ Paginación del feed por cursor keyset
 │       ├── webhooks/github/  → ✅ Webhooks de GitHub (M-08): firma HMAC + sync desde payload
 │       └── signals/          → ✅ Registro de señales implícitas (M-09; solo escritura)
 ├── components/
+│   ├── account/          → ✅ DeleteAccount (zona de peligro, confirmación en dos pasos)
 │   ├── auth/             → ✅ AuthControls (entrar con GitHub / menú de usuario / Mis repos)
 │   ├── selection/        → ✅ SelectionPage + RepoSelector (onboarding y settings comparten)
 │   └── feed/             → ✅ RepoCard (HTML/CSS), FeedList (IntersectionObserver); ui/ ⏳
