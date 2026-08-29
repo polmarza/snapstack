@@ -17,7 +17,13 @@ import { CardMenu } from "./card-menu";
  * Todo está a la vista: no hay desplegable. Los topics solo aparecen si los hay,
  * el follow va junto al autor y reportar vive en el menú de la esquina.
  */
-export function RepoCard({ repo }: { repo: FeedRepo }) {
+interface RepoCardProps {
+  repo: FeedRepo;
+  /** En los perfiles el dueño ya está en la cabecera: el pie sobra (C-05). */
+  showFooter?: boolean;
+}
+
+export function RepoCard({ repo, showFooter = true }: RepoCardProps) {
   const articleRef = useRef<HTMLElement>(null);
   const background = useMemo(
     () => cardBackground(String(repo.github_repo_id), repo.primary_language),
@@ -70,9 +76,11 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
       ref={articleRef}
       data-testid="feed-card"
       data-repo-id={repo.github_repo_id}
-      className="overflow-hidden rounded-2xl border border-edge bg-surface"
+      className="flex h-full flex-col overflow-hidden rounded-2xl border border-edge bg-surface"
     >
-      <div className="relative flex aspect-[4/5] flex-col justify-between p-6 sm:aspect-[1.9/1] sm:p-8">
+      {/* flex-1 sobre el aspect: en una parrilla, la fila estira las tarjetas
+          a la misma altura aunque una tenga más contenido que otra. */}
+      <div className="relative flex aspect-[4/5] flex-1 flex-col justify-between p-6 sm:aspect-[1.9/1] sm:p-8">
         <CardBackgroundLayer background={background} />
 
         <div className="relative flex items-start justify-between gap-2">
@@ -120,32 +128,33 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
 
           {/* Topics y clicks viven dentro del degradado: el pie queda para el
               autor (en móvil no cabía todo abajo sin apelotonarse). */}
-          <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
-              {repo.topics.length > 0 ? (
-                <ul data-testid="feed-card-topics" className="flex min-w-0 flex-wrap gap-1.5">
-                  {repo.topics.slice(0, 4).map((topic) => (
-                    <li
-                      key={topic}
-                      className="rounded-full border border-white/25 px-2.5 py-0.5 font-mono text-xs text-white/70"
-                    >
-                      {topic}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <span />
-              )}
-              <span
-                data-testid="feed-card-clicks"
-                className="font-mono text-xs text-white/60"
-                title="Clicks through to GitHub"
-              >
-                clicks {repo.click_count ?? 0}
-              </span>
+          {/* Todo alineado a la izquierda, clicks incluido: con o sin topics,
+              la fila no baila. */}
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2">
+            {repo.topics.length > 0 ? (
+              <ul data-testid="feed-card-topics" className="flex min-w-0 flex-wrap gap-1.5">
+                {repo.topics.slice(0, 4).map((topic) => (
+                  <li
+                    key={topic}
+                    className="rounded-full border border-white/25 px-2.5 py-0.5 font-mono text-xs text-white/70"
+                  >
+                    {topic}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <span
+              data-testid="feed-card-clicks"
+              className="font-mono text-xs text-white/60"
+              title="Clicks through to GitHub"
+            >
+              clicks {repo.click_count ?? 0}
+            </span>
           </div>
         </div>
       </div>
 
+      {showFooter ? (
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           {repo.owner_profile_id && repo.owner_login ? (
@@ -176,6 +185,7 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
         {/* "View on GitHub" vive solo en la vista detalle (C-05): el destino
             natural de la tarjeta es su página. */}
       </div>
+      ) : null}
     </article>
   );
 }

@@ -22,19 +22,25 @@ test("un username inexistente devuelve 404", async ({ page }) => {
 });
 
 test("el pie de una tarjeta con dueño navega al perfil; las semillas no enlazan", async ({ page }) => {
-  // El orden del feed es aleatorio (ficha feed-orden-aleatorio): la muestra de
-  // la landing no garantiza una tarjeta con dueño, así que esa parte se valida
-  // donde siempre las hay: el perfil.
-  await page.goto("/u/polmarza");
-  const ownedLink = page.getByTestId("feed-card-owner-link").first();
+  // Las tarjetas de los perfiles ya no llevan pie (el dueño está en la
+  // cabecera), así que esto se valida en la muestra de la landing. El orden es
+  // aleatorio: se recarga hasta que aparezca una tarjeta con dueño (con ~6
+  // repos con dueño de ~34, una racha de 10 muestras sin ninguno es
+  // despreciable).
+  let ownedLink = page.getByTestId("feed-card-owner-link").first();
+  for (let intento = 0; intento < 10; intento++) {
+    await page.goto("/");
+    await expect(page.getByTestId("feed-card").first()).toBeVisible();
+    if ((await page.getByTestId("feed-card-owner-link").count()) > 0) break;
+  }
+  ownedLink = page.getByTestId("feed-card-owner-link").first();
   await expect(ownedLink).toBeVisible();
   await ownedLink.click();
-  await page.waitForURL("**/u/polmarza");
+  await page.waitForURL("**/u/**");
   await expect(page.getByTestId("profile-header")).toBeVisible();
 
-  // En la muestra de la landing casi todo es semilla del trending, y su pie no
-  // es un enlace (una muestra de 4 sin ninguna semilla es despreciable con
-  // ~29 semillas de ~34 fichas).
+  // Y en la muestra casi todo es semilla del trending, cuyo pie no es enlace
+  // (una muestra de 4 sin ninguna semilla es igual de despreciable).
   await page.goto("/");
   const totalCards = await page.getByTestId("feed-card").count();
   const linkedCards = await page.getByTestId("feed-card-owner-link").count();
