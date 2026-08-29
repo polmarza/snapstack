@@ -4,7 +4,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/db/client";
 import { deleteGithubAppTokens, getGithubAppToken } from "@/lib/db/github-app-tokens";
 import { getProfileByClerkId } from "@/lib/db/profiles";
-import { GithubTokenRevokedError, setStar } from "@/lib/github/starring";
+import { GithubMissingPermissionError, GithubTokenRevokedError, setStar } from "@/lib/github/starring";
 
 export interface StarResult {
   ok: boolean;
@@ -36,6 +36,11 @@ export async function setStarAction(fullName: string, starred: boolean): Promise
         // Token revocado en GitHub: fuera de la base y a reconectar.
         await deleteGithubAppTokens(db, profile.id);
         return { ok: false, starred: !starred, needsConnect: true, error: null };
+      }
+      if (error instanceof GithubMissingPermissionError) {
+        return fallo(
+          "GitHub rejected it: the app's Starring permission is missing or pending approval (github.com/settings/installations).",
+        );
       }
       throw error;
     }
