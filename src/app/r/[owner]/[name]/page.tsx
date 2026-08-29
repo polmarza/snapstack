@@ -112,43 +112,50 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+      {/* La info del repo, entre dos divisorias y con algo más de aire que en
+          la tarjeta; el Follow va justo bajo el username. */}
+      <div
+        data-testid="repo-detail-meta"
+        className="mt-5 flex flex-wrap items-center justify-between gap-4 border-y border-edge py-4"
+      >
         <div className="flex min-w-0 items-center gap-3">
-          {repo.owner_profile_id && repo.owner_login ? (
-            <Link
-              href={`/u/${repo.owner_login}`}
-              data-testid="repo-detail-owner-link"
-              className="flex min-w-0 items-center gap-2 font-mono text-sm text-content-secondary hover:text-content"
-            >
-              {repo.owner_avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element -- avatar de GitHub, sin optimización
-                <img src={repo.owner_avatar_url} alt="" width={20} height={20} className="h-5 w-5 rounded-full" />
-              ) : null}
-              <span className="truncate">{repo.owner_login}</span>
-            </Link>
-          ) : (
-            <span data-testid="repo-detail-owner" className="font-mono text-sm text-content-secondary">
-              {repo.owner_login ?? repo.full_name.split("/")[0]}
-            </span>
-          )}
-          {canFollow && repo.owner_profile_id ? (
-            <FollowButton
-              profileId={repo.owner_profile_id}
-              initialFollowing={alreadyFollowing}
-              signalRepoId={repo.id}
-              size="sm"
-            />
+          {repo.owner_avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- avatar de GitHub, sin optimización
+            <img src={repo.owner_avatar_url} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-full border border-edge" />
           ) : null}
+          <div className="flex min-w-0 flex-col items-start gap-1.5">
+            {repo.owner_profile_id && repo.owner_login ? (
+              <Link
+                href={`/u/${repo.owner_login}`}
+                data-testid="repo-detail-owner-link"
+                className="truncate font-mono text-base font-medium hover:underline"
+              >
+                {repo.owner_login}
+              </Link>
+            ) : (
+              <span data-testid="repo-detail-owner" className="truncate font-mono text-base text-content-secondary">
+                {repo.owner_login ?? repo.full_name.split("/")[0]}
+              </span>
+            )}
+            {canFollow && repo.owner_profile_id ? (
+              <FollowButton
+                profileId={repo.owner_profile_id}
+                initialFollowing={alreadyFollowing}
+                signalRepoId={repo.id}
+                size="sm"
+              />
+            ) : null}
+          </div>
         </div>
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <RepoGithubLink repoId={repo.id} url={repo.url} />
           <span
             data-testid="repo-detail-clicks"
-            className="font-mono text-xs text-content-secondary"
+            className="font-mono text-sm text-content-secondary"
             title="Clicks through to GitHub"
           >
             clicks {repo.click_count ?? 0}
           </span>
-          <RepoGithubLink repoId={repo.id} url={repo.url} />
         </div>
       </div>
 
@@ -165,7 +172,7 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
         </ul>
       ) : null}
 
-      <section className="mt-8 border-t border-edge pt-6">
+      <section className="mt-8">
         {repo.readme_md ? (
           <ReadmeMarkdown markdown={repo.readme_md} fullName={repo.full_name} />
         ) : (

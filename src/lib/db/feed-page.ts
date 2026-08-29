@@ -170,12 +170,20 @@ export async function listFeedPage(
   return pageFromSegments(beforeWrap, afterWrap, limit, start);
 }
 
-/** Anota cada tarjeta con si el visitante sigue a su dueño (para el botón Follow). */
-export function annotateFollowed(page: FeedPage, followedIds: Set<string>): FeedPage {
+/**
+ * Anota cada tarjeta con si el visitante sigue a su dueño (para el botón
+ * Follow). Los repos del propio visitante se dejan sin anotar: nadie se sigue
+ * a sí mismo y el botón no debe aparecer en ellos.
+ */
+export function annotateFollowed(
+  page: FeedPage,
+  followedIds: Set<string>,
+  selfProfileId: string | null = null,
+): FeedPage {
   return {
     ...page,
     repos: page.repos.map((repo) =>
-      repo.owner_profile_id
+      repo.owner_profile_id && repo.owner_profile_id !== selfProfileId
         ? { ...repo, owner_followed: followedIds.has(repo.owner_profile_id) }
         : repo,
     ),

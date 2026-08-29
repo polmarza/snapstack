@@ -115,3 +115,14 @@ un repo y mutear un repo son las dos caras del mismo control fino. A resolver al
 tabla propia (`repo_follows`) o generalizar `follows` con un tipo; qué emite notificación
 (push, release, stars…); y cómo se refleja en el filtro Following del feed (¿los repos
 seguidos aparecen aunque no sigas al autor?). La página de detalle ya existe (C-05): construible cuando se quiera.
+
+### [MEJORA-08] Apartado de actividad (commits y PRs) en el detalle
+**Área:** Producto / Backend
+**Prioridad estimada:** Media
+**Origen:** Idea de Pol al pedir las suscripciones a repos (2026-08-29)
+
+Bajo el README del detalle, una lista de la actividad reciente del repo: commits (del payload
+del webhook `push`) y PRs (exige añadir el evento `pull_request` y el permiso *Pull requests:
+read* a la GitHub App). Necesita tabla propia (`repo_events`) porque hoy no se almacena
+ningún evento, solo se actualiza el estado del repo. Con la ficha `suscripcion-a-repos.md`
+hecha, la notificación podría enlazar aquí en vez de a GitHub.

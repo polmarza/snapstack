@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { cardBackground, languageColor } from "@/lib/card-seed";
 import type { FeedRepo } from "@/lib/db/feed-page";
-import { dwellEnter, dwellLeave, trackSignal } from "@/lib/signals/tracker";
+import { dwellEnter, dwellLeave } from "@/lib/signals/tracker";
 import { FollowButton } from "@/components/follow/follow-button";
 import { CardBackgroundLayer } from "./card-background";
 import { CardMenu } from "./card-menu";
@@ -117,22 +117,34 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
           {repo.description ? (
             <p className="line-clamp-3 text-white/70 sm:text-lg">{repo.description}</p>
           ) : null}
+
+          {/* Topics y clicks viven dentro del degradado: el pie queda para el
+              autor (en móvil no cabía todo abajo sin apelotonarse). */}
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+              {repo.topics.length > 0 ? (
+                <ul data-testid="feed-card-topics" className="flex min-w-0 flex-wrap gap-1.5">
+                  {repo.topics.slice(0, 4).map((topic) => (
+                    <li
+                      key={topic}
+                      className="rounded-full border border-white/25 px-2.5 py-0.5 font-mono text-xs text-white/70"
+                    >
+                      {topic}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span />
+              )}
+              <span
+                data-testid="feed-card-clicks"
+                className="font-mono text-xs text-white/60"
+                title="Clicks through to GitHub"
+              >
+                clicks {repo.click_count ?? 0}
+              </span>
+          </div>
         </div>
       </div>
-
-      {/* Topics: si no hay, no se pinta nada — ni la fila ni un texto vacío. */}
-      {repo.topics.length > 0 ? (
-        <ul data-testid="feed-card-topics" className="flex flex-wrap gap-2 px-4 pt-3">
-          {repo.topics.slice(0, 5).map((topic) => (
-            <li
-              key={topic}
-              className="rounded-full border border-edge px-2.5 py-0.5 font-mono text-xs text-content-secondary"
-            >
-              {topic}
-            </li>
-          ))}
-        </ul>
-      ) : null}
 
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -161,26 +173,8 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
           ) : null}
         </div>
 
-        <div className="flex shrink-0 items-center gap-3">
-          {/* Clicks reales acumulados (señal click_repo, contador de la migración 007). */}
-          <span
-            data-testid="feed-card-clicks"
-            className="font-mono text-xs text-content-secondary"
-            title="Clicks through to GitHub"
-          >
-            clicks {repo.click_count ?? 0}
-          </span>
-          <a
-            href={repo.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-testid="feed-card-repo-link"
-            onClick={() => trackSignal({ repoId: repo.id, type: "click_repo" })}
-            className="text-sm text-primary hover:underline"
-          >
-            View on GitHub ↗
-          </a>
-        </div>
+        {/* "View on GitHub" vive solo en la vista detalle (C-05): el destino
+            natural de la tarjeta es su página. */}
       </div>
     </article>
   );
