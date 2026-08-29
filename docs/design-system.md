@@ -137,6 +137,11 @@ titular:
    el hero ya trae su botón de entrar); al pasar el hero se vuelve fija arriba, con el fondo
    de la app, la marca a la izquierda y el botón de entrar a la derecha, donde ya no es
    redundante. El cambio lo dispara un IntersectionObserver sobre el propio hero.
+   **En móvil** las cinco secciones no caben junto a la marca y el botón (medido: faltaban
+   ~100 px incluso con etiquetas cortas), así que la barra lleva un **burger en color de
+   acento** con la palabra, y el menú se abre **a pantalla completa sobre el verde de marca**,
+   con las secciones en grande y la entrada al final. Es el patrón para cualquier menú de
+   móvil que venga después.
 1. **Hero** — marca, promesa y entrada, con las fichas reales del feed al fondo.
 2. **Marquee de lenguajes** — señal de que dentro hay stacks de verdad.
 3. **Por qué** (`WhySnapstack`) — el problema con el que el visitante ya convive, en tres

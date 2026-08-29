@@ -1,6 +1,10 @@
+import { DonateButton } from "./donate-button";
+
 /**
- * Footer discreto, global: autoría y un par de enlaces. Nada que compita con el
- * contenido — una línea, texto apagado, borde superior fino.
+ * Footer discreto, global: autoría, un par de enlaces y la invitación a apoyar
+ * el proyecto. Nada que compita con el contenido — texto apagado, borde
+ * superior fino; el botón de donación es lo único con color, y está al final
+ * a propósito.
  */
 export function SiteFooter() {
   return (
@@ -31,6 +35,10 @@ export function SiteFooter() {
           LinkedIn
         </a>
       </p>
+      <div className="mt-6 flex flex-col items-center gap-2">
+        <p>Support this project</p>
+        <DonateButton />
+      </div>
     </footer>
   );
 }

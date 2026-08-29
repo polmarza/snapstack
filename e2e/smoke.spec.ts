@@ -56,7 +56,9 @@ test("la landing lleva navegación: centrada en el hero y fija tras pasarlo", as
   await expect(page.getByTestId("landing-nav-sticky")).toHaveAttribute("data-visible", "false");
 
   // Pasado el hero, la barra fija entra con su marca y su botón de entrar.
-  await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.2));
+  // El scroll se ancla a una sección (y no a un número de píxeles): en dev la
+  // página aún está creciendo cuando `goto` vuelve.
+  await page.getByTestId("landing-features").scrollIntoViewIfNeeded();
   const fija = page.getByTestId("landing-nav-sticky");
   await expect(fija).toHaveAttribute("data-visible", "true");
   await expect(fija.getByTestId("sign-in-button")).toBeVisible();
@@ -70,4 +72,42 @@ test("la landing lleva navegación: centrada en el hero y fija tras pasarlo", as
     return h.top < nav.bottom;
   });
   expect(tapado).toBe(false);
+});
+
+test("en móvil el menú se abre a pantalla completa sobre el verde, con la entrada al final", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await page.getByTestId("landing-features").scrollIntoViewIfNeeded();
+
+  const fija = page.getByTestId("landing-nav-sticky");
+  await expect(fija).toHaveAttribute("data-visible", "true");
+  // En la barra, solo el burger con la marca: las cinco secciones no caben.
+  const burger = fija.getByTestId("landing-nav-burger");
+  await expect(burger).toBeVisible();
+  await expect(page.getByTestId("landing-nav-overlay")).toHaveCount(0);
+
+  await burger.click();
+  const overlay = page.getByTestId("landing-nav-overlay");
+  await expect(overlay).toBeVisible();
+
+  // Las cinco secciones y la entrada, dentro del menú.
+  for (const id of ["why", "features", "start", "stack", "faq"]) {
+    await expect(overlay.getByTestId(`landing-nav-mobile-${id}`)).toBeVisible();
+  }
+  await expect(overlay.getByTestId("sign-in-button")).toBeVisible();
+
+  // Pulsar una sección navega y cierra el menú.
+  await overlay.getByTestId("landing-nav-mobile-faq").click();
+  await expect(overlay).toHaveCount(0);
+  await expect(page.getByTestId("landing-faq")).toBeInViewport();
+});
+
+test("el footer invita a apoyar el proyecto con el botón de donación", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.getByTestId("site-footer");
+  await expect(footer).toContainText("Support this project");
+  await expect(footer.getByTestId("donate-button")).toHaveAttribute(
+    "href",
+    "https://www.buymeacoffee.com/polmarza",
+  );
 });
