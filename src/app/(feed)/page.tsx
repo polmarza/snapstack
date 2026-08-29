@@ -143,7 +143,15 @@ export default async function Home({ searchParams }: HomeProps) {
   if (needsOnboarding) redirect("/onboarding");
 
   return (
-    <main className={signedIn ? "mx-auto max-w-2xl px-4 py-8 sm:px-6" : ""}>
+    <main
+      className={
+        signedIn
+          ? "mx-auto max-w-2xl px-4 py-8 sm:px-6"
+          : // El CTA cierra la landing a sangre y en verde: el footer va pegado,
+            // sin el margen ni el borde que lleva en el resto de páginas.
+            "[&+footer]:mt-0 [&+footer]:border-t-0"
+      }
+    >
       {signedIn ? (
         // Con sesión la marca está en la navegación; el h1 se mantiene para
         // lectores de pantalla y buscadores, que no deben quedarse sin él.

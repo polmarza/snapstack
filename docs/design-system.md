@@ -143,4 +143,7 @@ El orden cuenta una historia y no debería reordenarse sin motivo:
    argumento de confianza. Los logos salen de `simple-icons` (ya instalada), monocromos —
    varias marcas son negras y desaparecerían sobre el fondo oscuro.
 7. **Preguntas** (`Faq`) — las dudas que frenan el registro (permisos, precio, borrado).
-8. **Muestra del feed y CTA** — la prueba de que está vivo, y la puerta.
+8. **Muestra del feed y CTA** — la prueba de que está vivo, y la puerta. El CTA cierra **a
+   sangre**: ancho completo, fondo en el verde de marca, sin bordes ni esquinas redondeadas y
+   pegado al footer (que solo ahí pierde su margen y su línea). Sobre el verde, el texto va en
+   el color de fondo y el botón cambia de blanco a oscuro (`AuthControls tone="onPrimary"`).
