@@ -29,8 +29,11 @@ GitHub deja **instalación + autorización de la estrella** hechas de un solo cl
   mientras no hay instalación, y una línea discreta cuando ya la hay. No desaparece del todo
   a propósito: una instalación con "Only select repositories" no cubre los repos que se
   añadan después, y sin recordatorio nadie se entera hasta echar en falta las notificaciones.
-  La invitación **recomienda "All repositories"** por ser la opción de una sola vez, y explica
-  el coste de la otra. El slug viaja en `NEXT_PUBLIC_GITHUB_APP_SLUG` (público por naturaleza).
+  La invitación **recomienda "All repositories"** por ser la opción de una sola vez, con la
+  comparación completa en un modal (`InstallScopeDialog`, `<dialog>` nativo) — una tarjeta por
+  alcance con su ilustración SVG: en la primera todos los repos dentro del marco de cobertura,
+  incluido el futuro; en la segunda, los añadidos después se quedan fuera. El slug viaja en
+  `NEXT_PUBLIC_GITHUB_APP_SLUG` (público por naturaleza).
 - Configuración de la App que esto exige (Pol, una vez): **Setup URL** =
   `https://snapstack.sh/api/github/setup`, y marcar **"Request user authorization (OAuth)
   during installation"** y **"Redirect on update"**.
@@ -44,11 +47,12 @@ GitHub deja **instalación + autorización de la estrella** hechas de un solo cl
 
 | Requisito | Se implementa en | Se valida con |
 |-----------|------------------|---------------|
-| C-08 | `supabase/migrations/015_profiles_installation.sql`, `src/lib/github/webhooks.ts`, `src/app/api/github/setup/route.ts`, `src/components/repo/install-app-banner.tsx` | `src/lib/github/webhooks.test.ts`, `src/components/repo/install-app-banner.test.tsx`, `e2e/webhooks.spec.ts` |
+| C-08 | `supabase/migrations/015_profiles_installation.sql`, `src/lib/github/webhooks.ts`, `src/app/api/github/setup/route.ts`, `src/components/repo/install-app-banner.tsx`, `src/components/repo/install-scope-dialog.tsx` | `src/lib/github/webhooks.test.ts`, `src/components/repo/install-app-banner.test.tsx`, `src/components/repo/install-scope-dialog.test.tsx`, `e2e/webhooks.spec.ts` |
 
 Los unitarios cubren el despacho del webhook `installation` (created registra el id en el
 perfil correcto por id de cuenta; deleted lo limpia; cuentas sin perfil no hacen nada) y las
-dos caras del banner con sus enlaces y su recomendación de alcance — es el primer test de
-componente del proyecto, posible porque el banner no tiene hooks ni estado. El e2e envía el
+dos caras del banner con sus enlaces, y el modal de alcances (abrir/cerrar, click en el
+fondo, contenido de ambas opciones e ilustraciones etiquetadas) — son los primeros tests de
+componente del proyecto. El e2e envía el
 evento firmado contra el server real y comprueba la marca en la base. El Setup URL exige la
 App real: pasada manual de Pol (checklist arriba).

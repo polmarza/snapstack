@@ -14,16 +14,14 @@ describe("InstallAppBanner (C-08)", () => {
   });
   afterEach(cleanup);
 
-  it("sin instalar: invita a conectar y explica las dos opciones de alcance", () => {
+  it("sin instalar: invita a conectar y ofrece la explicación del alcance", () => {
     render(<InstallAppBanner />);
     expect(screen.getByTestId("install-app-banner")).toBeTruthy();
     expect(screen.getByTestId("install-app-link").getAttribute("href")).toBe(
       "https://github.com/apps/snapstack-sh/installations/new",
     );
-    const texto = screen.getByTestId("install-app-banner").textContent ?? "";
-    expect(texto).toContain("All repositories");
-    expect(texto).toContain("Only select repositories");
-    expect(texto).toContain("only ever reads");
+    // El detalle de los alcances vive en el modal (ver install-scope-dialog).
+    expect(screen.getByTestId("install-scope-open")).toBeTruthy();
   });
 
   it("instalada: línea discreta que recuerda incluir los repos nuevos", () => {
