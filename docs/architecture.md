@@ -106,7 +106,8 @@ o aplicar migraciones con `DATABASE_URL`, que lanza Pol).
   `/api/webhooks/github` (M-08): `push` (refresco de datos), `star`/`watch` (stars),
   `repository` (deleted/privatized → retirar contenido; publicized → reactivar; renamed →
   refrescar), `installation` (created/deleted → registrar/limpiar la instalación en el
-  perfil, C-08). Firma HMAC SHA-256 obligatoria (`GITHUB_WEBHOOK_SECRET`); el endpoint solo
+  perfil, C-08) e `installation_repositories` (cambios de repos cubiertos → registrar; es el
+  único evento que llega al actualizar una instalación existente). Firma HMAC SHA-256 obligatoria (`GITHUB_WEBHOOK_SECRET`); el endpoint solo
   actualiza, nunca inserta. La sincronización usa los datos del propio payload — sin llamadas
   a la API ni tokens.
 - **Clerk:** autenticación y gestión de sesión.

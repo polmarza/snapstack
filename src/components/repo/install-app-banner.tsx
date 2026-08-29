@@ -1,47 +1,16 @@
-import { Check, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
+import Link from "next/link";
 import { InstallScopeDialog } from "./install-scope-dialog";
 
 /**
- * Estado de la GitHub App en la selección de repos (C-08). Dos caras:
- *
- * - **Sin instalar**: invitación con el botón de conectar y la recomendación de
- *   elegir "All repositories" — el selector de GitHub solo cubre los repos
- *   marcados en ese momento, así que quien vaya a añadir repos después evita
- *   tener que volver.
- * - **Instalada**: línea discreta con acceso a la configuración. No desaparece
- *   a propósito: un repo añadido más tarde no queda cubierto por una
- *   instalación de "Only select repositories", y sin este recordatorio nadie
- *   se entera hasta que echa en falta las notificaciones.
- *
- * Server component; sin slug configurado no pinta nada (en dev puede no haber App).
+ * Aviso de instalación de la GitHub App (C-08) en la selección de repos: solo
+ * mientras no esté conectada. El estado permanente y su gestión viven en
+ * Settings (`GithubAppSection`) — aquí sobra en cuanto deja de haber algo que
+ * hacer. Server component; sin slug configurado no pinta nada.
  */
 export function InstallAppBanner({ installed = false }: { installed?: boolean }) {
   const slug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG;
-  if (!slug) return null;
-
-  if (installed) {
-    return (
-      <p
-        data-testid="install-app-connected"
-        className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-content-secondary"
-      >
-        <Check size={15} aria-hidden className="shrink-0 text-primary" />
-        <span>GitHub App connected.</span>
-        <a
-          href={`https://github.com/settings/installations`}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="install-app-manage-link"
-          className="text-primary hover:underline"
-        >
-          Manage which repos it covers ↗
-        </a>
-        <span className="text-content-secondary/70">
-          — repos added later need to be included there too.
-        </span>
-      </p>
-    );
-  }
+  if (!slug || installed) return null;
 
   return (
     <div
@@ -69,6 +38,13 @@ export function InstallAppBanner({ installed = false }: { installed?: boolean })
           Connect
         </a>
         <InstallScopeDialog />
+        <Link
+          href="/settings/account"
+          data-testid="install-app-settings-link"
+          className="text-sm text-content-secondary hover:text-content"
+        >
+          Manage in settings
+        </Link>
       </div>
     </div>
   );
