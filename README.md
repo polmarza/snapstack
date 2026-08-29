@@ -91,9 +91,10 @@ evidencia, no casillas marcadas.
 
 ## Estado del proyecto
 
-**En desarrollo** — esqueleto Next.js y generación de fichas visuales (M-04) en marcha; demo
-local en `/dev/cards`. Fase 1 (MVP) definida en [`docs/roadmap.md`](docs/roadmap.md); el estado
-de cada feature, en [`docs/features/`](docs/features/).
+**En desarrollo** — hechas: fichas visuales procedurales (M-04), semilla de repos trending
+(M-10) y feed de scroll infinito (M-06). Fase 1 (MVP) definida en
+[`docs/roadmap.md`](docs/roadmap.md); el estado de cada feature, en
+[`docs/features/`](docs/features/).
 
 ## Licencia
 
