@@ -105,7 +105,15 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
         </div>
 
         <div className="relative flex flex-col gap-2">
-          <h2 className="font-mono text-2xl font-bold text-white sm:text-3xl">{name}</h2>
+          <h2 className="font-mono text-2xl font-bold text-white sm:text-3xl">
+            <Link
+              href={`/r/${repo.full_name}`}
+              data-testid="feed-card-detail-link"
+              className="hover:underline"
+            >
+              {name}
+            </Link>
+          </h2>
           {repo.description ? (
             <p className="line-clamp-3 text-white/70 sm:text-lg">{repo.description}</p>
           ) : null}

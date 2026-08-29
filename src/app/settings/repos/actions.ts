@@ -15,6 +15,7 @@ import {
   validateSelectionSize,
 } from "@/lib/db/selection";
 import { getGithubToken } from "@/lib/github/token";
+import { fetchRepoReadme } from "@/lib/github/readme";
 import { fetchRepoDetails, mapRepoDetailsToRow } from "@/lib/github/user-repos";
 import { LINGUIST_COLORS } from "@/lib/card-seed";
 import { repoBlockedTerm } from "@/lib/moderation/moderation";
@@ -72,12 +73,20 @@ export async function saveSelectionAction(
         return fallo(`"${ajeno.nameWithOwner}" isn't yours: you can only add your own repos.`);
       }
 
-      const rows = details.map((d) => {
+      // README para la página de detalle (C-05). Que falle no rompe el import:
+      // el backfill (pnpm backfill:readmes) lo recoge después.
+      const readmes = await Promise.all(
+        details.map((d) => fetchRepoReadme(token, d.nameWithOwner).catch(() => null)),
+      );
+
+      const rows = details.map((d, i) => {
         const row = mapRepoDetailsToRow(d, profile.id, now);
         const override = languageOverrides[row.full_name];
         if (row.primary_language === null && override && override in LINGUIST_COLORS) {
           row.primary_language = override;
         }
+        row.readme_md = readmes[i];
+        row.readme_fetched_at = now.toISOString();
         return row;
       });
 
