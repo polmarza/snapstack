@@ -89,12 +89,24 @@ describe("listFeedPage con filtro Following", () => {
   function fakeFeedDb(all: FeedRepo[]) {
     return {
       from: () => {
-        let rows = [...all].sort((a, b) => b.imported_at.localeCompare(a.imported_at));
+        let rows = [...all].sort((a, b) =>
+          b.card_seed === a.card_seed
+            ? b.id.localeCompare(a.id)
+            : b.card_seed.localeCompare(a.card_seed),
+        );
         let limit = rows.length;
         const query = {
           select: () => query,
           eq: (_c: string, v: string) => {
             rows = rows.filter((r) => r.status === v);
+            return query;
+          },
+          lte: (_c: string, v: string) => {
+            rows = rows.filter((r) => r.card_seed <= v);
+            return query;
+          },
+          gt: (_c: string, v: string) => {
+            rows = rows.filter((r) => r.card_seed > v);
             return query;
           },
           in: (_c: string, ids: string[]) => {
@@ -118,7 +130,7 @@ describe("listFeedPage con filtro Following", () => {
   const all = [repo(1, null), repo(2, "a"), repo(3, "b"), repo(4, "a")];
 
   it("M-07: el filtro restringe a repos de los dueños seguidos", async () => {
-    const page = await listFeedPage(fakeFeedDb(all), null, 10, { ownerIn: ["a"] });
+    const page = await listFeedPage(fakeFeedDb(all), null, 10, { ownerIn: ["a"] }, "ffffffff");
     expect(page.repos.map((r) => Number(r.github_repo_id))).toEqual([4, 2]);
   });
 

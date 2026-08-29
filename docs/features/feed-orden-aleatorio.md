@@ -1,9 +1,9 @@
 # Feed en orden aleatorio estable
 
-**Estado:** Acordada
+**Estado:** Verificada
 **Requisitos que cierra:** Modifica M-06 (el criterio "orden cronológico" pasa a "orden
 aleatorio estable por visita")
-**Fecha de acuerdo:** 2026-08-29 (pendiente de visto bueno)
+**Fecha de acuerdo:** 2026-08-29
 
 ## Qué se construye
 
@@ -45,8 +45,9 @@ se saltan fichas).
 
 | Requisito | Se implementa en | Se valida con |
 |-----------|------------------|---------------|
-| Orden por (card_seed, id) con inicio aleatorio y vuelta | `src/lib/db/feed-page.ts` | `src/lib/db/feed-page.test.ts` |
-| Sin duplicados ni saltos al paginar la vuelta completa | `src/lib/db/feed-page.ts` | `src/lib/db/feed-page.test.ts` (recorrido completo sobre db falsa) |
-| Cursor nuevo validado estrictamente; corrupto → primera página | `decodeCursor` | `src/lib/db/feed-page.test.ts` |
-| El feed real pagina sin repetir fichas | `/api/feed` | `e2e/feed.spec.ts` |
-| PRD al día | `docs/prd.md` (M-06) | revisión en el PR |
+| M-06 | `src/lib/db/feed-page.ts` (orden por `card_seed` con inicio aleatorio y vuelta, cursor validado) | `src/lib/db/feed-page.test.ts`, `e2e/feed.spec.ts` |
+
+Los unitarios cubren: primera página desde la semilla de entrada, recorrido completo de la
+vuelta sin duplicar ni saltar, dos semillas arrancan distinto, cursor corrupto o del formato
+cronológico anterior → primera página, inserts entre páginas sin desplazamiento, y solo repos
+activos. El e2e encadena los cursores contra la API real hasta el fin explícito del feed.

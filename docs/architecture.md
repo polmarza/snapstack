@@ -216,7 +216,9 @@ un repo ya curado por alguien no vuelve a semilla aunque siga en trending.
 
 ### 2026-08-29 — Sin algoritmo de recomendación en v1
 **Contexto:** no hay señal explícita (no hay swipe/like) ni volumen de datos.
-**Decisión:** feed cronológico con filtro por follows. Las señales implícitas (permanencia,
+**Decisión:** feed en orden aleatorio estable por visita (keyset sobre `card_seed` con punto
+de entrada aleatorio y vuelta completa; ficha `feed-orden-aleatorio.md`) con filtro por
+follows. Las señales implícitas (permanencia,
 expandir, click, follow) **se instrumentan desde el día uno** pero no alimentan ningún ranking.
 **Consecuencias:** cuando haya volumen, habrá histórico de señales para decidir con datos. La
 similitud entre repos, si entra, irá por embeddings (pgvector), no por interacciones.
