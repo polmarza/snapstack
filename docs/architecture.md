@@ -50,21 +50,23 @@ src/
 │   ├── dev/cards/        → ✅ Demo local de fichas sobre fixtures
 │   ├── dev/seed/         → ✅ Demo local de los repos semilla importados (lee de la DB)
 │   ├── u/[username]/     → ⏳ Perfil público
-│   ├── onboarding/       → ⏳ Selección de repos tras el login
-│   ├── settings/         → ⏳ Gestión de selección, baja de cuenta
+│   ├── onboarding/       → ✅ Selección de repos tras el login (M-02)
+│   ├── settings/repos/   → ✅ Gestión de la selección + server action de importación (M-03)
+│   ├── settings/         → ⏳ Baja de cuenta y resto de ajustes
 │   └── api/
 │       ├── og/               → ✅ Generación de fichas con @vercel/og (og:image/embeds)
 │       ├── feed/             → ✅ Paginación del feed por cursor keyset
 │       ├── webhooks/github/  → ⏳ Recepción de webhooks de la GitHub App
 │       └── signals/          → ⏳ Registro de señales implícitas
 ├── components/
-│   ├── auth/             → ✅ AuthControls (entrar con GitHub / menú de usuario)
+│   ├── auth/             → ✅ AuthControls (entrar con GitHub / menú de usuario / Mis repos)
+│   ├── selection/        → ✅ SelectionPage + RepoSelector (onboarding y settings comparten)
 │   └── feed/             → ✅ RepoCard (HTML/CSS), FeedList (IntersectionObserver); ui/ ⏳
 ├── proxy.ts              → ✅ clerkMiddleware (sesión en todas las rutas; ninguna exige login aún)
 ├── lib/
 │   ├── card-seed/        → ✅ Semilla determinista, colores Linguist vendorizados, paleta
-│   ├── github/           → ⏳ Cliente GraphQL, GitHub App, verificación de webhooks
-│   ├── db/               → ✅ Cliente Supabase (service role), queries de repos y profiles
+│   ├── github/           → ✅ Cliente GraphQL, token OAuth vía Clerk, listado/importación; GitHub App ⏳ (M-08)
+│   ├── db/               → ✅ Cliente Supabase (service role), queries de repos, profiles y selección
 │   └── signals/          → ⏳ Instrumentación de señales implícitas
 ├── jobs/
 │   └── seed-trending/    → ✅ Import manual de trending (pnpm seed:trending); Inngest/Trigger.dev ⏳
@@ -84,9 +86,12 @@ o aplicar migraciones con `DATABASE_URL`, que lanza Pol).
 ## Estrategia de autenticación
 
 - **Clerk con provider de GitHub** para el login de usuarios y la sesión.
-- **GitHub App propia** (no OAuth App simple) para la integración con repos: listado de repos
-  públicos del usuario, datos por GraphQL (`languages` por bytes, `repositoryTopics`) y
-  suscripción a webhooks **solo de los repos seleccionados**.
+- **El listado e importación de repos (M-02/M-03) usan el token OAuth del propio usuario**,
+  obtenido del backend de Clerk (`getUserOauthAccessToken`), para el GraphQL de GitHub
+  (`languages` por bytes, `repositoryTopics`). Escala por usuario (5.000 req/h cada uno) y no
+  requiere instalación de ninguna App.
+- **GitHub App propia** (no OAuth App simple) para lo que el token de usuario no cubre:
+  suscripción a webhooks **solo de los repos seleccionados** y sincronización continua (M-08).
 - Rutas públicas: feed y perfiles. Rutas protegidas: onboarding, settings, acciones de follow
   e importación.
 
@@ -153,6 +158,18 @@ anclada al color Linguist del lenguaje dominante) renderizado con `@vercel/og`.
 **Consecuencias:** sin cola de jobs de captura, sin riesgo de SSRF, sin coste de headless, y
 cubre el 100 % de los repos. Si algún día se retoman las capturas, la URL de demo es un campo
 público editable por terceros: habrá que validar contra IPs privadas/loopback.
+
+### 2026-08-29 — Import de M-02 con el token OAuth del usuario; GitHub App pospuesta a M-08
+**Contexto:** M-02 necesita listar los repos públicos del usuario e importar ≤5 con datos de
+GraphQL.
+**Opciones consideradas:** montar ya la GitHub App (instalación por usuario) o usar el token
+OAuth que Clerk ya gestiona.
+**Decisión:** token del usuario vía Clerk. El argumento del rate limit contra OAuth aplica a
+sincronización continua, no a un import puntual: el token de cada usuario da 5.000 req/h
+propios. La App queda para M-08, donde los webhooks la hacen imprescindible.
+**Consecuencias:** cero configuración extra ahora; en M-08 habrá que crear la App y decidir su
+flujo de instalación. Verificado que la instancia dev de Clerk expone el token (scopes
+`read:user`, `user:email`, suficientes para datos públicos).
 
 ### 2026-08-29 — Sin algoritmo de recomendación en v1
 **Contexto:** no hay señal explícita (no hay swipe/like) ni volumen de datos.

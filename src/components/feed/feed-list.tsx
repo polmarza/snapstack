@@ -27,12 +27,12 @@ export function FeedList({ initialRepos, initialCursor }: FeedListProps) {
     setError(null);
     try {
       const res = await fetch(`/api/feed?cursor=${encodeURIComponent(cursor)}`);
-      if (!res.ok) throw new Error(`El feed respondió ${res.status}`);
+      if (!res.ok) throw new Error(`The feed responded with ${res.status}`);
       const page = (await res.json()) as FeedPage;
       setRepos((prev) => [...prev, ...page.repos]);
       setCursor(page.nextCursor);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error de red");
+      setError(e instanceof Error ? e.message : "Network error");
     } finally {
       loadingRef.current = false;
     }
@@ -66,16 +66,16 @@ export function FeedList({ initialRepos, initialCursor }: FeedListProps) {
             onClick={() => void loadMore()}
             className="mt-2 rounded-lg border border-edge px-4 py-2 text-sm hover:border-primary"
           >
-            Reintentar
+            Retry
           </button>
         </div>
       ) : cursor ? (
         <div ref={sentinelRef} data-testid="feed-sentinel" className="py-6 text-center font-mono text-sm text-content-secondary">
-          Cargando…
+          Loading…
         </div>
       ) : (
         <p data-testid="feed-end" className="py-6 text-center font-mono text-sm text-content-secondary">
-          — fin del feed —
+          — end of feed —
         </p>
       )}
     </div>

@@ -24,7 +24,7 @@ export default async function Home() {
         <div>
           <h1 className="font-mono text-2xl font-bold">Snapstack</h1>
           <p className="mt-1 text-sm text-content-secondary">
-            Qué están construyendo los devs, repo a repo.
+            What devs are building, repo by repo.
           </p>
         </div>
         <AuthControls />
@@ -32,11 +32,11 @@ export default async function Home() {
 
       {page === null ? (
         <p data-testid="feed-unavailable" className="text-error">
-          El feed no está disponible ahora mismo. Vuelve en un rato.
+          The feed is unavailable right now. Check back soon.
         </p>
       ) : page.repos.length === 0 ? (
         <p data-testid="feed-empty" className="text-content-secondary">
-          Todavía no hay repos en el feed.
+          No repos in the feed yet.
         </p>
       ) : (
         <FeedList initialRepos={page.repos} initialCursor={page.nextCursor} />

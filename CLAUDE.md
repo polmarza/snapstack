@@ -145,6 +145,8 @@ La estructura interna de `src/` propuesta (app/, components/, lib/, jobs/, types
 
 - Gestor de paquetes: pnpm v11. No usar npm ni yarn.
 - Idioma: código, variables y commits en inglés; comentarios y documentación en español.
+- **Copy de la interfaz en inglés (english-first)**, decidido el 2026-08-29. Las páginas de
+  desarrollo (`/dev/*`) pueden quedar en español: no son producto.
 - TypeScript estricto. No usar `any`.
 - Nombrado de componentes: PascalCase.
 - Nombrado de archivos: kebab-case.

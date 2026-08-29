@@ -13,12 +13,21 @@ export function AuthControls() {
               data-testid="sign-in-button"
               className="rounded-lg border border-edge px-4 py-2 text-sm hover:border-primary"
             >
-              Entrar con GitHub
+              Sign in with GitHub
             </button>
           </SignInButton>
         }
       >
-        <UserButton />
+        <div className="flex items-center gap-4">
+          <a
+            href="/settings/repos"
+            data-testid="my-repos-link"
+            className="text-sm text-content-secondary hover:text-content"
+          >
+            My repos
+          </a>
+          <UserButton />
+        </div>
       </Show>
     </div>
   );
