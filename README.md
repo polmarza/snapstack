@@ -22,10 +22,6 @@ cada uno se convierte en una **ficha visual generada proceduralmente**. El conju
 en un feed de scroll infinito: sin swipe, sin likes. La intención es social y pasiva: seguir a
 un dev y ver qué construye.
 
-<p align="center">
-  <img src=".github/assets/hero.png" alt="La landing de snapstack: el hero con las fichas reales del feed derivando al fondo" width="820">
-</p>
-
 ## Las fichas: mismo repo, misma ficha, siempre
 
 Cada ficha se genera a partir de la **identidad del propio repo** — nada de capturas, nada de
