@@ -4,6 +4,7 @@ import { AuthControls } from "@/components/auth/auth-controls";
 import { createServiceClient } from "@/lib/db/client";
 import { getProfileByClerkId } from "@/lib/db/profiles";
 import { AppNav } from "./app-nav";
+import { Logo } from "./logo";
 import { DonateButton } from "./donate-button";
 import { HideOnHome } from "./hide-on-home";
 import { SiteFooter } from "./site-footer";
@@ -34,8 +35,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     <Link
       href="/"
       data-testid="header-wordmark"
-      className="font-mono text-xl font-bold lowercase"
+      className="flex items-center gap-2.5 font-mono text-xl font-bold lowercase"
     >
+      <Logo />
       snapstack
     </Link>
   );

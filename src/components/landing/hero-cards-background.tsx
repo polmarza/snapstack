@@ -48,7 +48,7 @@ export function HeroCardsBackground({ repos }: { repos: FeedRepo[] }) {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       {/* Sobresale un poco por los lados para que no se vea el borde de la retícula. */}
-      <div className="absolute -inset-x-4 inset-y-0 flex gap-4 opacity-30">
+      <div className="absolute -inset-x-4 inset-y-0 flex gap-4 opacity-50">
         {columns.map((column, i) => (
           <div key={i} className={`min-w-0 flex-1 ${i >= 3 ? "hidden lg:block" : ""}`}>
             <div
@@ -64,7 +64,7 @@ export function HeroCardsBackground({ repos }: { repos: FeedRepo[] }) {
         ))}
       </div>
       {/* Velo para que el texto del hero mande sobre las tarjetas. */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/55 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/55 via-background/40 to-background/80" />
       {/* Bandas de difuminado: las columnas nacen y mueren en el fondo, sin corte recto. */}
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />

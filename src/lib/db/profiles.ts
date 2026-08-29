@@ -7,6 +7,8 @@ export interface ProfileRow {
   username: string;
   display_name: string | null;
   avatar_url: string | null;
+  /** Cuándo completó (o saltó) el onboarding. Solo llega al leer de la base. */
+  onboarded_at?: string | null;
 }
 
 /**

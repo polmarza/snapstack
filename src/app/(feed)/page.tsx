@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { AuthControls } from "@/components/auth/auth-controls";
 import { FeedList } from "@/components/feed/feed-list";
@@ -32,13 +33,8 @@ export const metadata: Metadata = {
     siteName: "snapstack",
     title: "snapstack — what devs are building",
     description: TAGLINE,
-    images: [
-      `/api/og?${new URLSearchParams({
-        repoId: "snapstack",
-        name: "snapstack",
-        description: TAGLINE,
-      })}`,
-    ],
+    // La portada replica el hero de la landing, congelado (/api/og/home).
+    images: ["/api/og/home"],
   },
 };
 
@@ -52,6 +48,7 @@ export default async function Home({ searchParams }: HomeProps) {
   let page: FeedPage | null = null;
   let signedIn = false;
   let followingView = false;
+  let needsOnboarding = false;
   try {
     const db = createServiceClient();
     const user = await currentUser();
@@ -59,6 +56,7 @@ export default async function Home({ searchParams }: HomeProps) {
     await ensureProfile(db, user).catch(() => null);
     const profile = user ? await getProfileByClerkId(db, user.id) : null;
     signedIn = profile !== null;
+    needsOnboarding = profile !== null && !profile.onboarded_at;
 
     const followedIds = profile ? await listFollowedIds(db, profile.id) : null;
     followingView = filter === "following" && profile !== null;
@@ -68,6 +66,11 @@ export default async function Home({ searchParams }: HomeProps) {
   } catch {
     page = null;
   }
+
+  // Usuario nuevo: al onboarding hasta que lo complete o lo salte (marca de la
+  // migración 008). Fuera del try: redirect() lanza una excepción interna de
+  // Next que el catch no debe tragarse.
+  if (needsOnboarding) redirect("/onboarding");
 
   return (
     <main className={signedIn ? "mx-auto max-w-2xl px-4 py-8 sm:px-6" : ""}>
@@ -87,7 +90,7 @@ export default async function Home({ searchParams }: HomeProps) {
             <div className="relative flex flex-col items-center">
               <h1
                 data-testid="hero-wordmark"
-                className="landing-rise font-mono text-6xl font-bold lowercase tracking-tight text-primary sm:text-8xl"
+                className="landing-rise font-mono text-6xl font-bold lowercase tracking-tight sm:text-8xl"
               >
                 snapstack
               </h1>
