@@ -6,7 +6,13 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
 
+/**
+ * `metadataBase` convierte en absolutas las URLs relativas de og:image (la ficha
+ * de /api/og). Sin él, quien comparta un perfil no vería la portada: los
+ * scrapers de redes no resuelven rutas relativas.
+ */
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: "Snapstack",
   description:
     "A curated profile for your GitHub repos + a visual feed to discover what other devs are building.",

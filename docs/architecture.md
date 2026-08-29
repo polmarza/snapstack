@@ -136,6 +136,8 @@ Code pide aprobar los servidores de proyecto y autenticarse con `/mcp`.
 - Variables de entorno por entorno en Vercel; en local, `.env.local` (ver `.env.example`).
 - **Quién despliega:** Pol, desde Vercel (merge a `main` publica). El agente prepara y explica,
   no publica (ver "Límites de ejecución" en CLAUDE.md).
+- **El procedimiento completo de la primera salida a producción está en `docs/deploy.md`**
+  (Supabase remoto, Clerk de producción, GitHub App, Vercel, siembra y comprobaciones).
 
 ### GitHub App (pendiente: se crea el día del primer deploy)
 

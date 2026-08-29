@@ -1,8 +1,10 @@
 /**
  * Página de desarrollo: lista lo importado por `pnpm seed:trending` desde la base
- * de datos, renderizado con la ficha visual de M-04. No es el feed (M-06).
+ * de datos, renderizado con la ficha visual de M-04. No es el feed (M-06) ni parte
+ * del producto: en producción devuelve 404.
  */
 
+import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/db/client";
 import { listActiveRepos, type RepoRow } from "@/lib/db/repos";
 
@@ -19,6 +21,8 @@ function cardUrl(repo: RepoRow): string {
 }
 
 export default async function DevSeedPage() {
+  if (process.env.NODE_ENV === "production") notFound();
+
   let repos: RepoRow[] = [];
   let error: string | null = null;
   try {

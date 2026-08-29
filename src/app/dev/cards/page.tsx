@@ -1,7 +1,10 @@
 /**
  * Página de demo en local: fichas de ejemplo para comprobar a ojo el determinismo
- * y la coherencia visual entre lenguajes. No forma parte del producto navegable.
+ * y la coherencia visual entre lenguajes. No forma parte del producto navegable:
+ * en producción devuelve 404 (ver `notFound()` más abajo).
  */
+
+import { notFound } from "next/navigation";
 
 const FIXTURES = [
   { repoId: "1296269", name: "hello-world", description: "My first repository on GitHub!", language: "TypeScript" },
@@ -22,6 +25,8 @@ function cardUrl(fixture: (typeof FIXTURES)[number]): string {
 }
 
 export default function DevCardsPage() {
+  if (process.env.NODE_ENV === "production") notFound();
+
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
       <h1 className="font-mono text-2xl font-bold">Demo de fichas</h1>
