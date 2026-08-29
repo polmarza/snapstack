@@ -110,3 +110,17 @@ Pendientes: `FollowButton`, `LanguageChip` (hoy es un dot + texto dentro de `Rep
 - Colores de lenguaje: GitHub Linguist (`languages.yml`)
 - Ritmo de feed en columna única: Read.cv / posts de Bluesky
 - Fondos procedurales deterministas: avatares de Vercel, gradientes de GitHub Next
+
+---
+
+## Modales
+
+`<dialog>` nativo, sin librería: da Esc, foco atrapado y backdrop de serie. Patrón (ver
+`InstallScopeDialog`): ancho `min(46rem, 92vw)`, `rounded-2xl`, borde `edge`, fondo
+`background` y backdrop oscurecido con desenfoque; cabecera con título en mono, texto de
+apoyo y cruz de cierre; cierra también al pulsar el fondo, comparando `event.target` con el
+propio `<dialog>`.
+
+Los diagramas explicativos van en SVG inline, con las variables de color del tema
+(`var(--color-primary)`, `var(--color-content-secondary)`) en vez de valores fijos, y llevan
+`role="img"` con `aria-label` — son contenido, no decoración.

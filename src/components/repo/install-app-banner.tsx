@@ -1,4 +1,5 @@
 import { Check, Zap } from "lucide-react";
+import { InstallScopeDialog } from "./install-scope-dialog";
 
 /**
  * Estado de la GitHub App en la selección de repos (C-08). Dos caras:
@@ -47,31 +48,28 @@ export function InstallAppBanner({ installed = false }: { installed?: boolean })
       data-testid="install-app-banner"
       className="mb-6 rounded-xl border border-primary/40 bg-primary/5 px-4 py-3"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="flex min-w-0 items-start gap-2 text-sm">
-          <Zap size={16} aria-hidden className="mt-0.5 shrink-0 text-primary" />
-          <span>
-            <span className="font-medium">Keep your repos live.</span>{" "}
-            <span className="text-content-secondary">
-              Install the GitHub App on your repos: stars sync themselves and your subscribers
-              get notified on every push. One click, read-only.
-            </span>
+      <p className="flex min-w-0 items-start gap-2 text-sm">
+        <Zap size={16} aria-hidden className="mt-0.5 shrink-0 text-primary" />
+        <span>
+          <span className="font-medium">Keep your repos live.</span>{" "}
+          <span className="text-content-secondary">
+            Install the GitHub App on your repos: stars sync themselves and your subscribers
+            get notified on every push. One click, read-only.
           </span>
-        </p>
+        </span>
+      </p>
+      {/* La explicación de los alcances vive en el modal: aquí era letra
+          pequeña justo donde hay que decidir. */}
+      <div className="mt-3 flex flex-wrap items-center gap-2 pl-6">
         <a
           href={`https://github.com/apps/${slug}/installations/new`}
           data-testid="install-app-link"
-          className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
         >
           Connect
         </a>
+        <InstallScopeDialog />
       </div>
-      <p className="mt-2 pl-6 text-xs text-content-secondary">
-        GitHub will ask which repos to cover. <span className="font-medium">All repositories</span>{" "}
-        is the one-and-done option: repos you add later are covered automatically.{" "}
-        <span className="font-medium">Only select repositories</span> is stricter, but you&apos;ll
-        need to come back each time you pick a new repo. Either way, snapstack only ever reads.
-      </p>
     </div>
   );
 }
