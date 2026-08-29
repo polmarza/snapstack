@@ -17,6 +17,7 @@ Usuario de Snapstack, vinculado a su identidad de Clerk/GitHub.
 | username | text (único) | Login de GitHub, usado en la URL del perfil |
 | display_name | text | Nombre visible |
 | avatar_url | text | Avatar de GitHub |
+| onboarded_at | timestamptz (nullable) | Cuándo completó o saltó el onboarding; NULL = la home le redirige allí |
 | created_at | timestamptz | Alta |
 
 ### repos
@@ -133,6 +134,7 @@ El acceso a datos pasa por el servidor Next.js (service role); RLS actúa como s
 | 2026-08-29 | `supabase/migrations/005_reports.sql` | Tabla `reports` con índice único (reporter, repo); RLS sin políticas (solo service role) |
 | 2026-08-29 | `supabase/migrations/006_follows.sql` | Tabla `follows` (PK compuesta, check anti auto-follow, cascada); RLS de lectura pública |
 | 2026-08-29 | `supabase/migrations/007_repo_click_count.sql` | `repos.click_count` (desnormalizado desde `signals`, con relleno) y función `increment_repo_clicks` |
+| 2026-08-29 | `supabase/migrations/008_profiles_onboarded.sql` | `profiles.onboarded_at` con relleno para quien ya tenía repos (redirección al onboarding) |
 
 ---
 

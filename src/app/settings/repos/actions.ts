@@ -16,6 +16,7 @@ import {
 } from "@/lib/db/selection";
 import { getGithubToken } from "@/lib/github/token";
 import { fetchRepoDetails, mapRepoDetailsToRow } from "@/lib/github/user-repos";
+import { LINGUIST_COLORS } from "@/lib/card-seed";
 import { repoBlockedTerm } from "@/lib/moderation/moderation";
 
 export interface SaveSelectionResult {
@@ -29,8 +30,16 @@ export interface SaveSelectionResult {
  * Guarda la selección de repos del usuario (M-02/M-03): importa los nuevos con
  * datos frescos de GraphQL, quita los deseleccionados y valida el límite en
  * servidor. Usada por /onboarding y /settings/repos.
+ *
+ * `languageOverrides` (fullName → lenguaje) permite fijar a mano el lenguaje de
+ * repos donde Linguist no detecta ninguno (una skill en puro Markdown, por
+ * ejemplo). Solo se acepta un lenguaje del catálogo oficial, y solo cuando
+ * GitHub no detectó nada: la detección real nunca se pisa.
  */
-export async function saveSelectionAction(selectedFullNames: string[]): Promise<SaveSelectionResult> {
+export async function saveSelectionAction(
+  selectedFullNames: string[],
+  languageOverrides: Record<string, string> = {},
+): Promise<SaveSelectionResult> {
   const fallo = (error: string): SaveSelectionResult => ({ ok: false, added: 0, removed: 0, error });
 
   try {
@@ -63,7 +72,14 @@ export async function saveSelectionAction(selectedFullNames: string[]): Promise<
         return fallo(`"${ajeno.nameWithOwner}" isn't yours: you can only add your own repos.`);
       }
 
-      const rows = details.map((d) => mapRepoDetailsToRow(d, profile.id, now));
+      const rows = details.map((d) => {
+        const row = mapRepoDetailsToRow(d, profile.id, now);
+        const override = languageOverrides[row.full_name];
+        if (row.primary_language === null && override && override in LINGUIST_COLORS) {
+          row.primary_language = override;
+        }
+        return row;
+      });
 
       // Filtro básico de contenido (S-01): el repo marcado se rechaza entero.
       const bloqueado = rows.find((row) => repoBlockedTerm(row) !== null);
@@ -77,6 +93,19 @@ export async function saveSelectionAction(selectedFullNames: string[]): Promise<
     }
 
     await removeOwnedRepos(db, profile.id, diff.toRemove.map((row) => row.github_repo_id));
+
+    // Overrides sobre repos ya importados sin lenguaje: no exigen re-import.
+    for (const row of current) {
+      const override = languageOverrides[row.full_name];
+      if (row.primary_language === null && override && override in LINGUIST_COLORS) {
+        await db.from("repos").update({ primary_language: override })
+          .eq("github_repo_id", row.github_repo_id).eq("owner_profile_id", profile.id);
+      }
+    }
+
+    // Guardar la selección completa el onboarding, venga de donde venga.
+    await db.from("profiles").update({ onboarded_at: new Date().toISOString() })
+      .eq("id", profile.id).is("onboarded_at", null);
 
     revalidatePath("/");
     revalidatePath("/settings/repos");

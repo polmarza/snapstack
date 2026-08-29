@@ -5,6 +5,7 @@ import { ensureProfile, getProfileByClerkId } from "@/lib/db/profiles";
 import { listOwnedActiveRepos, selectionLimit } from "@/lib/db/selection";
 import { getGithubToken } from "@/lib/github/token";
 import { listPublicRepos } from "@/lib/github/user-repos";
+import { skipOnboardingAction } from "@/app/onboarding/actions";
 import { RepoSelector } from "./repo-selector";
 
 /**
@@ -47,9 +48,24 @@ export async function SelectionPage({
     <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       {/* Sin enlaces de vuelta: la navegación (lateral en desktop, inferior en
           móvil) ya lleva a cualquier sitio desde cualquier página. */}
-      <header className="mb-6">
-        <h1 className="font-mono text-2xl font-bold">{title}</h1>
-        <p className="mt-1 text-sm text-content-secondary">{intro}</p>
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-mono text-2xl font-bold">{title}</h1>
+          <p className="mt-1 text-sm text-content-secondary">{intro}</p>
+        </div>
+        {mode === "onboarding" ? (
+          // La salida del onboarding: sin ella, quien no quiera importar nada
+          // quedaría atrapado en la redirección de la home.
+          <form action={skipOnboardingAction}>
+            <button
+              type="submit"
+              data-testid="skip-onboarding"
+              className="shrink-0 font-mono text-sm text-content-secondary hover:text-content"
+            >
+              Skip for now →
+            </button>
+          </form>
+        ) : null}
       </header>
 
       {loadError || !items ? (
