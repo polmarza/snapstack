@@ -39,4 +39,4 @@ Rutas previstas; los tests se escriben al construir (la ficha está Acordada, no
 
 | Requisito | Se implementa en | Se valida con |
 |-----------|------------------|---------------|
-| C-06 | `supabase/migrations/012_repo_subscriptions.sql`, `src/lib/db/subscriptions.ts`, `src/app/r/[owner]/[name]/`, `src/lib/github/webhooks.ts` | `src/lib/db/subscriptions.test.ts`, `e2e/webhooks.spec.ts` |
+| C-06 | `supabase/migrations/013_repo_subscriptions.sql`, `src/lib/db/subscriptions.ts`, `src/app/r/[owner]/[name]/`, `src/lib/github/webhooks.ts` | `src/lib/db/subscriptions.test.ts`, `e2e/webhooks.spec.ts` |
