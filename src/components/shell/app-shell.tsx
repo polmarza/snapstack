@@ -2,6 +2,7 @@ import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { AuthControls } from "@/components/auth/auth-controls";
 import { createServiceClient } from "@/lib/db/client";
+import { countUnreadNotifications } from "@/lib/db/notifications";
 import { getProfileByClerkId } from "@/lib/db/profiles";
 import { AppNav } from "./app-nav";
 import { Logo } from "./logo";
@@ -21,11 +22,14 @@ import { SiteFooter } from "./site-footer";
  */
 export async function AppShell({ children }: { children: React.ReactNode }) {
   let username: string | null = null;
+  let unreadNotifications = 0;
   try {
     const user = await currentUser();
     if (user) {
-      const profile = await getProfileByClerkId(createServiceClient(), user.id);
+      const db = createServiceClient();
+      const profile = await getProfileByClerkId(db, user.id);
       username = profile?.username ?? null;
+      if (profile) unreadNotifications = await countUnreadNotifications(db, profile.id);
     }
   } catch {
     username = null; // sin perfil resuelto, la app se comporta como anónima
@@ -44,7 +48,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {username ? <AppNav username={username} /> : null}
+      {username ? <AppNav username={username} unreadNotifications={unreadNotifications} /> : null}
 
       <div className={username ? "lg:pl-56" : ""}>
         {username ? (

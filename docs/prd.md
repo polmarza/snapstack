@@ -135,6 +135,13 @@ En v1 son el mismo perfil de persona en dos momentos de uso distintos.
   opcional; vaciar un campo lo elimina. Añadido el 2026-08-29 (ficha
   `perfil-enriquecido.md`); de momento solo visible en el perfil, no en tarjetas ni feed.
 
+- **[C-04] Notificaciones in-app de nuevos seguidores** — Dado un usuario con sesión, cuando
+  otro dev le sigue, entonces aparece una notificación en `/notifications` y un contador de no
+  leídas en la navegación; abrir la página lo marca todo como leído. Volver a seguir tras
+  dejar de seguir no notifica de nuevo. Sin emails ni push. Añadido el 2026-08-29 (ficha
+  `notificaciones-follows.md`); la actividad de repos seguidos y el silenciado granular
+  quedan para una feature posterior sobre esta base.
+
 ### WON'T (esta versión)
 
 - Swipe o señal explícita de like/dislike sobre tarjetas.
