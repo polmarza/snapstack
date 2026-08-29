@@ -165,6 +165,14 @@ En v1 son el mismo perfil de persona en dos momentos de uso distintos.
   pasivo. En las tarjetas, la estrella enlaza al detalle. Construido el 2026-08-29 (ficha
   `estrella-real.md`; era MEJORA-02); su verificación de flujo exige configurar la App.
 
+- **[C-08] Instalación guiada de la GitHub App** — Dado un usuario con la App sin instalar,
+  cuando está en la selección de repos (onboarding o settings), entonces un aviso con botón
+  le lleva a instalarla; la instalación queda registrada en su perfil (por el webhook
+  `installation` y por el Setup URL, que además guarda los tokens de C-07 si la App pide
+  autorización durante la instalación) y el aviso desaparece. Instalar no es obligatorio:
+  sin App, los datos se quedan como en el import. Construido el 2026-08-29 (ficha
+  `instalacion-guiada.md`).
+
 ### WON'T (esta versión)
 
 - Swipe o señal explícita de like/dislike sobre tarjetas.

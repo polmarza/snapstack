@@ -21,6 +21,7 @@ Usuario de Snapstack, vinculado a su identidad de Clerk/GitHub.
 | tagline | text (nullable, ≤ 80) | Una línea bajo el nombre en el perfil (C-03, migración 009) |
 | bio | text (nullable, ≤ 280) | Bio breve bajo la cabecera del perfil (C-03, migración 009) |
 | social_links | jsonb (default `{}`) | `{plataforma: url}` con lista blanca validada en servidor (C-03, migración 009) |
+| github_installation_id | bigint (nullable) | Instalación de la GitHub App (C-08, migración 015); NULL = aviso de instalación visible |
 | created_at | timestamptz | Alta |
 
 ### repos

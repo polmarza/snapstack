@@ -7,6 +7,7 @@ import { getGithubToken } from "@/lib/github/token";
 import { listPublicRepos } from "@/lib/github/user-repos";
 import { skipOnboardingAction } from "@/app/onboarding/actions";
 import { RepoSelector } from "./repo-selector";
+import { InstallAppBanner } from "@/components/repo/install-app-banner";
 
 /**
  * Página de selección compartida por /onboarding y /settings/repos (M-02/M-03).
@@ -67,6 +68,10 @@ export async function SelectionPage({
           </form>
         ) : null}
       </header>
+
+      {/* C-08: mientras la App no esté instalada, la selección lo recuerda —
+          es el momento natural: acabas de decidir qué repos son los tuyos. */}
+      {profile.github_installation_id == null ? <InstallAppBanner /> : null}
 
       {loadError || !items ? (
         <p data-testid="selection-error" className="text-error">{loadError}</p>

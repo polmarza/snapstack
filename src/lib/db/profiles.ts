@@ -15,6 +15,8 @@ export interface ProfileRow {
   tagline?: string | null;
   bio?: string | null;
   social_links?: SocialLinks;
+  /** Instalación de la GitHub App (C-08, migración 015); NULL = banner visible. */
+  github_installation_id?: number | null;
 }
 
 /**

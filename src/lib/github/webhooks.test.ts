@@ -113,3 +113,56 @@ describe("handleGithubEvent", () => {
     expect((await handleGithubEvent(db, "repository", { action: "archived", repository: webhookRepo() })).handled).toBe(false);
   });
 });
+
+describe("handleGithubEvent: installation (C-08)", () => {
+  function fakeProfilesDb() {
+    const perfiles = [
+      { id: "p1", github_id: 111, github_installation_id: null as number | null },
+      { id: "p2", github_id: 222, github_installation_id: 77 as number | null },
+    ];
+    const db = {
+      from: (table: string) => {
+        expect(table).toBe("profiles");
+        return {
+          update: (patch: { github_installation_id: number | null }) => ({
+            eq: (_col: string, accountId: number) => {
+              for (const p of perfiles) {
+                if (p.github_id === accountId) p.github_installation_id = patch.github_installation_id;
+              }
+              return Promise.resolve({ error: null });
+            },
+          }),
+        };
+      },
+    } as unknown as Parameters<typeof handleGithubEvent>[0];
+    return { db, perfiles };
+  }
+
+  const payload = (action: string, installationId = 9001, accountId = 111) => ({
+    action,
+    installation: { id: installationId, account: { id: accountId } },
+  });
+
+  it("installation.created registra el id en el perfil de esa cuenta", async () => {
+    const { db, perfiles } = fakeProfilesDb();
+    const result = await handleGithubEvent(db, "installation", payload("created"));
+    expect(result.handled).toBe(true);
+    expect(perfiles[0].github_installation_id).toBe(9001);
+    expect(perfiles[1].github_installation_id).toBe(77); // otra cuenta, intacta
+  });
+
+  it("installation.deleted la limpia; una cuenta sin perfil no rompe nada", async () => {
+    const { db, perfiles } = fakeProfilesDb();
+    await handleGithubEvent(db, "installation", payload("deleted", 77, 222));
+    expect(perfiles[1].github_installation_id).toBeNull();
+
+    const sinPerfil = await handleGithubEvent(db, "installation", payload("created", 5, 999));
+    expect(sinPerfil.handled).toBe(true); // el update simplemente no encuentra fila
+  });
+
+  it("un payload incompleto o una acción desconocida se ignoran", async () => {
+    const { db } = fakeProfilesDb();
+    expect((await handleGithubEvent(db, "installation", { action: "created" })).handled).toBe(false);
+    expect((await handleGithubEvent(db, "installation", payload("banana"))).handled).toBe(false);
+  });
+});

@@ -39,6 +39,7 @@ No planificar en detalle hasta terminar la Fase 1. Candidatos:
 - [x] C-05 Página de detalle del repo con README (2026-08-29)
 - [x] C-06 Suscripción a los cambios de un repo, con notificación por push (2026-08-29)
 - [x] C-07 Estrella real desde snapstack vía GitHub App (2026-08-29; flujo pendiente de configurar la App)
+- [x] C-08 Instalación guiada de la GitHub App con registro en el perfil (2026-08-29)
 - [ ] C-01 Similitud entre repos por embeddings (pgvector sobre README/topics)
 - [ ] Reclamación de repos semilla por sus autores al registrarse
 - [ ] Mejoras de feed guiadas por las señales implícitas acumuladas (qué mostrar, no ranking
