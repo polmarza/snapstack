@@ -18,7 +18,16 @@ export function AuthControls() {
           </SignInButton>
         }
       >
-        <UserButton />
+        <div className="flex items-center gap-4">
+          <a
+            href="/settings/repos"
+            data-testid="my-repos-link"
+            className="text-sm text-content-secondary hover:text-content"
+          >
+            Mis repos
+          </a>
+          <UserButton />
+        </div>
       </Show>
     </div>
   );

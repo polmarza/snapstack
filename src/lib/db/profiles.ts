@@ -57,3 +57,13 @@ export async function ensureProfile(db: Db, user: ClerkUserLike | null): Promise
   if (error) throw new Error(`Error al asegurar el perfil: ${error.message}`);
   return row;
 }
+
+/** Perfil persistido, con su `id` (lo necesita `repos.owner_profile_id`). */
+export async function getProfileByClerkId(
+  db: Db,
+  clerkId: string,
+): Promise<(ProfileRow & { id: string }) | null> {
+  const { data, error } = await db.from("profiles").select("*").eq("clerk_id", clerkId).maybeSingle();
+  if (error) throw new Error(`Error al leer el perfil: ${error.message}`);
+  return (data as (ProfileRow & { id: string }) | null) ?? null;
+}
