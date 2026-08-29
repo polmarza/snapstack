@@ -101,84 +101,106 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const alreadyFollowing = canFollow ? await isFollowing(db, viewer.id, profile.id) : false;
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+    <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: profileJsonLd(profile) }}
       />
 
-      <header data-testid="profile-header" className="mb-8 flex items-center gap-4">
-        {profile.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- avatar de GitHub, sin optimización
-          <img
-            src={profile.avatar_url}
-            alt=""
-            width={64}
-            height={64}
-            className="h-16 w-16 rounded-full border border-edge"
-          />
-        ) : null}
-        <div className="min-w-0">
-          <h1 className="truncate font-mono text-2xl font-bold">
-            {profile.display_name ?? profile.username}
-          </h1>
-          {profile.tagline ? (
-            <p data-testid="profile-tagline" className="mt-0.5 truncate text-sm text-content">
-              {profile.tagline}
-            </p>
+      {/* Cabecera en tres niveles: quién es, qué cuenta de sí, y sus números
+          con sus enlaces. Antes todo compartía una línea y nada destacaba. */}
+      <header data-testid="profile-header" className="mb-8">
+        <div className="flex items-start gap-4">
+          {profile.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- avatar de GitHub, sin optimización
+            <img
+              src={profile.avatar_url}
+              alt=""
+              width={80}
+              height={80}
+              className="h-16 w-16 shrink-0 rounded-full border border-edge sm:h-20 sm:w-20"
+            />
           ) : null}
-          <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-content-secondary">
-            <span data-testid="profile-username" className="font-mono">@{profile.username}</span>
-            <a
-              href={`https://github.com/${profile.username}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              GitHub ↗
-            </a>
-            <span className="font-mono">
-              {repos.length} {repos.length === 1 ? "repo" : "repos"}
-            </span>
-            <span data-testid="profile-follow-counts" className="font-mono">
-              {counts.followers} {counts.followers === 1 ? "follower" : "followers"} ·{" "}
-              {counts.following} following
-            </span>
-            <SocialIconLinks links={parseStoredSocialLinks(profile.social_links)} />
-          </p>
-        </div>
-        {canFollow ? (
-          <div className="ml-auto shrink-0">
-            <FollowButton profileId={profile.id} initialFollowing={alreadyFollowing} refreshOnToggle />
-          </div>
-        ) : viewer && viewer.id === profile.id ? (
-          // Tu propio perfil: acceso a Settings desde aquí (en móvil es la
-          // única puerta; la barra inferior ya no lo lleva).
-          <div className="ml-auto shrink-0">
-            <Link
-              href="/settings/account"
-              data-testid="profile-edit-link"
-              className="flex items-center gap-2 rounded-lg border border-edge px-4 py-2 text-sm text-content-secondary transition-colors hover:text-content"
-            >
-              <Settings size={16} strokeWidth={1.75} aria-hidden />
-              Edit profile
-            </Link>
-          </div>
-        ) : null}
-      </header>
 
-      {profile.bio ? (
-        <p data-testid="profile-bio" className="-mt-4 mb-8 max-w-prose text-sm text-content-secondary">
-          {profile.bio}
-        </p>
-      ) : null}
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate font-mono text-2xl font-bold sm:text-3xl">
+              {profile.display_name ?? profile.username}
+            </h1>
+            <p className="mt-1 flex flex-wrap items-center gap-x-3 text-sm text-content-secondary">
+              <span data-testid="profile-username" className="font-mono">@{profile.username}</span>
+              <a
+                href={`https://github.com/${profile.username}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                GitHub ↗
+              </a>
+            </p>
+            {profile.tagline ? (
+              <p data-testid="profile-tagline" className="mt-2 text-base text-content">
+                {profile.tagline}
+              </p>
+            ) : null}
+          </div>
+
+          {canFollow ? (
+            <div className="shrink-0">
+              <FollowButton profileId={profile.id} initialFollowing={alreadyFollowing} refreshOnToggle />
+            </div>
+          ) : viewer && viewer.id === profile.id ? (
+            // Tu propio perfil: acceso a Settings desde aquí (en móvil es la
+            // única puerta; la barra inferior ya no lo lleva).
+            <div className="shrink-0">
+              <Link
+                href="/settings/account"
+                data-testid="profile-edit-link"
+                className="flex items-center gap-2 rounded-lg border border-edge px-3 py-2 text-sm text-content-secondary transition-colors hover:text-content sm:px-4"
+              >
+                <Settings size={16} strokeWidth={1.75} aria-hidden />
+                <span className="hidden sm:inline">Edit profile</span>
+              </Link>
+            </div>
+          ) : null}
+        </div>
+
+        {profile.bio ? (
+          <p data-testid="profile-bio" className="mt-4 max-w-prose text-sm leading-relaxed text-content-secondary">
+            {profile.bio}
+          </p>
+        ) : null}
+
+        {/* Números y redes, separados por su propia línea: son datos, no
+            identidad, y con la cifra en primer plano se leen de un vistazo. */}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-edge pt-4">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-sm">
+            <span>
+              <span className="font-bold">{repos.length}</span>{" "}
+              <span className="text-content-secondary">{repos.length === 1 ? "repo" : "repos"}</span>
+            </span>
+            <span data-testid="profile-follow-counts">
+              <span className="font-bold">{counts.followers}</span>{" "}
+              <span className="text-content-secondary">
+                {counts.followers === 1 ? "follower" : "followers"}
+              </span>
+              <span className="mx-2 text-content-secondary/50">·</span>
+              <span className="font-bold">{counts.following}</span>{" "}
+              <span className="text-content-secondary">following</span>
+            </span>
+          </div>
+          <SocialIconLinks links={parseStoredSocialLinks(profile.social_links)} />
+        </div>
+      </header>
 
       {repos.length === 0 ? (
         <p data-testid="profile-empty" className="text-content-secondary">
           No repos selected yet.
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        // Una sola columna, como el feed: la tarjeta es la misma y sus
+        // tamaños están pensados para este ancho (a dos columnas el texto
+        // desbordaba y el menú de la esquina quedaba fuera).
+        <div className="flex flex-col gap-6">
           {repos.map((repo) => (
             <RepoCard key={repo.id} repo={repo} showFooter={false} />
           ))}
