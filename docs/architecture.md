@@ -131,11 +131,15 @@ Code pide aprobar los servidores de proyecto y autenticarse con `/mcp`.
 
 ## Estrategia de despliegue
 
-- **Vercel**, con previews por rama y producción en `main`. Dominio: `snapstack.sh`.
-- Entornos: local (`pnpm dev`) → preview (PR) → producción (merge a `main`).
+- **Vercel**, con producción en `main`. Dominio: `snapstack.sh`.
+- **Despliegue manual, nunca automático**: `vercel.json` fija `git.deploymentEnabled: false`,
+  de modo que ningún push ni merge publica por su cuenta. Se lanza a mano
+  (`pnpm dlx vercel --prod`, el panel o un deploy hook). Decisión de Pol: quiere elegir el
+  momento de cada publicación.
+- Entornos: local (`pnpm dev`) → producción (despliegue manual).
 - Variables de entorno por entorno en Vercel; en local, `.env.local` (ver `.env.example`).
-- **Quién despliega:** Pol, desde Vercel (merge a `main` publica). El agente prepara y explica,
-  no publica (ver "Límites de ejecución" en CLAUDE.md).
+- **Quién despliega:** Pol, a mano. El agente prepara y explica, no publica (ver "Límites de
+  ejecución" en CLAUDE.md).
 - **El procedimiento completo de la primera salida a producción está en `docs/deploy.md`**
   (Supabase remoto, Clerk de producción, GitHub App, Vercel, siembra y comprobaciones).
 

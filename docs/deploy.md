@@ -28,7 +28,17 @@ El proyecto remoto ya existe; falta el esquema.
    for f in supabase/migrations/*.sql; do psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$f"; done
    ```
 
-2. **Comprobar** que están las 6 tablas y sus políticas:
+   > **Aplicadas el 2026-08-29 con el bucle de `psql`** (7 migraciones, `001` a `007`), no con
+   > `supabase db push`: el CLI espera nombres con marca de tiempo y los nuestros son `001_…`.
+   > Consecuencia: `supabase_migrations.schema_migrations` no las registra, así que las
+   > siguientes migraciones se aplican por el mismo camino. Un `db push` a ciegas intentaría
+   > recrearlo todo y fallaría (que es un fallo seguro, no destructivo).
+   >
+   > Nota de conexión: la cadena **directa** (`db.<ref>.supabase.co`) solo publica IPv6 y no
+   > sirve desde redes sin IPv6. Hay que usar la del **Session pooler**
+   > (`…pooler.supabase.com:5432`), que va por IPv4.
+
+2. **Comprobar** que están las tablas y sus políticas:
 
    ```bash
    psql "$DATABASE_URL" -c "\dt public.*"
@@ -55,7 +65,18 @@ las tuyas.
    (Clerk los lista; van en el proveedor del dominio).
 4. Anotar las claves de producción (`pk_live_…`, `sk_live_…`) para el paso 4.
 
-> Ojo: son claves distintas de las de desarrollo. Las de dev seguirán funcionando en local.
+> **Las claves de producción no van a `.env.local`.** Sólo funcionan desde el dominio de
+> producción: en localhost Clerk las rechaza ("Production Keys are only allowed for domain
+> …"). Su sitio es Vercel, y sólo en el entorno **Production**.
+>
+> Para tener las dos a la vez sin pisarse, se usan los entornos de Vercel: **Production** con
+> las `pk_live_/sk_live_`, y **Preview** (y Development) con las mismas de desarrollo que hay
+> en `.env.local`. Así cada rama desplegada de prueba entra con la instancia de dev y nadie
+> crea usuarios reales sin querer.
+>
+> Si alguna vez hiciera falta probar producción desde la máquina local, la única vía es mapear
+> un subdominio del dominio real al equipo y servir por HTTPS en el puerto 443; para el uso
+> normal no compensa: se prueba sobre el sitio desplegado.
 
 ---
 
@@ -101,7 +122,18 @@ completo en `architecture.md` → "GitHub App"; en resumen:
    máquina de Pol.
 
 3. Añadir el dominio `snapstack.sh` y sus DNS.
-4. Desplegar (merge a `main` publica).
+4. Desplegar. **Los despliegues automáticos están desactivados**: `vercel.json` lleva
+   `git.deploymentEnabled: false`, así que un push o un merge a `main` **no publica nada**.
+   Se despliega a mano, de una de estas formas:
+
+   ```bash
+   pnpm dlx vercel --prod
+   ```
+
+   …o desde el panel de Vercel (Deployments → Redeploy), o con un Deploy Hook.
+
+   Aviso: la configuración solo surte efecto **después del primer despliegue**, que sí puede
+   dispararse solo. A partir de ahí, silencio.
 5. Comprobar después del deploy:
 
    ```bash
