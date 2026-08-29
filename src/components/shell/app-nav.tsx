@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
-import { LayoutList, LogOut, Settings, User, BookMarked } from "lucide-react";
+import { Bell, LayoutList, LogOut, Settings, User, BookMarked } from "lucide-react";
+import { NOTIFICATIONS_READ_EVENT } from "@/components/notifications/mark-read-on-open";
 import { DonateButton } from "./donate-button";
 import { Logo } from "./logo";
 
@@ -19,6 +21,12 @@ const items = [
   { href: "/", label: "Feed", Icon: LayoutList, match: (p: string) => p === "/" },
   { href: "__profile__", label: "Profile", Icon: User, match: (p: string) => p.startsWith("/u/") },
   {
+    href: "/notifications",
+    label: "Alerts",
+    Icon: Bell,
+    match: (p: string) => p.startsWith("/notifications"),
+  },
+  {
     href: "/settings/repos",
     label: "Repos",
     Icon: BookMarked,
@@ -32,8 +40,34 @@ const items = [
   },
 ];
 
-export function AppNav({ username }: { username: string }) {
+export function AppNav({
+  username,
+  unreadNotifications = 0,
+}: {
+  username: string;
+  unreadNotifications?: number;
+}) {
   const pathname = usePathname();
+
+  // El badge (C-04) llega del servidor al montar; abrir /notifications lo pone
+  // a cero por evento — el layout no se re-renderiza al navegar.
+  const [unread, setUnread] = useState(unreadNotifications);
+  useEffect(() => {
+    const clear = () => setUnread(0);
+    window.addEventListener(NOTIFICATIONS_READ_EVENT, clear);
+    return () => window.removeEventListener(NOTIFICATIONS_READ_EVENT, clear);
+  }, []);
+
+  const badge =
+    unread > 0 ? (
+      <span
+        data-testid="nav-alerts-badge"
+        className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-mono text-[10px] font-bold leading-none text-background"
+      >
+        {unread > 9 ? "9+" : unread}
+      </span>
+    ) : null;
+
   const destinos = items.map((item) => ({
     ...item,
     href: item.href === "__profile__" ? `/u/${username}` : item.href,
@@ -63,7 +97,10 @@ export function AppNav({ username }: { username: string }) {
               activo ? "bg-surface text-content" : "text-content-secondary hover:text-content"
             }`}
           >
-            <Icon size={20} strokeWidth={1.75} aria-hidden />
+            <span className="relative">
+              <Icon size={20} strokeWidth={1.75} aria-hidden />
+              {label === "Alerts" ? badge : null}
+            </span>
             {label}
           </Link>
         ))}
@@ -98,7 +135,10 @@ export function AppNav({ username }: { username: string }) {
               activo ? "text-primary" : "text-content-secondary"
             }`}
           >
-            <Icon size={20} strokeWidth={1.75} aria-hidden />
+            <span className="relative">
+              <Icon size={20} strokeWidth={1.75} aria-hidden />
+              {label === "Alerts" ? badge : null}
+            </span>
             {label}
           </Link>
         ))}

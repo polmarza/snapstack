@@ -59,6 +59,20 @@ poder ajustarlo sin migración. Se valida en la capa de aplicación al importar.
 
 PK compuesta (`follower_id`, `followed_id`). Un usuario no puede seguirse a sí mismo (check).
 
+### notifications
+Notificaciones in-app (C-04, migración 010). Genérica (`type` + `payload`) aunque v1 solo
+emite `new_follower`; el dedupe de ese tipo es de aplicación (una por par destinatario/actor,
+para siempre). Cascada con `profiles` en ambos extremos: la baja de cuenta no deja huérfanas.
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| id | uuid (PK) | Identificador |
+| recipient_profile_id | uuid (FK → profiles) | Quién la recibe |
+| actor_profile_id | uuid (FK → profiles, nullable) | Quién la provoca |
+| type | text (check) | `new_follower` (v1) |
+| payload | jsonb (default `{}`) | Datos extra del tipo; vacío en `new_follower` |
+| created_at | timestamptz | Cuándo ocurrió |
+| read_at | timestamptz (nullable) | NULL = no leída (índice parcial para el badge) |
+
 ### signals
 Señales implícitas del feed. Solo instrumentación en v1: ningún ranking las consume.
 | Campo | Tipo | Descripción |

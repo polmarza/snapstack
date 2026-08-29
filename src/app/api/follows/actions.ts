@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { currentUser } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/db/client";
 import { setFollowing, SelfFollowError } from "@/lib/db/follows";
+import { createFollowNotification } from "@/lib/db/notifications";
 import { ensureProfile, getProfileByClerkId } from "@/lib/db/profiles";
 
 export interface FollowResult {
@@ -27,6 +28,16 @@ export async function setFollowingAction(
     if (!profile) return { ok: false, following: !following, error: "We couldn't find your profile." };
 
     await setFollowing(db, profile.id, followedProfileId, following);
+
+    // La notificación (C-04) nunca rompe el follow: si falla, se loguea y ya.
+    if (following) {
+      try {
+        await createFollowNotification(db, followedProfileId, profile.id);
+      } catch (error) {
+        console.error("[setFollowingAction] notificación", error);
+      }
+    }
+
     revalidatePath("/");
     return { ok: true, following, error: null };
   } catch (error) {
