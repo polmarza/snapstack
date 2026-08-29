@@ -16,5 +16,11 @@ enlace pelado.
 - Recaptura del hero con el estado actual de la landing (1712×898, recortada al borde del
   marquee) para `.github/assets/hero.png` — la cabecera del README — y su versión 1200×630
   en `public/og-home.png`, que es la que el metadato busca.
-- Queda pendiente decidir qué hacer con `public/og-home-new.png`: es la captura anterior, ya
-  sin referencias.
+- **El nombre pasa a llevar versión** (`og-home-v2.png`) y el código apunta ahí. Es el motivo
+  del renombrado que Pol había intentado a mano: Facebook, WhatsApp y compañía cachean la
+  imagen **por URL**, así que recapturar exige un nombre nuevo — pero también actualizar la
+  referencia, que es el paso que faltaba y provocaba el 404. Próxima recaptura: `-v3`.
+- Se añaden `og:image:width/height/alt`: los scrapers componen la tarjeta sin descargar la
+  imagen primero, y el alt describe la portada.
+- `public/og-home-new.png` (la captura vieja renombrada durante la depuración) se elimina: ya
+  no la referencia nadie. Sigue recuperable desde el historial de git.
