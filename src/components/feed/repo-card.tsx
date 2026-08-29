@@ -153,16 +153,26 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
           ) : null}
         </div>
 
-        <a
-          href={repo.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="feed-card-repo-link"
-          onClick={() => trackSignal({ repoId: repo.id, type: "click_repo" })}
-          className="shrink-0 text-sm text-primary hover:underline"
-        >
-          View on GitHub ↗
-        </a>
+        <div className="flex shrink-0 items-center gap-3">
+          {/* Clicks reales acumulados (señal click_repo, contador de la migración 007). */}
+          <span
+            data-testid="feed-card-clicks"
+            className="font-mono text-xs text-content-secondary"
+            title="Clicks through to GitHub"
+          >
+            clicks {repo.click_count ?? 0}
+          </span>
+          <a
+            href={repo.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="feed-card-repo-link"
+            onClick={() => trackSignal({ repoId: repo.id, type: "click_repo" })}
+            className="text-sm text-primary hover:underline"
+          >
+            View on GitHub ↗
+          </a>
+        </div>
       </div>
     </article>
   );
