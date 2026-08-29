@@ -101,7 +101,18 @@ completo en `architecture.md` → "GitHub App"; en resumen:
    máquina de Pol.
 
 3. Añadir el dominio `snapstack.sh` y sus DNS.
-4. Desplegar (merge a `main` publica).
+4. Desplegar. **Los despliegues automáticos están desactivados**: `vercel.json` lleva
+   `git.deploymentEnabled: false`, así que un push o un merge a `main` **no publica nada**.
+   Se despliega a mano, de una de estas formas:
+
+   ```bash
+   pnpm dlx vercel --prod
+   ```
+
+   …o desde el panel de Vercel (Deployments → Redeploy), o con un Deploy Hook.
+
+   Aviso: la configuración solo surte efecto **después del primer despliegue**, que sí puede
+   dispararse solo. A partir de ahí, silencio.
 5. Comprobar después del deploy:
 
    ```bash

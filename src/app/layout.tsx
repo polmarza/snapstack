@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { AppShell } from "@/components/shell/app-shell";
 import "./globals.css";
 
@@ -25,6 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="en" className={`${geist.variable} ${jetbrainsMono.variable}`}>
         <body className="font-sans antialiased">
           <AppShell>{children}</AppShell>
+          {/* Analítica de Vercel: sin cookies y sin banner de consentimiento.
+              Solo emite en despliegues de Vercel; en local no hace nada. */}
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
