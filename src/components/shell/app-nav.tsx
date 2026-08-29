@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
 import { LayoutList, LogOut, Settings, User, BookMarked } from "lucide-react";
 import { DonateButton } from "./donate-button";
+import { Logo } from "./logo";
 
 /**
  * Navegación de la app, solo con sesión: barra lateral en desktop y barra
@@ -47,7 +48,10 @@ export function AppNav({ username }: { username: string }) {
         aria-label="Main"
         className="fixed inset-y-0 left-0 z-20 hidden w-56 flex-col gap-1 border-r border-edge bg-background px-3 py-6 lg:flex"
       >
-        <span className="mb-4 px-3 font-mono text-lg font-bold lowercase">snapstack</span>
+        <span className="mb-4 flex items-center gap-2.5 px-3 font-mono text-lg font-bold lowercase">
+          <Logo size={24} />
+          snapstack
+        </span>
 
         {destinos.map(({ href, label, Icon, activo }) => (
           <Link

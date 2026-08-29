@@ -25,6 +25,12 @@ Del estreno de Pol como primer usuario de producción salieron cuatro mejoras:
   campo vive fuera del `<label>` para que escribir no alterne la selección. Nota: la elección
   colorea la ficha al instante (el fondo depende del lenguaje).
 
+Además, tres remates visuales del mismo repaso: la marca del hero **vuelve a blanco**; se
+añade el **logo en la cabecera y en la barra lateral** — el cuadrado verde del favicon con las
+capas *recortadas por máscara SVG*: el trazo es un agujero real y por la silueta se ve lo que
+haya detrás; y las **tarjetas del hero suben de presencia** (opacidad 30→50 y velo más ligero),
+que en móvil apenas se veían.
+
 Verificado: 99/99 unit, 21/21 e2e, build y lint en verde. El flujo con sesión (redirección,
 skip, lenguaje manual) queda para el repaso de Pol — requiere sus credenciales.
 

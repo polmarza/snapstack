@@ -95,7 +95,7 @@ export default async function Home({ searchParams }: HomeProps) {
             <div className="relative flex flex-col items-center">
               <h1
                 data-testid="hero-wordmark"
-                className="landing-rise font-mono text-6xl font-bold lowercase tracking-tight text-primary sm:text-8xl"
+                className="landing-rise font-mono text-6xl font-bold lowercase tracking-tight sm:text-8xl"
               >
                 snapstack
               </h1>
