@@ -23,8 +23,27 @@ test("la landing cuenta el problema, las funcionalidades y cómo empezar, en ese
   // Seis funcionalidades, cada una con su título y su texto.
   await expect(features.getByTestId("landing-feature-card")).toHaveCount(6);
 
-  // El orden importa: primero por qué, luego qué, luego cómo.
+  // El orden importa: primero por qué, luego qué, luego cómo, y el stack al final.
   const posicion = async (testId: string) =>
     (await page.getByTestId(testId).boundingBox())?.y ?? 0;
   expect(await posicion("landing-why")).toBeLessThan(await posicion("landing-features"));
+  expect(await posicion("landing-features")).toBeLessThan(await posicion("landing-stack"));
+});
+
+test("la landing enseña el stack con sus logos y enlaza al código", async ({ page }) => {
+  await page.goto("/");
+  const stack = page.getByTestId("landing-stack");
+  await expect(stack).toBeVisible();
+
+  // Diez tecnologías, cada una con su nombre y su papel.
+  await expect(stack.getByTestId("landing-stack-item")).toHaveCount(10);
+  await expect(stack).toContainText("Next.js");
+  await expect(stack).toContainText("Clerk");
+  await expect(stack).toContainText("Supabase");
+
+  // Y la promesa que sostiene la sección: el código es público.
+  await expect(stack.getByTestId("landing-stack-repo")).toHaveAttribute(
+    "href",
+    "https://github.com/polmarza/snapstack",
+  );
 });
