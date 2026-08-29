@@ -18,3 +18,10 @@
      negrita** y la etiqueta en secundario, y los iconos sociales alineados a la derecha.
 - El botón (Follow o Edit profile) se alinea arriba con el nombre; en móvil, "Edit profile"
   se queda en el icono para no comerse el ancho.
+
+## Adenda (feedback de Pol)
+
+- La bio sube a 16px: es texto para leer, no un metadato.
+- El enlace a GitHub deja la línea de identidad y pasa a la fila de iconos sociales, como una
+  red más — `SocialIconLinks` acepta `githubUsername` y lo pinta primero. Bajo el nombre queda
+  solo `@usuario`.

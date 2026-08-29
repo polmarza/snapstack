@@ -126,16 +126,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             <h1 className="truncate font-mono text-2xl font-bold sm:text-3xl">
               {profile.display_name ?? profile.username}
             </h1>
-            <p className="mt-1 flex flex-wrap items-center gap-x-3 text-sm text-content-secondary">
+            <p className="mt-1 text-sm text-content-secondary">
               <span data-testid="profile-username" className="font-mono">@{profile.username}</span>
-              <a
-                href={`https://github.com/${profile.username}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                GitHub ↗
-              </a>
             </p>
             {profile.tagline ? (
               <p data-testid="profile-tagline" className="mt-2 text-base text-content">
@@ -165,7 +157,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         </div>
 
         {profile.bio ? (
-          <p data-testid="profile-bio" className="mt-4 max-w-prose text-sm leading-relaxed text-content-secondary">
+          <p data-testid="profile-bio" className="mt-4 max-w-prose text-base leading-relaxed text-content-secondary">
             {profile.bio}
           </p>
         ) : null}
@@ -188,7 +180,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               <span className="text-content-secondary">following</span>
             </span>
           </div>
-          <SocialIconLinks links={parseStoredSocialLinks(profile.social_links)} />
+          <SocialIconLinks
+            links={parseStoredSocialLinks(profile.social_links)}
+            githubUsername={profile.username}
+          />
         </div>
       </header>
 

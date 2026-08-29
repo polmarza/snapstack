@@ -1,6 +1,7 @@
 import { Globe } from "lucide-react";
 import {
   siBluesky,
+  siGithub,
   siMastodon,
   siReddit,
   siSubstack,
@@ -35,12 +36,34 @@ const BRAND_PATHS: Partial<Record<SocialPlatformKey, { d: string; viewBox: strin
  * Fila compacta de iconos con los enlaces sociales del perfil (C-03). Solo
  * renderiza plataformas con enlace; sin enlaces, nada.
  */
-export function SocialIconLinks({ links }: { links: SocialLinks }) {
+export function SocialIconLinks({
+  links,
+  githubUsername,
+}: {
+  links: SocialLinks;
+  /** Con username, GitHub abre la fila: es una red más, no un caso aparte. */
+  githubUsername?: string;
+}) {
   const activos = SOCIAL_PLATFORM_KEYS.filter((key) => links[key]);
-  if (activos.length === 0) return null;
+  if (activos.length === 0 && !githubUsername) return null;
 
   return (
-    <span data-testid="profile-social-links" className="flex items-center gap-2.5">
+    <span data-testid="profile-social-links" className="flex items-center gap-3">
+      {githubUsername ? (
+        <a
+          href={`https://github.com/${githubUsername}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub"
+          title="GitHub"
+          data-testid="profile-social-github"
+          className="text-content-secondary transition-colors hover:text-content"
+        >
+          <svg aria-hidden viewBox="0 0 24 24" width={16} height={16} fill="currentColor">
+            <path d={siGithub.path} />
+          </svg>
+        </a>
+      ) : null}
       {activos.map((key) => {
         const brand = BRAND_PATHS[key];
         return (
@@ -58,14 +81,14 @@ export function SocialIconLinks({ links }: { links: SocialLinks }) {
               <svg
                 aria-hidden
                 viewBox={brand.viewBox}
-                width={15}
-                height={15}
+                width={16}
+                height={16}
                 fill="currentColor"
               >
                 <path d={brand.d} />
               </svg>
             ) : (
-              <Globe aria-hidden size={15} strokeWidth={1.8} />
+              <Globe aria-hidden size={16} strokeWidth={1.8} />
             )}
           </a>
         );
