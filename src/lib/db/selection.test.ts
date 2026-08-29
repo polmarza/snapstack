@@ -6,6 +6,7 @@ import {
   validateSelectionSize,
   selectionLimit,
   SelectionLimitError,
+  RepoOwnedByAnotherProfileError,
   importOwnedRepos,
   removeOwnedRepos,
 } from "./selection";
@@ -29,29 +30,80 @@ const fila = (n: number, extra: Partial<RepoRow> = {}): RepoRow => ({
   ...extra,
 });
 
-/** Db falsa con upsert por github_repo_id y update de status. */
+/**
+ * Db falsa con la semántica real de la tabla: lectura de propiedad, insert que
+ * respeta la restricción única, y update con sus filtros (incluido el `or` que
+ * limita a quién puede escribir la fila).
+ */
 function fakeDb(inicial: RepoRow[] = []) {
-  const store = new Map<number, RepoRow>(inicial.map((r) => [r.github_repo_id, r]));
+  const store = new Map<number, RepoRow>(inicial.map((r) => [r.github_repo_id, { ...r }]));
+
   const db = {
     from: () => ({
-      upsert: (rows: RepoRow[], opts: { onConflict: string }) => {
-        expect(opts.onConflict).toBe("github_repo_id");
-        for (const row of rows) store.set(row.github_repo_id, row);
+      select: () => ({
+        in: (_col: string, ids: number[]) =>
+          Promise.resolve({
+            data: [...store.values()]
+              .filter((row) => ids.includes(row.github_repo_id))
+              .map((row) => ({
+                github_repo_id: row.github_repo_id,
+                owner_profile_id: row.owner_profile_id,
+              })),
+            error: null,
+          }),
+      }),
+      insert: (rows: RepoRow[]) => {
+        for (const row of rows) {
+          if (store.has(row.github_repo_id)) {
+            return Promise.resolve({ error: { message: "duplicate key value" } });
+          }
+          store.set(row.github_repo_id, { ...row });
+        }
         return Promise.resolve({ error: null });
       },
-      update: (patch: Partial<RepoRow>) => ({
-        eq: (_col: string, owner: string) => ({
-          in: (_c: string, ids: number[]) => {
-            for (const id of ids) {
-              const row = store.get(id);
-              if (row && row.owner_profile_id === owner) store.set(id, { ...row, ...patch });
+      update: (patch: Partial<RepoRow>) => {
+        let ids: number[] | null = null;
+        let ownerEq: string | null = null;
+        let ownerNullOrEq: string | null = null;
+
+        const aplicar = () => {
+          for (const [id, row] of store) {
+            if (ids && !ids.includes(id)) continue;
+            if (ownerEq !== null && row.owner_profile_id !== ownerEq) continue;
+            if (
+              ownerNullOrEq !== null &&
+              row.owner_profile_id !== null &&
+              row.owner_profile_id !== ownerNullOrEq
+            ) {
+              continue;
             }
-            return Promise.resolve({ error: null });
+            store.set(id, { ...row, ...patch });
+          }
+          return { error: null };
+        };
+
+        const builder = {
+          eq: (col: string, value: string | number) => {
+            if (col === "github_repo_id") ids = [Number(value)];
+            if (col === "owner_profile_id") ownerEq = String(value);
+            return builder;
           },
-        }),
-      }),
+          in: (_col: string, valores: number[]) => {
+            ids = valores;
+            return builder;
+          },
+          or: (expr: string) => {
+            const m = expr.match(/owner_profile_id\.is\.null,owner_profile_id\.eq\.(.+)$/);
+            if (m) ownerNullOrEq = m[1];
+            return builder;
+          },
+          then: (resolve: (v: { error: null }) => void) => resolve(aplicar()),
+        };
+        return builder;
+      },
     }),
   } as unknown as Db;
+
   return { db, store };
 }
 
@@ -95,18 +147,45 @@ describe("validateSelectionSize", () => {
   });
 });
 
-describe("importOwnedRepos / removeOwnedRepos", () => {
-  it("M-02: importar no duplica por github_repo_id y reclama una semilla existente", async () => {
+describe("importOwnedRepos", () => {
+  it("M-02: importar no duplica por github_repo_id y reclama una semilla sin dueño", async () => {
     const semilla = fila(7, { owner_profile_id: null, is_seed: true, owner_login: "otro" });
     const { db, store } = fakeDb([semilla]);
 
-    await importOwnedRepos(db, [fila(7), fila(8)]);
+    await importOwnedRepos(db, [fila(7), fila(8)], "perfil-pol");
 
     expect(store.size).toBe(2);
     expect(store.get(7)?.owner_profile_id).toBe("perfil-pol"); // reclamada
     expect(store.get(7)?.is_seed).toBe(false);
   });
 
+  it("seguridad: no roba un repo que ya pertenece a otro perfil", async () => {
+    const deOtro = fila(9, { owner_profile_id: "perfil-ajeno", full_name: "otra/cosa" });
+    const { db, store } = fakeDb([deOtro]);
+
+    await expect(importOwnedRepos(db, [fila(9)], "perfil-pol")).rejects.toThrow(
+      RepoOwnedByAnotherProfileError,
+    );
+    expect(store.get(9)?.owner_profile_id).toBe("perfil-ajeno"); // intacto
+  });
+
+  it("seguridad: el intento sobre un repo ajeno no escribe tampoco los del mismo lote", async () => {
+    const deOtro = fila(9, { owner_profile_id: "perfil-ajeno" });
+    const { db, store } = fakeDb([deOtro]);
+
+    await expect(importOwnedRepos(db, [fila(1), fila(9)], "perfil-pol")).rejects.toThrow();
+    expect(store.has(1)).toBe(false);
+  });
+
+  it("M-03: re-importar un repo propio lo refresca sin problema", async () => {
+    const { db, store } = fakeDb([fila(1, { stars: 1 })]);
+    await importOwnedRepos(db, [fila(1, { stars: 42 })], "perfil-pol");
+    expect(store.get(1)?.stars).toBe(42);
+    expect(store.size).toBe(1);
+  });
+});
+
+describe("removeOwnedRepos", () => {
   it("M-03: quitar pasa a removed sin borrar, y re-importar reactiva", async () => {
     const { db, store } = fakeDb([fila(1)]);
 
@@ -114,7 +193,7 @@ describe("importOwnedRepos / removeOwnedRepos", () => {
     expect(store.get(1)?.status).toBe("removed");
     expect(store.size).toBe(1); // no se borra
 
-    await importOwnedRepos(db, [fila(1)]);
+    await importOwnedRepos(db, [fila(1)], "perfil-pol");
     expect(store.get(1)?.status).toBe("active");
   });
 

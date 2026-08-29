@@ -18,6 +18,13 @@ export class SelectionLimitError extends Error {
   }
 }
 
+/** Intento de importar un repo que ya pertenece a otro perfil de Snapstack. */
+export class RepoOwnedByAnotherProfileError extends Error {
+  constructor(fullName: string) {
+    super(`"${fullName}" is already on another dev's profile`);
+  }
+}
+
 export interface SelectionDiff {
   /** full_names a importar (nuevos en la selección). */
   toAdd: string[];
@@ -54,13 +61,55 @@ export async function listOwnedActiveRepos(db: Db, profileId: string): Promise<R
 }
 
 /**
- * Importa (o reactiva/reclama) por upsert sobre `github_repo_id`: un repo que ya
- * existía como semilla pasa a tener dueño; uno quitado antes vuelve a `active`.
+ * Importa repos a la selección de un perfil. Un repo que existía como semilla
+ * (sin dueño) se reclama; uno quitado antes vuelve a `active`.
+ *
+ * **Nunca roba una fila que ya pertenece a otro perfil.** El upsert plano sí lo
+ * hacía: sobreescribe la fila entera, `owner_profile_id` incluido, así que
+ * bastaba con pedir el `full_name` de otro para quedarse su repo. Aquí la
+ * propiedad se comprueba antes y, además, el UPDATE lleva el dueño permitido en
+ * su propio filtro (la condición la aplica la base de datos, no esta función).
  */
-export async function importOwnedRepos(db: Db, rows: RepoRow[]): Promise<void> {
+export async function importOwnedRepos(db: Db, rows: RepoRow[], profileId: string): Promise<void> {
   if (rows.length === 0) return;
-  const { error } = await db.from("repos").upsert(rows, { onConflict: "github_repo_id" });
-  if (error) throw new Error(`Error al importar repos: ${error.message}`);
+
+  const { data, error: readError } = await db
+    .from("repos")
+    .select("github_repo_id, owner_profile_id")
+    .in("github_repo_id", rows.map((row) => row.github_repo_id));
+  if (readError) throw new Error(`Error al comprobar la propiedad de los repos: ${readError.message}`);
+
+  const existingOwners = new Map(
+    ((data ?? []) as Array<{ github_repo_id: number; owner_profile_id: string | null }>).map(
+      (row) => [row.github_repo_id, row.owner_profile_id],
+    ),
+  );
+
+  for (const row of rows) {
+    const owner = existingOwners.get(row.github_repo_id);
+    if (owner != null && owner !== profileId) {
+      throw new RepoOwnedByAnotherProfileError(row.full_name);
+    }
+  }
+
+  const nuevos = rows.filter((row) => !existingOwners.has(row.github_repo_id));
+  const existentes = rows.filter((row) => existingOwners.has(row.github_repo_id));
+
+  if (nuevos.length > 0) {
+    // Sin upsert: si otro perfil insertara el mismo repo entre la comprobación y
+    // esta línea, la restricción única falla — que es el resultado correcto.
+    const { error } = await db.from("repos").insert(nuevos);
+    if (error) throw new Error(`Error al importar repos: ${error.message}`);
+  }
+
+  for (const row of existentes) {
+    const { error } = await db
+      .from("repos")
+      .update(row)
+      .eq("github_repo_id", row.github_repo_id)
+      .or(`owner_profile_id.is.null,owner_profile_id.eq.${profileId}`);
+    if (error) throw new Error(`Error al importar repos: ${error.message}`);
+  }
 }
 
 /** Quitar de la selección: `status = 'removed'` — fuera de feed y perfil, sin borrar. */

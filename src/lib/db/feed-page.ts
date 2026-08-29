@@ -38,15 +38,25 @@ export function encodeCursor(cursor: FeedCursor): string {
   return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
 }
 
-/** Devuelve null ante un cursor ausente o corrupto: la página vuelve al principio. */
+const CURSOR_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CURSOR_TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2}T[\d:.]+(?:Z|[+-]\d{2}:\d{2})$/;
+
+/**
+ * Devuelve null ante un cursor ausente, corrupto o con formato inesperado: la
+ * página vuelve al principio.
+ *
+ * El formato se valida estrictamente porque estos dos valores acaban dentro del
+ * filtro `or=(...)` de PostgREST, y ahí una coma o un paréntesis del cliente
+ * cambiarían la condición de la consulta.
+ */
 export function decodeCursor(token: string | null | undefined): FeedCursor | null {
   if (!token) return null;
   try {
     const parsed = JSON.parse(Buffer.from(token, "base64url").toString("utf8"));
-    if (typeof parsed?.t === "string" && typeof parsed?.id === "string") {
-      return { t: parsed.t, id: parsed.id };
-    }
-    return null;
+    if (typeof parsed?.t !== "string" || typeof parsed?.id !== "string") return null;
+    if (!CURSOR_TIMESTAMP_RE.test(parsed.t) || Number.isNaN(Date.parse(parsed.t))) return null;
+    if (!CURSOR_UUID_RE.test(parsed.id)) return null;
+    return { t: parsed.t, id: parsed.id };
   } catch {
     return null;
   }
