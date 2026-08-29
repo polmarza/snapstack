@@ -92,9 +92,10 @@ completo en `architecture.md` → "GitHub App"; en resumen:
    - Permisos: *Contents* read-only y *Metadata* read-only. Nada de escritura.
    - Eventos: `push`, `star`, `repository`.
 2. Guardar el secret como `GITHUB_WEBHOOK_SECRET` en Vercel (paso 4).
-3. Enlazar la instalación desde la pantalla de selección: cada usuario instala la App **solo
-   en los repos que ha seleccionado** (`https://github.com/apps/<slug>/installations/new`).
-   Ese enlace todavía no existe en la UI: es el primer trabajo posterior al despliegue.
+3. La pantalla de selección enlaza la instalación (C-08, `InstallAppBanner`): cada usuario
+   instala la App **solo en los repos que ha seleccionado**. Con "Request user authorization
+   during installation" y el Setup URL (`/api/github/setup`), instalar deja también
+   autorizada la estrella (C-07) en el mismo viaje.
 
 > Con la App creada se desbloquea **MEJORA-02** (dar estrella desde Snapstack), que necesita
 > el permiso fine-grained *Starring: write* y un token de usuario de la App.

@@ -168,3 +168,35 @@ test("C-06: un push firmado notifica a los suscriptores del repo, con acumulaciÃ
   await db.from("repo_subscriptions").delete().eq("subscriber_profile_id", profileId).eq("repo_id", repoId);
   await db.from("notifications").delete().eq("recipient_profile_id", profileId).eq("type", "repo_update");
 });
+
+test("C-08: el evento installation firmado registra y retira la instalaciÃ³n del perfil", async () => {
+  process.loadEnvFile(".env.local");
+  const { createClient } = await import("@supabase/supabase-js");
+  const db = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+  );
+  const { data } = await db.from("profiles").select("id, github_id").eq("username", "polmarza").single();
+  const perfil = data as { id: string; github_id: number };
+  expect(perfil.github_id).toBeTruthy();
+
+  const instalacion = async () => {
+    const { data: fila } = await db
+      .from("profiles")
+      .select("github_installation_id")
+      .eq("id", perfil.id)
+      .single();
+    return (fila as { github_installation_id: number | null }).github_installation_id;
+  };
+
+  const payload = (action: string) => ({
+    action,
+    installation: { id: 424242, account: { id: perfil.github_id } },
+  });
+
+  expect((await enviar("installation", payload("created"))).status()).toBe(200);
+  expect(await instalacion()).toBe(424242);
+
+  expect((await enviar("installation", payload("deleted"))).status()).toBe(200);
+  expect(await instalacion()).toBeNull();
+});

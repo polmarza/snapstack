@@ -82,6 +82,11 @@ export async function handleGithubEvent(
   eventName: string,
   payload: Record<string, unknown>,
 ): Promise<WebhookResult> {
+  // `installation` no lleva `repository`: se despacha antes de exigirlo (C-08).
+  if (eventName === "installation") {
+    return handleInstallationEvent(db, payload);
+  }
+
   const repo = repoOf(payload);
   if (!repo) return { handled: false, action: "sin repository en el payload" };
 
@@ -170,4 +175,43 @@ async function notifySubscribersOfPush(
     });
   }
   return subscribers.length;
+}
+
+/**
+ * Alta/baja de la instalación de la App (C-08): registra el installation_id en
+ * el perfil cuyo github_id coincide con la cuenta donde se instaló. Cuentas
+ * sin perfil en snapstack no hacen nada (la App es pública: cualquiera puede
+ * instalarla desde GitHub).
+ */
+async function handleInstallationEvent(
+  db: Db,
+  payload: Record<string, unknown>,
+): Promise<WebhookResult> {
+  const action = String(payload.action ?? "");
+  const installation = payload.installation as
+    | { id?: number; account?: { id?: number } }
+    | undefined;
+  const installationId = installation?.id;
+  const accountId = installation?.account?.id;
+  if (typeof installationId !== "number" || typeof accountId !== "number") {
+    return { handled: false, action: "installation: payload incompleto" };
+  }
+
+  if (action === "created" || action === "unsuspend" || action === "new_permissions_accepted") {
+    const { error } = await db
+      .from("profiles")
+      .update({ github_installation_id: installationId })
+      .eq("github_id", accountId);
+    if (error) throw new Error(`Error al registrar la instalación: ${error.message}`);
+    return { handled: true, action: `installation.${action}: registrada` };
+  }
+  if (action === "deleted" || action === "suspend") {
+    const { error } = await db
+      .from("profiles")
+      .update({ github_installation_id: null })
+      .eq("github_id", accountId);
+    if (error) throw new Error(`Error al limpiar la instalación: ${error.message}`);
+    return { handled: true, action: `installation.${action}: retirada` };
+  }
+  return { handled: false, action: `installation.${action}: ignorado` };
 }
