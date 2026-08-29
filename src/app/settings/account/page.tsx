@@ -17,7 +17,7 @@ export default async function AccountSettingsPage() {
       <header className="mt-4 mb-8">
         <h1 className="font-mono text-2xl font-bold">Account</h1>
         <p className="mt-1 text-sm text-content-secondary">
-          Manage your Snapstack account. Your repo selection lives in{" "}
+          Manage your snapstack account. Your repo selection lives in{" "}
           <Link href="/settings/repos" className="text-primary hover:underline">
             My repos
           </Link>

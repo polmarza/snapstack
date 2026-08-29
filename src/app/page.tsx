@@ -1,6 +1,6 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
-import { AuthControls } from "@/components/auth/auth-controls";
 import { FeedList } from "@/components/feed/feed-list";
 import { createServiceClient } from "@/lib/db/client";
 import { annotateFollowed, listFeedPage, type FeedPage } from "@/lib/db/feed-page";
@@ -8,6 +8,32 @@ import { listFollowedIds } from "@/lib/db/follows";
 import { ensureProfile, getProfileByClerkId } from "@/lib/db/profiles";
 
 export const dynamic = "force-dynamic";
+
+const TAGLINE = "What devs are building, repo by repo.";
+
+/**
+ * La home es el enlace que más se comparte: sin Open Graph propio, snapstack.sh
+ * se pega como un enlace pelado. La portada usa el mismo endpoint de fichas.
+ */
+export const metadata: Metadata = {
+  title: "snapstack — what devs are building",
+  description:
+    "A curated profile for your GitHub repos + a visual feed to discover what other devs are building.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "snapstack",
+    title: "snapstack — what devs are building",
+    description: TAGLINE,
+    images: [
+      `/api/og?${new URLSearchParams({
+        repoId: "snapstack",
+        name: "snapstack",
+        description: TAGLINE,
+      })}`,
+    ],
+  },
+};
 
 interface HomeProps {
   searchParams: Promise<{ filter?: string }>;
@@ -38,15 +64,10 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <header className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-mono text-2xl font-bold">Snapstack</h1>
-          <p className="mt-1 text-sm text-content-secondary">
-            What devs are building, repo by repo.
-          </p>
-        </div>
-        <AuthControls />
-      </header>
+      {/* La marca visible está en la cabecera de AppShell. Aquí queda el h1 solo
+          para lectores de pantalla y buscadores: la home no debe quedarse sin
+          encabezado de nivel 1. */}
+      <h1 className="sr-only">snapstack — {TAGLINE}</h1>
 
       {signedIn ? (
         <nav data-testid="feed-tabs" className="mb-6 flex gap-2 font-mono text-sm">

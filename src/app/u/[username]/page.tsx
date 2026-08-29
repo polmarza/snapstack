@@ -10,6 +10,13 @@ import { isFollowing } from "@/lib/db/follows";
 import { getProfileByClerkId, getProfileByUsername } from "@/lib/db/profiles";
 import { listOwnedActiveRepos } from "@/lib/db/selection";
 
+/**
+ * Dinámica. Se intentó cachearla con ISR y no es posible tal como está: los
+ * componentes cliente de la tarjeta (`FollowButton`, `ReportButton`) llaman a
+ * `useAuth()`, y eso obliga a Next a renderizar la ruta bajo demanda por mucho
+ * `revalidate` que se declare. Cachearla exigiría que esos botones no resuelvan
+ * sesión durante el render del servidor (ver MEJORA-04 en `mejoras/backlog.md`).
+ */
 export const dynamic = "force-dynamic";
 
 interface ProfilePageProps {
@@ -22,16 +29,48 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
   if (!profile) return { title: "Profile not found" };
 
   const name = profile.display_name ?? profile.username;
+  const description = `What ${name} is building — their curated GitHub repos on snapstack.`;
   const og = new URLSearchParams({
     repoId: profile.username,
     name: profile.username,
-    description: `${name} on Snapstack — a curated selection of their repos`,
+    description: `${name} on snapstack — a curated selection of their repos`,
   });
+
   return {
-    title: `${profile.username} · Snapstack`,
-    description: `What ${name} is building — their curated GitHub repos on Snapstack.`,
-    openGraph: { images: [`/api/og?${og.toString()}`] },
+    title: `${profile.username} · snapstack`,
+    description,
+    // Canónica: evita que /u/x?utm_source=… se indexe como página distinta.
+    alternates: { canonical: `/u/${profile.username}` },
+    openGraph: {
+      type: "profile",
+      siteName: "snapstack",
+      url: `/u/${profile.username}`,
+      title: `${profile.username} · snapstack`,
+      description,
+      images: [`/api/og?${og.toString()}`],
+    },
   };
+}
+
+/**
+ * JSON-LD del perfil. El nombre viene de GitHub (texto de terceros): se escapa
+ * `<` para que no pueda cerrar la etiqueta <script>.
+ */
+function profileJsonLd(profile: { username: string; display_name: string | null; avatar_url: string | null }) {
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    mainEntity: {
+      "@type": "Person",
+      name: profile.display_name ?? profile.username,
+      alternateName: profile.username,
+      url: `${base}/u/${profile.username}`,
+      ...(profile.avatar_url ? { image: profile.avatar_url } : {}),
+      sameAs: [`https://github.com/${profile.username}`],
+    },
+  };
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
@@ -51,6 +90,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: profileJsonLd(profile) }}
+      />
+
       <Link href="/" className="font-mono text-sm text-content-secondary hover:text-content">
         ← Back to feed
       </Link>

@@ -33,6 +33,28 @@ pasa con los repos semilla, que no tienen webhooks (¿refresco periódico del sc
 Decidir al construir M-08. El cursor de paginación de M-06 ya queda parametrizado para que el
 cambio de campo de orden sea barato.
 
+### [MEJORA-05] Filtro del feed por stack (lenguajes y topics)
+**Área:** Frontend / Backend / UX
+**Prioridad estimada:** Media (cuando haya volumen de repos)
+**Origen:** Idea de Pol sobre el onboarding (2026-08-29); aplazada por él mismo
+
+Pastillas de stack para acotar el feed: las del usuario arriba, otras comunes debajo. **Filtro
+explícito, no ranking** — decisión de Pol, y así no toca el WON'T del PRD ("algoritmo de
+recomendación sobre señales implícitas o cualquier otra base"): es el usuario quien elige, como
+ya hace con la pestaña Following.
+
+Materia prima: **GitHub no da frameworks**. Da lenguajes (Linguist, por bytes) y topics
+declarados por el autor — que en la práctica ya contienen `react`, `nextjs`, `django`. Con eso
+se arman las pastillas sin inventar un detector; leer `package.json`/`Cargo.toml` sería la
+"heurística propia" que el PRD descartó.
+
+Prerrequisito: **enriquecer el seed con el desglose de lenguajes**. Hoy los repos semilla
+guardan `languages: {}` porque la Search API solo devuelve el dominante, y son la mayoría del
+feed. Se arregla con una consulta GraphQL por lote al sembrar. Ese mismo dato habilita mostrar
+los lenguajes secundarios en la ficha (otra idea de Pol de la misma conversación).
+
+El onboarding se queda en dos pasos (login → elegir repos) hasta entonces.
+
 ### [MEJORA-02] Dar estrella a un repo desde Snapstack
 **Área:** Backend / UX
 **Prioridad estimada:** Alta
@@ -46,6 +68,25 @@ scope clásico `public_repo`, que es desproporcionado (incluye escritura de cód
 el estado starred/no-starred por tarjeta sin batch endpoint (consulta lazy al expandir/hover, o
 cache propio + webhook `watch` para reconciliar). Al priorizarla, promover a `docs/prd.md`
 como S-02 con su criterio de aceptación.
+
+### [MEJORA-04] Hacer cacheables el feed y los perfiles (rendimiento y SEO)
+**Área:** Frontend / Infraestructura
+**Prioridad estimada:** Media (sube en cuanto haya tráfico)
+**Origen:** Intento fallido durante la preparación de producción (2026-08-29)
+
+Hoy toda página va con `force-dynamic`: cada visita golpea la base de datos y el TTFB entra
+directo en las Core Web Vitals. Se intentó ISR (`revalidate = 60`) en los perfiles y **no
+funciona tal como está el código**: los componentes cliente de la tarjeta (`FollowButton`,
+`ReportButton`) llaman a `useAuth()` durante el render, lo que obliga a Next a renderizar la
+ruta bajo demanda; la respuesta sale con `Cache-Control: private, no-store` aunque se declare
+`revalidate`. Comprobado con un build de producción real, y no lo arregla sacar la ruta del
+matcher del middleware de Clerk.
+
+Lo que haría falta: que esos botones no resuelvan sesión durante el render del servidor —
+renderizarlos solo tras montar, o que la página no los incluya y se hidraten aparte
+consultando su estado (haría falta un `GET /api/follows?profileId=`). Se descartó hacerlo
+ahora por ser cirugía sin beneficio medible antes del lanzamiento. Al retomarlo, medir antes
+y después con el build de producción (`curl -D-` sobre `/u/<usuario>`).
 
 ### [MEJORA-03] Página de detalle del repo con README
 **Área:** Frontend / Backend
