@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { cardBackground, languageColor } from "@/lib/card-seed";
 import type { FeedRepo } from "@/lib/db/feed-page";
 import { dwellEnter, dwellLeave, trackSignal } from "@/lib/signals/tracker";
+import { FollowButton } from "@/components/follow/follow-button";
 import { CardBackgroundLayer } from "./card-background";
 import { ReportButton } from "./report-button";
 
@@ -163,8 +164,16 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
           ) : (
             <p className="text-sm text-content-secondary">No topics declared.</p>
           )}
-          <div className="mt-3">
+          <div className="mt-3 flex items-center justify-between gap-3">
             <ReportButton repoId={repo.id} />
+            {repo.owner_profile_id && repo.owner_followed !== undefined ? (
+              <FollowButton
+                profileId={repo.owner_profile_id}
+                initialFollowing={repo.owner_followed}
+                signalRepoId={repo.id}
+                size="sm"
+              />
+            ) : null}
           </div>
         </div>
       ) : null}

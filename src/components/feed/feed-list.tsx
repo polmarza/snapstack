@@ -7,6 +7,8 @@ import { RepoCard } from "./repo-card";
 interface FeedListProps {
   initialRepos: FeedRepo[];
   initialCursor: string | null;
+  /** "following" restringe las páginas siguientes al filtro de seguidos (M-07). */
+  filter?: string;
 }
 
 /**
@@ -14,7 +16,7 @@ interface FeedListProps {
  * siguiente página a /api/feed. El fin del feed es explícito; un fallo muestra
  * reintento inline y conserva lo ya cargado.
  */
-export function FeedList({ initialRepos, initialCursor }: FeedListProps) {
+export function FeedList({ initialRepos, initialCursor, filter }: FeedListProps) {
   const [repos, setRepos] = useState<FeedRepo[]>(initialRepos);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,9 @@ export function FeedList({ initialRepos, initialCursor }: FeedListProps) {
     loadingRef.current = true;
     setError(null);
     try {
-      const res = await fetch(`/api/feed?cursor=${encodeURIComponent(cursor)}`);
+      const params = new URLSearchParams({ cursor });
+      if (filter) params.set("filter", filter);
+      const res = await fetch(`/api/feed?${params.toString()}`);
       if (!res.ok) throw new Error(`The feed responded with ${res.status}`);
       const page = (await res.json()) as FeedPage;
       setRepos((prev) => [...prev, ...page.repos]);
@@ -36,7 +40,7 @@ export function FeedList({ initialRepos, initialCursor }: FeedListProps) {
     } finally {
       loadingRef.current = false;
     }
-  }, [cursor]);
+  }, [cursor, filter]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;

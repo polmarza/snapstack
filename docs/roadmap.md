@@ -16,7 +16,7 @@ Todo lo marcado MUST en `prd.md`:
 - [x] M-04 Ficha visual generada (fondo procedural determinista + `@vercel/og`)
 - [x] M-05 Perfil público
 - [x] M-06 Feed de scroll infinito cronológico
-- [ ] M-07 Follows y filtro "solo seguidos" ← **lo único pendiente de Fase 1**
+- [x] M-07 Follows y filtro "solo seguidos" (follow nativo de Snapstack, no espejo de GitHub)
 - [x] M-08 Sincronización por webhooks (endpoint hecho; la GitHub App se crea al desplegar)
 - [x] M-09 Instrumentación de señales implícitas (sin ranking encima)
 - [x] M-10 Semilla de contenido: import de repos trending

@@ -61,6 +61,7 @@ src/
 ├── components/
 │   ├── account/          → ✅ DeleteAccount (zona de peligro, confirmación en dos pasos)
 │   ├── auth/             → ✅ AuthControls (entrar con GitHub / menú de usuario / Mis repos)
+│   ├── follow/           → ✅ FollowButton (toggle optimista; emite follow_author desde tarjetas)
 │   ├── selection/        → ✅ SelectionPage + RepoSelector (onboarding y settings comparten)
 │   └── feed/             → ✅ RepoCard (HTML/CSS), FeedList (IntersectionObserver); ui/ ⏳
 ├── proxy.ts              → ✅ clerkMiddleware (sesión en todas las rutas; ninguna exige login aún)
