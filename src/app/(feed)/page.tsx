@@ -3,6 +3,7 @@ import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { AuthControls } from "@/components/auth/auth-controls";
 import { FeedList } from "@/components/feed/feed-list";
+import { RepoCard } from "@/components/feed/repo-card";
 import { Faq } from "@/components/landing/faq";
 import { HeroCardsBackground } from "@/components/landing/hero-cards-background";
 import { HowItWorks } from "@/components/landing/how-it-works";
@@ -112,15 +113,32 @@ export default async function Home({ searchParams }: HomeProps) {
           <LanguageMarquee />
           <HowItWorks />
           <Faq />
-          <LandingCta />
 
-          <div className="mx-auto max-w-2xl px-4 pt-4 sm:px-6">
-            <h2 className="mb-6 text-center font-mono text-2xl font-bold">The feed, live</h2>
-          </div>
+          {/* Muestra del feed: 3 fichas y una cuarta desvaneciéndose — "hay más".
+              El feed completo es para quien entra; la landing solo enseña que
+              está vivo. El CTA va justo debajo, donde el interés está caliente. */}
+          {page && page.repos.length > 0 ? (
+            <section data-testid="landing-feed-preview" className="mx-auto max-w-2xl px-4 pt-4 sm:px-6">
+              <h2 className="mb-6 text-center font-mono text-3xl font-bold">The feed, live</h2>
+              <div className="flex flex-col gap-6">
+                {page.repos.slice(0, 3).map((repo) => (
+                  <RepoCard key={repo.id} repo={repo} />
+                ))}
+              </div>
+              {page.repos.length > 3 ? (
+                <div aria-hidden className="relative mt-6 max-h-44 overflow-hidden">
+                  <RepoCard repo={page.repos[3]} />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/70 to-background" />
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+
+          <LandingCta />
         </>
       )}
 
-      <div className={signedIn ? "" : "mx-auto max-w-2xl px-4 pb-8 sm:px-6"}>
+      <div className={signedIn ? "" : "hidden"}>
       {signedIn ? (
         <nav data-testid="feed-tabs" className="mb-6 flex gap-2 font-mono text-sm">
           <Link

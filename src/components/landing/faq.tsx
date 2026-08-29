@@ -40,7 +40,7 @@ export function Faq() {
       <div className="mt-10 flex flex-col gap-3">
         {FAQS.map((item) => (
           <details key={item.q} className="group rounded-xl border border-edge bg-surface">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-medium [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-lg font-medium [&::-webkit-details-marker]:hidden">
               {item.q}
               <ChevronDown
                 size={18}
@@ -48,7 +48,7 @@ export function Faq() {
                 className="shrink-0 text-content-secondary transition-transform group-open:rotate-180"
               />
             </summary>
-            <p className="px-5 pb-5 text-sm text-content-secondary">{item.a}</p>
+            <p className="px-5 pb-5 text-lg text-content-secondary">{item.a}</p>
           </details>
         ))}
       </div>

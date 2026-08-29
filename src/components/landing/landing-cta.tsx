@@ -8,7 +8,7 @@ export function LandingCta() {
         <h2 className="font-mono text-3xl font-bold sm:text-4xl">
           Your repos already tell a story.
         </h2>
-        <p className="mx-auto mt-4 max-w-md text-content-secondary">
+        <p className="mx-auto mt-4 max-w-md text-lg text-content-secondary">
           Give them a place where people actually scroll, look, and follow the person behind
           the code.
         </p>

@@ -21,11 +21,21 @@ genérico:
   dibujada (2/5 marcados), y una ficha generada por el mismo motor procedural de verdad.
 - **FAQ** con `<details>` nativo (6 preguntas que cuentan las decisiones reales: solo lectura,
   límite de 5, borrado real, sync por webhooks).
-- **Banner CTA final** con el segundo botón de entrar y el remate "Free · read-only · leave
-  whenever you want".
-- **El feed en vivo va al final** ("The feed, live"), y esto es deliberado: con scroll
-  infinito, cualquier sección colocada debajo del feed sería inalcanzable. Encima de él, todo
-  se puede leer; debajo, el feed sigue siendo infinito como siempre.
+- **Muestra del feed** ("The feed, live"): 3 fichas reales y una cuarta desvaneciéndose en
+  degradado — "hay más". Decisión de Pol: el feed completo es para quien entra; la landing
+  solo enseña que está vivo. Consecuencia: el visitante anónimo ya no navega el feed infinito
+  (la garantía de M-06 —paginación keyset sin duplicar ni saltar— pasó a verificarse por API
+  en el e2e, porque la UI infinita es ahora de sesión).
+- **Banner CTA final** justo debajo de la muestra, donde el interés está caliente, con el
+  segundo botón de entrar y el remate "Free · read-only · leave whenever you want".
+
+Tras el primer repaso de Pol sobre la rama: columnas del hero **de borde a borde** y con
+tarjetas de sobra para no dejar huecos; **bucle sin tirón** en columnas y marquee (el hueco va
+como margen de cada pieza, no como `gap` del contenedor — con `gap`, el punto de reinicio del
+bucle quedaba descuadrado por medio hueco y se notaba el salto); nombres de las mini-tarjetas
+alineados a la izquierda; "How it works" con el botón real + cursor, dos repos con descripción
+y el contador de pastillas de la app, y estrellas en la ficha del paso 3; y **mínimo `text-lg`
+en todo el texto legible de la landing** (FAQ incluida).
 
 Toda animación respeta `prefers-reduced-motion`. Con sesión, la home no cambia.
 

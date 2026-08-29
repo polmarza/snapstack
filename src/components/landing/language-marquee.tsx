@@ -19,9 +19,11 @@ export function LanguageMarquee() {
       aria-hidden
       className="relative overflow-hidden border-y border-edge py-4 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
     >
-      <div className="landing-marquee flex w-max items-center gap-8">
+      {/* El hueco va como margen de cada item (no como gap): así -50% cae justo
+          donde empieza la segunda copia y el bucle no tiene tirón. */}
+      <div className="landing-marquee flex w-max items-center">
         {items.map((language, i) => (
-          <span key={`${language}-${i}`} className="flex shrink-0 items-center gap-2 font-mono text-sm text-content-secondary">
+          <span key={`${language}-${i}`} className="mr-8 flex shrink-0 items-center gap-2 font-mono text-sm text-content-secondary">
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: languageColor(language) }} />
             {language}
           </span>

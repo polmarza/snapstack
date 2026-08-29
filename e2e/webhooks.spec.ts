@@ -40,7 +40,7 @@ test("una firma inválida devuelve 401 y no toca nada", async () => {
   expect(res.status()).toBe(401);
 });
 
-test("un evento star firmado cambia las stars que muestra el feed", async ({ page }) => {
+test("un evento star firmado cambia las stars que sirve el feed", async ({ page }) => {
   const repo = await repoSemilla(page);
   const nuevasStars = 54321;
 
@@ -56,8 +56,10 @@ test("un evento star firmado cambia las stars que muestra el feed", async ({ pag
   });
   expect(res.status()).toBe(200);
 
-  await page.goto("/");
-  await expect(page.locator(`[data-repo-id="${repo.github_repo_id}"]`)).toContainText(String(nuevasStars));
+  const api = await playwrightRequest.newContext({ baseURL: "http://localhost:3000" });
+  const feed = await (await api.get("/api/feed")).json();
+  const actualizado = feed.repos.find((r: { github_repo_id: number }) => r.github_repo_id === repo.github_repo_id);
+  expect(actualizado?.stars).toBe(nuevasStars);
 });
 
 test("repository.privatized hace desaparecer la ficha del feed (sin fantasmas), y publicized la devuelve", async ({ page }) => {
@@ -73,12 +75,16 @@ test("repository.privatized hace desaparecer la ficha del feed (sin fantasmas), 
     },
   };
 
+  const api = await playwrightRequest.newContext({ baseURL: "http://localhost:3000" });
+  const enFeed = async () => {
+    const feed = await (await api.get("/api/feed")).json();
+    return feed.repos.some((r: { github_repo_id: number }) => r.github_repo_id === repo.github_repo_id);
+  };
+
   expect((await enviar("repository", { action: "privatized", ...payload })).status()).toBe(200);
-  await page.goto("/");
-  await expect(page.locator(`[data-repo-id="${repo.github_repo_id}"]`)).toHaveCount(0);
+  expect(await enFeed()).toBe(false); // sin fantasmas
 
   // Restaurar: publicized reactiva.
   expect((await enviar("repository", { action: "publicized", ...payload })).status()).toBe(200);
-  await page.goto("/");
-  await expect(page.locator(`[data-repo-id="${repo.github_repo_id}"]`)).toHaveCount(1);
+  expect(await enFeed()).toBe(true);
 });
