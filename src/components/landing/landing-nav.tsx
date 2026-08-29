@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { ArrowRight, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { AuthControls } from "@/components/auth/auth-controls";
 import { Logo } from "@/components/shell/logo";
 
@@ -13,9 +13,12 @@ import { Logo } from "@/components/shell/logo";
  * - **Al pasar el hero**: fija arriba con el fondo de la app; en desktop, marca
  *   a la izquierda, enlaces y botón de entrar a la derecha.
  * - **En móvil**: las cinco secciones no caben junto a la marca y el botón
- *   (medido: faltaban ~100 px incluso acortando etiquetas), así que la barra
- *   lleva un burger en color de acento con la palabra, y el menú se despliega
- *   a pantalla completa sobre el verde de marca, con la entrada al final.
+ *   (medido: faltaban ~100 px incluso acortando etiquetas), así que se
+ *   despliegan. El disparador no es un burger sino el icono de **abrir panel
+ *   lateral** — el de cualquier editor de código, que es el lenguaje de quien
+ *   nos lee. Al abrir, la barra se queda donde está y el panel la envuelve en
+ *   el verde de marca: mismo sitio para el icono, la marca y la entrada, solo
+ *   cambian los colores, y debajo aparecen las secciones con su flecha.
  *
  * Los nombres son cortos a propósito: no repiten el titular de cada sección,
  * que es largo por diseño.
@@ -93,21 +96,30 @@ export function LandingNav() {
       <div
         data-testid="landing-nav-sticky"
         data-visible={fija}
-        className={`fixed inset-x-0 top-0 z-40 border-b border-edge bg-background/95 backdrop-blur transition-all duration-200 ${
-          fija ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-full opacity-0"
-        }`}
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-200 ${
+          abierto
+            ? "border-b border-transparent bg-primary text-background"
+            : "border-b border-edge bg-background/95 backdrop-blur"
+        } ${fija ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-full opacity-0"}`}
       >
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
-          {/* Móvil: burger en color de acento + la palabra. */}
+          {/* Móvil: el icono de panel lateral y la marca. Al abrir no se mueven
+              de sitio — solo cambia el color y el icono pasa a "contraer". */}
           <button
             type="button"
             data-testid="landing-nav-burger"
-            aria-label="Open menu"
+            aria-label={abierto ? "Close menu" : "Open menu"}
             aria-expanded={abierto}
-            onClick={() => setAbierto(true)}
+            onClick={() => setAbierto((v) => !v)}
             className="flex shrink-0 items-center gap-2.5 font-mono text-lg font-bold lowercase sm:hidden"
           >
-            <Menu size={24} strokeWidth={2} aria-hidden className="text-primary" />
+            <span className="transition-transform duration-200 active:scale-90">
+              {abierto ? (
+                <PanelLeftClose size={24} strokeWidth={2} aria-hidden />
+              ) : (
+                <PanelLeftOpen size={24} strokeWidth={2} aria-hidden />
+              )}
+            </span>
             snapstack
           </button>
 
@@ -121,54 +133,43 @@ export function LandingNav() {
           </a>
           <span aria-hidden className="hidden h-6 w-px shrink-0 bg-edge sm:block" />
           <Enlaces className="hidden text-content-secondary sm:flex" />
-          <div className="ml-auto hidden shrink-0 sm:block">
-            <AuthControls />
+          {/* La entrada, arriba a la derecha siempre: sobre el verde cambia a
+              fondo oscuro para seguir leyéndose. */}
+          <div className="ml-auto shrink-0">
+            <AuthControls tone={abierto ? "onPrimary" : "onDark"} />
           </div>
         </div>
       </div>
 
-      {/* Menú de móvil, a pantalla completa sobre el verde de marca. */}
+      {/* El panel desplegado: ocupa la pantalla bajo la barra, que se queda en
+          su sitio. Las flechas caen bajo el icono y las etiquetas bajo la
+          marca — la misma rejilla, alineada a la izquierda. */}
       {abierto ? (
         <div
           data-testid="landing-nav-overlay"
           role="dialog"
           aria-modal="true"
           aria-label="Menu"
-          className="fixed inset-0 z-50 flex flex-col bg-primary px-6 py-3 text-left text-background sm:hidden"
+          // Cubre la pantalla entera y deja hueco arriba para la barra, que
+          // queda por encima (z mayor) y en el mismo verde: sin costura.
+          className="fixed inset-0 z-40 bg-primary px-4 pb-8 pt-20 text-left text-background sm:hidden"
         >
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-lg font-bold lowercase">snapstack</span>
-            <button
-              type="button"
-              data-testid="landing-nav-close"
-              aria-label="Close menu"
-              onClick={() => setAbierto(false)}
-              className="rounded-lg p-1.5 transition-opacity hover:opacity-70"
-            >
-              <X size={24} strokeWidth={2} aria-hidden />
-            </button>
-          </div>
-
-          {/* Centrado explícito: sin esto lo heredaría del hero, que es donde
-              vive este componente — una dependencia frágil. */}
-          <nav aria-label="Sections" className="mt-10 flex flex-col text-center">
+          <nav aria-label="Sections" className="flex flex-col">
             {SECCIONES.map(({ id, label }) => (
               <a
                 key={id}
                 href={`#${id}`}
                 data-testid={`landing-nav-mobile-${id}`}
                 onClick={() => setAbierto(false)}
-                className="py-3 font-mono text-2xl font-bold transition-opacity hover:opacity-70"
+                className="flex items-center gap-2.5 py-3 font-mono text-lg font-bold transition-opacity active:opacity-60"
               >
+                <span className="flex w-6 shrink-0 justify-center">
+                  <ArrowRight size={18} strokeWidth={2.25} aria-hidden />
+                </span>
                 {label}
               </a>
             ))}
           </nav>
-
-          {/* La entrada, al final: es lo último que se lee antes de decidir. */}
-          <div className="mt-auto flex justify-center pb-6">
-            <AuthControls size="lg" tone="onPrimary" />
-          </div>
         </div>
       ) : null}
     </>
