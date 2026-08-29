@@ -7,6 +7,6 @@ import { test, expect } from "@playwright/test";
  */
 test("sin sesión aparece el botón de entrar y el feed sigue navegable", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByTestId("sign-in-button")).toBeVisible();
+  await expect(page.getByTestId("sign-in-button").first()).toBeVisible();
   await expect(page.getByTestId("feed-card").first()).toBeVisible();
 });

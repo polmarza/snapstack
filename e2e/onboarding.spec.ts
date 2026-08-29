@@ -9,6 +9,6 @@ for (const ruta of ["/onboarding", "/settings/repos"]) {
   test(`sin sesión, ${ruta} redirige a la home con el login a la vista`, async ({ page }) => {
     await page.goto(ruta);
     await page.waitForURL("**/");
-    await expect(page.getByTestId("sign-in-button")).toBeVisible();
+    await expect(page.getByTestId("sign-in-button").first()).toBeVisible();
   });
 }
