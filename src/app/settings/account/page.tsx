@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
+import { SignOutButton } from "@clerk/nextjs";
+import { LogOut } from "lucide-react";
 import { DeleteAccount } from "@/components/account/delete-account";
 import { ProfileForm } from "@/components/account/profile-form";
 import { createServiceClient } from "@/lib/db/client";
@@ -35,6 +37,20 @@ export default async function AccountSettingsPage() {
           initialLinks={parseStoredSocialLinks(profile.social_links)}
         />
       ) : null}
+
+      <section data-testid="session-section" className="mb-10">
+        <h2 className="font-mono text-lg font-bold">Session</h2>
+        <SignOutButton>
+          <button
+            type="button"
+            data-testid="settings-sign-out"
+            className="mt-3 flex items-center gap-2 rounded-lg border border-edge px-4 py-2 text-sm text-content-secondary transition-colors hover:text-content"
+          >
+            <LogOut size={16} strokeWidth={1.75} aria-hidden />
+            Sign out
+          </button>
+        </SignOutButton>
+      </section>
 
       <DeleteAccount />
     </main>
