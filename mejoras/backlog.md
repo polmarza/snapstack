@@ -33,6 +33,28 @@ pasa con los repos semilla, que no tienen webhooks (¿refresco periódico del sc
 Decidir al construir M-08. El cursor de paginación de M-06 ya queda parametrizado para que el
 cambio de campo de orden sea barato.
 
+### [MEJORA-05] Filtro del feed por stack (lenguajes y topics)
+**Área:** Frontend / Backend / UX
+**Prioridad estimada:** Media (cuando haya volumen de repos)
+**Origen:** Idea de Pol sobre el onboarding (2026-08-29); aplazada por él mismo
+
+Pastillas de stack para acotar el feed: las del usuario arriba, otras comunes debajo. **Filtro
+explícito, no ranking** — decisión de Pol, y así no toca el WON'T del PRD ("algoritmo de
+recomendación sobre señales implícitas o cualquier otra base"): es el usuario quien elige, como
+ya hace con la pestaña Following.
+
+Materia prima: **GitHub no da frameworks**. Da lenguajes (Linguist, por bytes) y topics
+declarados por el autor — que en la práctica ya contienen `react`, `nextjs`, `django`. Con eso
+se arman las pastillas sin inventar un detector; leer `package.json`/`Cargo.toml` sería la
+"heurística propia" que el PRD descartó.
+
+Prerrequisito: **enriquecer el seed con el desglose de lenguajes**. Hoy los repos semilla
+guardan `languages: {}` porque la Search API solo devuelve el dominante, y son la mayoría del
+feed. Se arregla con una consulta GraphQL por lote al sembrar. Ese mismo dato habilita mostrar
+los lenguajes secundarios en la ficha (otra idea de Pol de la misma conversación).
+
+El onboarding se queda en dos pasos (login → elegir repos) hasta entonces.
+
 ### [MEJORA-02] Dar estrella a un repo desde Snapstack
 **Área:** Backend / UX
 **Prioridad estimada:** Alta

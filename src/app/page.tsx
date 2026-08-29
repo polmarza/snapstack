@@ -64,10 +64,10 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <header className="mb-6">
-        <h1 className="font-mono text-2xl font-bold lowercase">snapstack</h1>
-        <p className="mt-1 text-sm text-content-secondary">{TAGLINE}</p>
-      </header>
+      {/* La marca visible está en la cabecera de AppShell. Aquí queda el h1 solo
+          para lectores de pantalla y buscadores: la home no debe quedarse sin
+          encabezado de nivel 1. */}
+      <h1 className="sr-only">snapstack — {TAGLINE}</h1>
 
       {signedIn ? (
         <nav data-testid="feed-tabs" className="mb-6 flex gap-2 font-mono text-sm">

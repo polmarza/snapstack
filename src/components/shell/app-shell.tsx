@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { AuthControls } from "@/components/auth/auth-controls";
 import { createServiceClient } from "@/lib/db/client";
@@ -27,9 +28,20 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       {username ? <AppNav username={username} /> : null}
 
       <div className={username ? "lg:pl-56" : ""}>
-        <header className="flex items-center justify-end gap-3 px-4 pt-4 sm:px-6">
-          <DonateButton />
-          <AuthControls />
+        {/* La marca vive en la cabecera, en la misma línea que los botones. Con
+            sesión en desktop se oculta: ya la lleva la barra lateral. */}
+        <header className="flex items-center gap-3 px-4 pt-4 sm:px-6">
+          <Link
+            href="/"
+            data-testid="header-wordmark"
+            className={`font-mono text-xl font-bold lowercase ${username ? "lg:hidden" : ""}`}
+          >
+            snapstack
+          </Link>
+          <div className="ml-auto flex items-center gap-3">
+            <DonateButton />
+            <AuthControls />
+          </div>
         </header>
 
         {/* Hueco inferior para la barra de navegación de móvil. */}
