@@ -58,11 +58,13 @@ src/
 │       ├── webhooks/github/  → ⏳ Recepción de webhooks de la GitHub App
 │       └── signals/          → ⏳ Registro de señales implícitas
 ├── components/
+│   ├── auth/             → ✅ AuthControls (entrar con GitHub / menú de usuario)
 │   └── feed/             → ✅ RepoCard (HTML/CSS), FeedList (IntersectionObserver); ui/ ⏳
+├── proxy.ts              → ✅ clerkMiddleware (sesión en todas las rutas; ninguna exige login aún)
 ├── lib/
 │   ├── card-seed/        → ✅ Semilla determinista, colores Linguist vendorizados, paleta
 │   ├── github/           → ⏳ Cliente GraphQL, GitHub App, verificación de webhooks
-│   ├── db/               → ✅ Cliente Supabase (service role) y queries de repos
+│   ├── db/               → ✅ Cliente Supabase (service role), queries de repos y profiles
 │   └── signals/          → ⏳ Instrumentación de señales implícitas
 ├── jobs/
 │   └── seed-trending/    → ✅ Import manual de trending (pnpm seed:trending); Inngest/Trigger.dev ⏳
