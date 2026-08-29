@@ -6,6 +6,7 @@ import { getProfileByClerkId } from "@/lib/db/profiles";
 import { AppNav } from "./app-nav";
 import { DonateButton } from "./donate-button";
 import { HideOnHome } from "./hide-on-home";
+import { SiteFooter } from "./site-footer";
 
 /**
  * Marco común de la app. Cambia según haya sesión o no:
@@ -63,7 +64,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         )}
 
         {/* Hueco inferior para la barra de navegación de móvil. */}
-        <div className={username ? "pb-24 lg:pb-0" : ""}>{children}</div>
+        <div className={username ? "pb-24 lg:pb-0" : ""}>
+          {children}
+          <SiteFooter />
+        </div>
       </div>
     </>
   );

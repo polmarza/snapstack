@@ -7,5 +7,5 @@ import { test, expect } from "@playwright/test";
 test("sin sesión, /settings/account redirige a la home", async ({ page }) => {
   await page.goto("/settings/account");
   await page.waitForURL("**/");
-  await expect(page.getByTestId("sign-in-button")).toBeVisible();
+  await expect(page.getByTestId("sign-in-button").first()).toBeVisible();
 });
