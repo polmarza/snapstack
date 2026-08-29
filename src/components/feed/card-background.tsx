@@ -8,7 +8,9 @@ export function CardBackgroundLayer({ background }: { background: CardBackground
   return (
     <div
       aria-hidden
-      className="absolute inset-0"
+      // Decoración pura: sin esto, una mancha que cae sobre el pie de la
+      // tarjeta intercepta los clicks del enlace al repo.
+      className="pointer-events-none absolute inset-0"
       style={{
         backgroundImage: `linear-gradient(${background.angle}deg, ${background.gradientFrom}, ${background.gradientTo})`,
       }}

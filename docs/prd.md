@@ -78,8 +78,12 @@ En v1 son el mismo perfil de persona en dos momentos de uso distintos.
   seleccionados.
 
 - **[M-06] Feed de scroll infinito** — Dado un usuario en el feed, cuando hace scroll hasta el
-  final del contenido cargado, entonces se carga la siguiente página de fichas en orden
-  cronológico sin recargar la página. No hay swipe ni botones de like/dislike.
+  final del contenido cargado, entonces se carga la siguiente página de fichas sin recargar
+  la página. El orden es aleatorio estable por visita (cada visita arranca en un punto
+  distinto del feed y lo recorre entero sin repetir ni saltar fichas), para que los repos de
+  un mismo autor no salgan en bloque — revisado el 2026-08-29, ficha
+  `feed-orden-aleatorio.md`; el criterio original era orden cronológico de importación. No
+  hay swipe ni botones de like/dislike.
 
 - **[M-07] Follows** — Dado un usuario autenticado viendo un perfil o una ficha, cuando pulsa
   seguir, entonces el autor queda en su lista de seguidos y puede filtrar el feed a "solo
@@ -142,7 +146,7 @@ Descritos en detalle en `user-flows.md`. Narrativamente:
 repos públicos, selecciona hasta 5, y su perfil queda publicado con las fichas generadas.
 
 **Navegación:** el usuario abre el feed, hace scroll infinito sobre fichas visuales en orden
-cronológico, expande las que le interesan, salta al repo en GitHub o sigue al autor, y puede
+aleatorio estable, expande las que le interesan, salta al repo en GitHub o sigue al autor, y puede
 cambiar a la vista de "solo seguidos".
 
 **Mantenimiento del perfil:** en cualquier momento el usuario añade o quita repos de su

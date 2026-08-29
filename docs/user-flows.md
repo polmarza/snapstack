@@ -61,7 +61,7 @@ flowchart TD
 
 ### Pasos
 
-1. El feed carga la primera página de fichas en orden cronológico (M-06).
+1. El feed carga la primera página de fichas en orden aleatorio estable por visita (M-06).
 2. Al acercarse al final, se carga la siguiente página sin recarga.
 3. Sobre una ficha puede: expandirla (más detalle: lenguajes, topics, stars), ir al repo en
    GitHub, ver el perfil del autor, o seguirlo (con sesión).

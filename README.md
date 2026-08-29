@@ -70,7 +70,8 @@ cualquier ancho.
   su propia portada al compartir.
 - **Selección curada** con límite de 5, gestionable en cualquier momento; los repos de otros
   no se pueden reclamar (verificación de propiedad en servidor).
-- **Feed cronológico** con paginación por cursor estable, filtro *Following* y contador de
+- **Feed en orden aleatorio estable** — cada visita arranca en un punto distinto y el scroll
+  nunca repite fichas — con paginación por cursor, filtro *Following* y contador de
   clicks real por ficha.
 - **Follows nativos** — deliberadamente no espejan el follow de GitHub.
 - **Sincronización por webhooks**: un repo borrado o vuelto privado en GitHub desaparece del
