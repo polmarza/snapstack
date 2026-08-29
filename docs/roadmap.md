@@ -34,6 +34,7 @@ selección. Las señales implícitas registradas dirán qué se mira y qué se i
 No planificar en detalle hasta terminar la Fase 1. Candidatos:
 
 - [ ] C-02 Control manual del fondo al importar (elegir/regenerar variantes)
+- [x] C-03 Perfil enriquecido: tagline, bio y enlaces sociales (2026-08-29)
 - [ ] C-01 Similitud entre repos por embeddings (pgvector sobre README/topics)
 - [ ] Reclamación de repos semilla por sus autores al registrarse
 - [ ] Mejoras de feed guiadas por las señales implícitas acumuladas (qué mostrar, no ranking

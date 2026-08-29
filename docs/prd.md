@@ -127,6 +127,14 @@ En v1 son el mismo perfil de persona en dos momentos de uso distintos.
   la generación del fondo lo ofrezca, entonces puede regenerar o elegir entre variantes.
   Pendiente de decidir si entra algo de esto en v1 o queda 100 % automático.
 
+- **[C-03] Perfil enriquecido** — Dado un usuario en Settings, cuando guarda un tagline
+  (≤ 80), una bio (≤ 280) o enlaces a otras redes (lista blanca: X, LinkedIn, YouTube,
+  Reddit, Substack, Twitch, Bluesky, Mastodon, web personal), entonces su perfil público los
+  muestra — tagline bajo el nombre, bio bajo la cabecera, enlaces como fila de iconos — y
+  cualquier URL fuera de la lista blanca o que no sea https se rechaza en servidor. Todo
+  opcional; vaciar un campo lo elimina. Añadido el 2026-08-29 (ficha
+  `perfil-enriquecido.md`); de momento solo visible en el perfil, no en tarjetas ni feed.
+
 ### WON'T (esta versión)
 
 - Swipe o señal explícita de like/dislike sobre tarjetas.

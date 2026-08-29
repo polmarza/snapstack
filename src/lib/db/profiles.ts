@@ -1,4 +1,5 @@
 import type { Db } from "./client";
+import type { SocialLinks } from "@/lib/profile/social-links";
 
 /** Fila de la tabla `profiles` (ver docs/data-model.md y migración 003). */
 export interface ProfileRow {
@@ -9,6 +10,11 @@ export interface ProfileRow {
   avatar_url: string | null;
   /** Cuándo completó (o saltó) el onboarding. Solo llega al leer de la base. */
   onboarded_at?: string | null;
+  /** Perfil enriquecido (C-03, migración 009). Solo llegan al leer de la base:
+      el upsert de `ensureProfile` no los incluye y por tanto nunca los pisa. */
+  tagline?: string | null;
+  bio?: string | null;
+  social_links?: SocialLinks;
 }
 
 /**

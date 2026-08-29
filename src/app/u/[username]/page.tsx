@@ -8,6 +8,8 @@ import type { FeedRepo } from "@/lib/db/feed-page";
 import { getFollowCounts, isFollowing } from "@/lib/db/follows";
 import { getProfileByClerkId, getProfileByUsername } from "@/lib/db/profiles";
 import { listOwnedActiveRepos } from "@/lib/db/selection";
+import { SocialIconLinks } from "@/components/profile/social-icon-links";
+import { parseStoredSocialLinks } from "@/lib/profile/social-links";
 
 /**
  * Dinámica. Se intentó cachearla con ISR y no es posible tal como está: los
@@ -55,7 +57,12 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
  * JSON-LD del perfil. El nombre viene de GitHub (texto de terceros): se escapa
  * `<` para que no pueda cerrar la etiqueta <script>.
  */
-function profileJsonLd(profile: { username: string; display_name: string | null; avatar_url: string | null }) {
+function profileJsonLd(profile: {
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  social_links?: unknown;
+}) {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const data = {
     "@context": "https://schema.org",
@@ -66,7 +73,10 @@ function profileJsonLd(profile: { username: string; display_name: string | null;
       alternateName: profile.username,
       url: `${base}/u/${profile.username}`,
       ...(profile.avatar_url ? { image: profile.avatar_url } : {}),
-      sameAs: [`https://github.com/${profile.username}`],
+      sameAs: [
+        `https://github.com/${profile.username}`,
+        ...Object.values(parseStoredSocialLinks(profile.social_links)),
+      ],
     },
   };
   return JSON.stringify(data).replace(/</g, "\\u003c");
@@ -110,7 +120,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <h1 className="truncate font-mono text-2xl font-bold">
             {profile.display_name ?? profile.username}
           </h1>
-          <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-sm text-content-secondary">
+          {profile.tagline ? (
+            <p data-testid="profile-tagline" className="mt-0.5 truncate text-sm text-content">
+              {profile.tagline}
+            </p>
+          ) : null}
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-content-secondary">
             <span data-testid="profile-username" className="font-mono">@{profile.username}</span>
             <a
               href={`https://github.com/${profile.username}`}
@@ -127,6 +142,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               {counts.followers} {counts.followers === 1 ? "follower" : "followers"} ·{" "}
               {counts.following} following
             </span>
+            <SocialIconLinks links={parseStoredSocialLinks(profile.social_links)} />
           </p>
         </div>
         {canFollow ? (
@@ -135,6 +151,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           </div>
         ) : null}
       </header>
+
+      {profile.bio ? (
+        <p data-testid="profile-bio" className="-mt-4 mb-8 max-w-prose text-sm text-content-secondary">
+          {profile.bio}
+        </p>
+      ) : null}
 
       {repos.length === 0 ? (
         <p data-testid="profile-empty" className="text-content-secondary">

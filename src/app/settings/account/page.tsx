@@ -2,12 +2,18 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { DeleteAccount } from "@/components/account/delete-account";
+import { ProfileForm } from "@/components/account/profile-form";
+import { createServiceClient } from "@/lib/db/client";
+import { getProfileByClerkId } from "@/lib/db/profiles";
+import { parseStoredSocialLinks } from "@/lib/profile/social-links";
 
 export const dynamic = "force-dynamic";
 
 export default async function AccountSettingsPage() {
   const user = await currentUser();
   if (!user) redirect("/");
+
+  const profile = await getProfileByClerkId(createServiceClient(), user.id).catch(() => null);
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
@@ -21,6 +27,14 @@ export default async function AccountSettingsPage() {
           .
         </p>
       </header>
+
+      {profile ? (
+        <ProfileForm
+          initialTagline={profile.tagline ?? ""}
+          initialBio={profile.bio ?? ""}
+          initialLinks={parseStoredSocialLinks(profile.social_links)}
+        />
+      ) : null}
 
       <DeleteAccount />
     </main>
