@@ -65,7 +65,18 @@ las tuyas.
    (Clerk los lista; van en el proveedor del dominio).
 4. Anotar las claves de producción (`pk_live_…`, `sk_live_…`) para el paso 4.
 
-> Ojo: son claves distintas de las de desarrollo. Las de dev seguirán funcionando en local.
+> **Las claves de producción no van a `.env.local`.** Sólo funcionan desde el dominio de
+> producción: en localhost Clerk las rechaza ("Production Keys are only allowed for domain
+> …"). Su sitio es Vercel, y sólo en el entorno **Production**.
+>
+> Para tener las dos a la vez sin pisarse, se usan los entornos de Vercel: **Production** con
+> las `pk_live_/sk_live_`, y **Preview** (y Development) con las mismas de desarrollo que hay
+> en `.env.local`. Así cada rama desplegada de prueba entra con la instancia de dev y nadie
+> crea usuarios reales sin querer.
+>
+> Si alguna vez hiciera falta probar producción desde la máquina local, la única vía es mapear
+> un subdominio del dominio real al equipo y servir por HTTPS en el puerto 443; para el uso
+> normal no compensa: se prueba sobre el sitio desplegado.
 
 ---
 
