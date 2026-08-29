@@ -33,8 +33,10 @@ export const metadata: Metadata = {
     siteName: "snapstack",
     title: "snapstack — what devs are building",
     description: TAGLINE,
-    // La portada replica el hero de la landing, congelado (/api/og/home).
-    images: ["/api/og/home"],
+    // La portada es una captura real del hero (1200x630, misma imagen que la
+    // cabecera del README): la versión procedural de /api/og/home quedaba
+    // recortada y con el texto pisando las tarjetas.
+    images: ["/og-home.png"],
   },
 };
 
