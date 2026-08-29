@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cardBackground, languageColor } from "@/lib/card-seed";
 import type { FeedRepo } from "@/lib/db/feed-page";
+import { dwellEnter, dwellLeave, trackSignal } from "@/lib/signals/tracker";
 import { CardBackgroundLayer } from "./card-background";
 
 /**
@@ -13,10 +14,31 @@ import { CardBackgroundLayer } from "./card-background";
  */
 export function RepoCard({ repo }: { repo: FeedRepo }) {
   const [expanded, setExpanded] = useState(false);
+  const articleRef = useRef<HTMLElement>(null);
   const background = useMemo(
     () => cardBackground(String(repo.github_repo_id), repo.primary_language),
     [repo.github_repo_id, repo.primary_language],
   );
+
+  // Señal implícita de permanencia (M-09): tramos con la tarjeta ≥50 % visible.
+  useEffect(() => {
+    const element = articleRef.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) dwellEnter(repo.id);
+          else dwellLeave(repo.id);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+      dwellLeave(repo.id);
+    };
+  }, [repo.id]);
 
   const [ownerFromName, name] = repo.full_name.includes("/")
     ? [repo.full_name.split("/")[0], repo.full_name.split("/").slice(1).join("/")]
@@ -25,6 +47,7 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
 
   return (
     <article
+      ref={articleRef}
       data-testid="feed-card"
       data-repo-id={repo.github_repo_id}
       className="overflow-hidden rounded-2xl border border-edge bg-surface"
@@ -99,7 +122,12 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
           <button
             type="button"
             data-testid="feed-card-expand"
-            onClick={() => setExpanded((v) => !v)}
+            onClick={() =>
+              setExpanded((v) => {
+                if (!v) trackSignal({ repoId: repo.id, type: "expand" });
+                return !v;
+              })
+            }
             className="text-sm text-content-secondary hover:text-content"
             aria-expanded={expanded}
           >
@@ -110,6 +138,7 @@ export function RepoCard({ repo }: { repo: FeedRepo }) {
             target="_blank"
             rel="noopener noreferrer"
             data-testid="feed-card-repo-link"
+            onClick={() => trackSignal({ repoId: repo.id, type: "click_repo" })}
             className="text-sm text-primary hover:underline"
           >
             View on GitHub ↗
