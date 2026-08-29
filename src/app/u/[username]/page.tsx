@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Settings } from "lucide-react";
 import { currentUser } from "@clerk/nextjs/server";
 import { RepoCard } from "@/components/feed/repo-card";
 import { FollowButton } from "@/components/follow/follow-button";
@@ -148,6 +150,19 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         {canFollow ? (
           <div className="ml-auto shrink-0">
             <FollowButton profileId={profile.id} initialFollowing={alreadyFollowing} refreshOnToggle />
+          </div>
+        ) : viewer && viewer.id === profile.id ? (
+          // Tu propio perfil: acceso a Settings desde aquí (en móvil es la
+          // única puerta; la barra inferior ya no lo lleva).
+          <div className="ml-auto shrink-0">
+            <Link
+              href="/settings/account"
+              data-testid="profile-edit-link"
+              className="flex items-center gap-2 rounded-lg border border-edge px-4 py-2 text-sm text-content-secondary transition-colors hover:text-content"
+            >
+              <Settings size={16} strokeWidth={1.75} aria-hidden />
+              Edit profile
+            </Link>
           </div>
         ) : null}
       </header>

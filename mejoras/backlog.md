@@ -115,3 +115,16 @@ click de M-09. Letra pequeña obligatoria: el README es contenido de terceros �
 (XSS), reescribir links/imágenes relativos a raw.githubusercontent, límites de tamaño, mayor
 superficie de moderación (S-01) y límites de caché de los GitHub API Terms. El README ya
 estaba previsto para embeddings (C-01), así que traerlo sirve doble.
+
+### [MEJORA-07] Seguir repos individuales
+**Área:** Producto / Backend
+**Prioridad estimada:** Media
+**Origen:** Idea de Pol al planificar la página de detalle (2026-08-29)
+
+Además de seguir a un dev, poder seguir un repo concreto desde su futura página de detalle
+(MEJORA-03): un botón "Follow repo" que suscribe solo a la actividad de ese repo. Encaja con
+las notificaciones de actividad (punto 6 del feedback) y con su silenciado granular: seguir
+un repo y mutear un repo son las dos caras del mismo control fino. A resolver al construirlo:
+tabla propia (`repo_follows`) o generalizar `follows` con un tipo; qué emite notificación
+(push, release, stars…); y cómo se refleja en el filtro Following del feed (¿los repos
+seguidos aparecen aunque no sigas al autor?). Construir junto a MEJORA-03 o justo después.

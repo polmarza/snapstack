@@ -37,6 +37,9 @@ const items = [
     label: "Settings",
     Icon: Settings,
     match: (p: string) => p.startsWith("/settings/account"),
+    // En móvil, Settings se llega desde el botón del propio perfil: la barra
+    // inferior va justa de sitio y crecerá (feedback de Pol, 2026-08-29).
+    mobileHidden: true,
   },
 ];
 
@@ -126,7 +129,7 @@ export function AppNav({
         aria-label="Main"
         className="fixed inset-x-0 bottom-0 z-20 flex items-stretch justify-around border-t border-edge bg-background/95 backdrop-blur lg:hidden"
       >
-        {destinos.map(({ href, label, Icon, activo }) => (
+        {destinos.filter((d) => !d.mobileHidden).map(({ href, label, Icon, activo }) => (
           <Link
             key={label}
             href={href}
