@@ -25,14 +25,21 @@ El feed es contemplativo: funciona con la novedad, no sostiene la vuelta. Estas 
 son ideas sueltas, son **una secuencia** — cada paso quita el riesgo del anterior:
 
 1. **[MEJORA-09] Notas por repo**, como eventos con fecha. Es la pieza que las demás necesitan.
-2. **[MEJORA-10] Releases automáticas como notas.** Llena el feed de novedades sin que nadie
-   escriba: quita el riesgo de que MEJORA-09 nazca con la línea de tiempo vacía.
+2. **[MEJORA-10] Cosechar releases y PRs** + **[MEJORA-12] bandeja de publicación**, que son
+   las dos mitades del mismo paso: una recoge candidatos, la otra es donde su dueño decide
+   qué sale. Quita el riesgo de que MEJORA-09 nazca con la línea de tiempo vacía, sin
+   publicar nada que no se haya elegido.
 3. **[MEJORA-01] Orden del feed por última nota** (revisada: por nota, no por commit). Cierra
    el bucle — publican, te avisan, vuelves, hay algo distinto.
 4. **C-01 del PRD** (similitud por embeddings): "repos parecidos a este". Ya no es descubrir
    qué hay, es encontrar a quien está en tu mismo problema. La materia prima —los READMEs
    cacheados— llegó con C-05.
 5. **[MEJORA-11] Comentarios en las notas.** El último a propósito, y con moderación antes.
+
+Fuera de la secuencia, dos ideas sobre issues que salieron el mismo día: **[MEJORA-13]** los
+`help wanted` como invitación (no publicar el flujo de issues, que es una lista de lo roto) y
+**[MEJORA-14]** abrir un issue desde snapstack. Ambas dependen de permisos nuevos de la App,
+así que conviene decidirlas a la vez que los demás permisos y pedirlos de una tacada.
 
 **Antes que todo esto está la distribución.** Con 6 usuarios (2026-08-30) y la publicación en
 LinkedIn prevista para la semana siguiente, mirar qué hace la gente que entre dará más
@@ -158,14 +165,17 @@ conducta de una minoría (ver MEJORA-10, que existe justo para eso). A decidir a
 si las notas son públicas siempre, si admiten edición o borrado, y si una nota sin repo
 —una nota "de perfil"— tiene sentido o confunde el modelo.
 
-### [MEJORA-10] Releases y PRs como notas automáticas
+### [MEJORA-10] Cosechar releases y PRs como borradores de nota
 **Área:** Backend
-**Prioridad estimada:** Alta — paso 2 del plan
+**Prioridad estimada:** Alta — paso 2 del plan, junto con MEJORA-12
 **Origen:** Conversación del 2026-08-30: cómo evitar que MEJORA-09 nazca vacía
 
 **No pedir que escriban más: recoger lo que ya escriben a propósito.** Las release notes son
 una publicación deliberada, redactada para lectores; la descripción de un PR mergeado, casi.
-Dos vías:
+
+**Importante (decisión de Pol, 2026-08-30): esto cosecha candidatos, no publica.** Lo único
+que se importa solo es el repo con sus datos; todo lo demás espera a que su dueño diga que
+sí, en la bandeja de MEJORA-12. Dos vías de cosecha:
 
 - **Repos con la App instalada**: el evento `release` (hay que suscribirlo en la GitHub App,
   hoy solo tenemos `push`, `star`, `repository`, `installation`).
@@ -195,3 +205,79 @@ para siempre. Antes de abrirlos hacen falta bloqueo de usuarios, límite de frec
 tiempo semanal reservado — el filtro de S-01 y la tabla `reports` no bastan para texto libre
 de terceros. Y el problema de la sala vacía: una caja de comentarios en silencio comunica
 peor que no tenerla, así que solo tiene sentido cuando ya haya notas y gente.
+
+### [MEJORA-12] Bandeja de publicación: ver de un vistazo qué se puede publicar
+**Área:** Producto / Frontend / Backend
+**Prioridad estimada:** Alta — paso 2 del plan, es la cara visible de MEJORA-10
+**Origen:** Idea de Pol, conversación del 2026-08-30
+
+Una pantalla propia donde el usuario ve **todo lo suyo que es susceptible de publicarse** —
+releases, PRs mergeados, quizá issues— y decide, uno a uno, qué va a su perfil y qué no. La
+regla que la gobierna, dicha por Pol: **nada se publica solo salvo el repo con su
+información**; el resto es siempre un acto explícito.
+
+Diseño a resolver al construirla:
+
+- **Tres estados por candidato**: pendiente, publicado, descartado. El descarte importa tanto
+  como el publicar: sin él, el mismo PR pregunta para siempre.
+- **Editable antes de publicar.** Si el borrador se puede recortar o reescribir, la bandeja
+  deja de ser sindicación y pasa a ser trabajo editorial — que es justo lo que hace que las
+  notas tengan valor.
+- **Control de volumen.** Un repo con cuarenta PRs a la semana inunda la bandeja. Por defecto:
+  releases sí, prereleases y borradores no, PRs solo con descripción de cierta longitud.
+- **De dónde salen los candidatos**: por webhook para repos con la App instalada (permite el
+  aviso "tienes 3 cosas por publicar") o pidiéndolos a la API al abrir la pantalla (nada que
+  guardar de lo que aún no se ha decidido publicar). Probablemente lo primero con lo segundo
+  de reserva; decidir con la privacidad en mente, porque guardar borradores es guardar cosas
+  que su autor todavía no ha elegido enseñar.
+- **Es un motivo para volver, del bueno**: "3 cosas listas para publicar" habla de tu propio
+  trabajo, no de rachas ni de puntos.
+
+**Sobre el "botoncito en GitHub"** que Pol planteaba: GitHub no deja añadir botones propios a
+su interfaz, así que nativo no existe. Las alternativas, de peor a mejor:
+
+1. *Extensión de navegador* que lo inyecte: mantener una por navegador y pedir que la
+   instalen, para llegar a poquísima gente. No compensa.
+2. *GitHub Action* que el dev añade a su repo y llama a snapstack al publicar una release. Es
+   idiomático para devs, pero exige un YAML y un secreto en su repo.
+3. **El botón ya existe y es "Publish release".** Con el webhook, el gesto que el dev ya hace
+   en GitHub deja el borrador esperando en la bandeja. No hace falta inventar nada.
+4. Y si se quiere marcar desde GitHub qué publicar sin entrar aquí: una **convención**, como
+   una etiqueta `snapstack` en el PR o una línea en el cuerpo de la release. Cero fricción,
+   usa costumbres que los devs ya tienen (etiquetas, trailers) y no depende de extensiones.
+
+### [MEJORA-13] Issues con `help wanted` como invitación, no como quejas
+**Área:** Producto / Backend
+**Prioridad estimada:** Media
+**Origen:** Conversación del 2026-08-30 sobre qué contenido de GitHub merece publicarse
+
+Publicar el flujo de issues de alguien sería un error: para el de fuera casi todo es ruido,
+es una lista de lo que está roto —justo lo contrario de "tu mejor trabajo, digno de presumir"—
+y además suele ser *lo que otros dicen* sobre su trabajo, no lo que su autor eligió enseñar.
+
+Pero los issues etiquetados **`help wanted` / `good first issue` son otra cosa: son
+invitaciones, y las puso el propio mantenedor.** El consentimiento viene incorporado en la
+etiqueta. En la ficha podrían aparecer como *"busca ayuda con 3 cosas"*, y el feed dejaría de
+ser solo para mirar: sería para engancharse a algo.
+
+Coste a tener en cuenta: exige el permiso *Issues: read* en la GitHub App, y **añadir un
+permiso obliga a re-aprobar a todos los que ya la instalaron** (lección de C-07).
+
+### [MEJORA-14] "Propón una mejora": abrir un issue desde snapstack
+**Área:** Producto / Backend
+**Prioridad estimada:** Media
+**Origen:** Idea de Pol (feedback y propuestas de mejora), conversación del 2026-08-30
+
+Un botón en la ficha que abre un issue **en GitHub**, con la cuenta del visitante. Es la mejor
+versión de "poder aportar feedback":
+
+- La conversación técnica se queda donde el mantenedor trabaja: no fragmentamos ni le añadimos
+  un buzón que no pidió, y no competimos con issues ni discussions.
+- snapstack pasa de escaparate a **rampa de entrada a la contribución**: descubres el proyecto
+  y en un clic ya has aportado.
+- Reutiliza la infraestructura del starring (C-07): token de usuario de la App, autorización
+  una sola vez.
+
+A resolver: permiso *Issues: write* (con el mismo coste de re-aprobación que MEJORA-13);
+plantilla mínima para que no se convierta en un canal de mensajes vagos; y qué pasa con los
+repos semilla, que no tienen dueño aquí.
