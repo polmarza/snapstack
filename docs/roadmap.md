@@ -40,7 +40,10 @@ No planificar en detalle hasta terminar la Fase 1. Candidatos:
 - [x] C-06 Suscripción a los cambios de un repo, con notificación por push (2026-08-29)
 - [x] C-07 Estrella real desde snapstack vía GitHub App (2026-08-29; flujo pendiente de configurar la App)
 - [x] C-08 Instalación guiada de la GitHub App con registro en el perfil (2026-08-29)
-- [ ] C-01 Similitud entre repos por embeddings (pgvector sobre README/topics)
+- [ ] C-01 Similitud entre repos por embeddings (pgvector sobre README/topics) — paso 4 del
+      plan de `mejoras/backlog.md`; la materia prima (READMEs cacheados) llegó con C-05
+- [ ] Notas por repo, releases automáticas y orden del feed por última nota — el plan para que
+      la app esté viva más allá de la novedad, ordenado en `mejoras/backlog.md`
 - [ ] Reclamación de repos semilla por sus autores al registrarse
 - [ ] Mejoras de feed guiadas por las señales implícitas acumuladas (qué mostrar, no ranking
       algorítmico todavía)
