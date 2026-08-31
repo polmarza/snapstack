@@ -9,7 +9,7 @@ import { ChevronDown } from "lucide-react";
 const FAQS: Array<{ q: string; a: string }> = [
   {
     q: "Is snapstack free?",
-    a: "Yes. Sign in with GitHub and you're in — no card, no trial, no catch. If you like it, there's a donate button.",
+    a: "Yes. Sign in with GitHub and you're in — no card, no trial, no catch. If you like it, you can sponsor it on GitHub — or contribute to it, the whole thing is open source.",
   },
   {
     q: "What can snapstack do to my GitHub account?",

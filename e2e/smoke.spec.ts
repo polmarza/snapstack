@@ -118,10 +118,15 @@ test("en móvil el menú se despliega como un panel lateral, con la barra en su 
   await expect(page.getByTestId("landing-faq")).toBeInViewport();
 });
 
-test("el footer invita a apoyar el proyecto con el botón de donación", async ({ page }) => {
+test("el footer ofrece las dos vías de apoyo al proyecto", async ({ page }) => {
   await page.goto("/");
   const footer = page.getByTestId("site-footer");
   await expect(footer).toContainText("Support this project");
+  // Sponsors para quien ya tiene cuenta de GitHub; el café, para el resto.
+  await expect(footer.getByTestId("sponsor-button")).toHaveAttribute(
+    "href",
+    "https://github.com/sponsors/polmarza",
+  );
   await expect(footer.getByTestId("donate-button")).toHaveAttribute(
     "href",
     "https://www.buymeacoffee.com/polmarza",

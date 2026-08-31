@@ -1,10 +1,15 @@
-import { DonateButton } from "./donate-button";
+import { DonateButton, SponsorButton } from "./support-links";
 
 /**
  * Footer discreto, global: autoría, un par de enlaces y la invitación a apoyar
  * el proyecto. Nada que compita con el contenido — texto apagado, borde
- * superior fino; el botón de donación es lo único con color, y está al final
+ * superior fino; el botón de patrocinio es lo único con color, y está al final
  * a propósito.
+ *
+ * Aquí van las dos vías, y no una: el footer se lee sobre todo en la landing,
+ * donde entra gente sin cuenta de GitHub. Sponsors es la principal (con color)
+ * porque es la que le sirve a un dev sin registrarse en nada nuevo; el café es
+ * la salida para todos los demás.
  */
 export function SiteFooter() {
   return (
@@ -35,9 +40,12 @@ export function SiteFooter() {
           LinkedIn
         </a>
       </p>
-      <div className="mt-6 flex flex-col items-center gap-2">
+      <div className="mt-6 flex flex-col items-center gap-3">
         <p>Support this project</p>
-        <DonateButton />
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+          <SponsorButton label="Sponsor on GitHub" />
+          <DonateButton />
+        </div>
       </div>
     </footer>
   );
