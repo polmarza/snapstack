@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { AuthControls } from "@/components/auth/auth-controls";
 import { FeedList } from "@/components/feed/feed-list";
+import { NoteComposer, type ComposerRepo } from "@/components/notes/note-composer";
 import { RepoCard } from "@/components/feed/repo-card";
 import { Faq } from "@/components/landing/faq";
 import { HeroCardsBackground } from "@/components/landing/hero-cards-background";
@@ -17,8 +18,9 @@ import { LanguageMarquee } from "@/components/landing/language-marquee";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { RepoCardSkeleton } from "@/components/skeleton/skeleton";
 import { createServiceClient } from "@/lib/db/client";
-import { annotateFollowed, listFeedPage, type FeedPage } from "@/lib/db/feed-page";
+import { annotateFollowed, listFeedPage, type FeedPage, type FeedRepo } from "@/lib/db/feed-page";
 import { listFollowedIds } from "@/lib/db/follows";
+import { listOwnedActiveRepos } from "@/lib/db/selection";
 import { ensureProfile, getProfileByClerkId } from "@/lib/db/profiles";
 
 export const dynamic = "force-dynamic";
@@ -91,21 +93,22 @@ async function FeedBody({
       </p>
     );
   }
-  if (page.repos.length === 0) {
+  if (page.items.length === 0) {
     return (
       <p data-testid="feed-empty" className="text-content-secondary">
         {followingView
           ? "You're not following anyone yet. Explore the feed and follow the devs you like."
-          : "No repos in the feed yet."}
+          : "Nothing in the feed yet."}
       </p>
     );
   }
   return (
     <FeedList
       key={followingView ? "following" : "all"}
-      initialRepos={page.repos}
+      initialItems={page.items}
       initialCursor={page.nextCursor}
       filter={followingView ? "following" : undefined}
+      viewerProfileId={viewerProfileId}
     />
   );
 }
@@ -128,6 +131,8 @@ export default async function Home({ searchParams }: HomeProps) {
   let needsOnboarding = false;
   let viewerProfileId: string | null = null;
   let followedIds: string[] = [];
+  // Los repos del visitante son a lo que puede anclar una nota (C-09).
+  let reposPropios: ComposerRepo[] = [];
   try {
     const db = createServiceClient();
     const user = await currentUser();
@@ -138,6 +143,14 @@ export default async function Home({ searchParams }: HomeProps) {
     viewerProfileId = profile?.id ?? null;
     needsOnboarding = profile !== null && !profile.onboarded_at;
     followedIds = profile ? await listFollowedIds(db, profile.id) : [];
+    if (profile) {
+      const propios = await listOwnedActiveRepos(db, profile.id).catch(() => []);
+      reposPropios = (propios as Array<ComposerRepo>).map(({ id, full_name, primary_language }) => ({
+        id,
+        full_name,
+        primary_language,
+      }));
+    }
 
     // Sin sesión, la landing necesita su muestra de fichas ya resuelta.
     if (!signedIn) page = await listFeedPage(db);
@@ -146,6 +159,12 @@ export default async function Home({ searchParams }: HomeProps) {
     sessionOk = false;
   }
   const followingView = filter === "following" && signedIn;
+
+  // La landing enseña fichas, no notas: es la muestra de qué es el producto,
+  // y quien todavía no ha entrado no tiene contexto para leer una nota suelta.
+  const reposDeMuestra: FeedRepo[] = (page?.items ?? [])
+    .filter((item) => item.kind === "repo")
+    .map((item) => (item as Extract<typeof item, { kind: "repo" }>).repo);
 
   // Usuario nuevo: al onboarding hasta que lo complete o lo salte (marca de la
   // migración 008). Fuera del try: redirect() lanza una excepción interna de
@@ -175,7 +194,7 @@ export default async function Home({ searchParams }: HomeProps) {
             id="top"
             className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden px-4 text-center"
           >
-            <HeroCardsBackground repos={page?.repos ?? []} />
+            <HeroCardsBackground repos={reposDeMuestra} />
             <LandingNav />
             <div className="relative flex flex-col items-center">
               <h1
@@ -214,17 +233,17 @@ export default async function Home({ searchParams }: HomeProps) {
           {/* Muestra del feed: 3 fichas y una cuarta desvaneciéndose — "hay más".
               El feed completo es para quien entra; la landing solo enseña que
               está vivo. El CTA va justo debajo, donde el interés está caliente. */}
-          {page && page.repos.length > 0 ? (
+          {reposDeMuestra.length > 0 ? (
             <section data-testid="landing-feed-preview" className="mx-auto max-w-2xl px-4 pb-20 pt-4 sm:px-6">
               <h2 className="mb-6 text-center font-mono text-3xl font-bold">The feed, live</h2>
               <div className="flex flex-col gap-6">
-                {page.repos.slice(0, 3).map((repo) => (
+                {reposDeMuestra.slice(0, 3).map((repo) => (
                   <RepoCard key={repo.id} repo={repo} />
                 ))}
               </div>
-              {page.repos.length > 3 ? (
+              {reposDeMuestra.length > 3 ? (
                 <div aria-hidden className="relative mt-6 max-h-44 overflow-hidden">
-                  <RepoCard repo={page.repos[3]} />
+                  <RepoCard repo={reposDeMuestra[3]} />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/70 to-background" />
                 </div>
               ) : null}
@@ -253,6 +272,14 @@ export default async function Home({ searchParams }: HomeProps) {
             Following
           </Link>
         </nav>
+      ) : null}
+
+      {/* El compositor va sobre el feed y bajo las pestañas: lo primero que ves
+          al entrar es que aquí se puede escribir, sin que tape el contenido. */}
+      {signedIn ? (
+        <div className="mb-6">
+          <NoteComposer repos={reposPropios} />
+        </div>
       ) : null}
 
       {signedIn && sessionOk ? (

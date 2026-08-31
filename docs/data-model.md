@@ -96,6 +96,19 @@ políticas (solo service role). Cascada con profiles y repos.
 | repo_id | uuid (PK, FK → repos) | A qué repo |
 | created_at | timestamptz | Alta |
 
+### notes
+Nota corta anclada a un repo (C-09, migración 017). `repo_id` es NOT NULL a propósito: **no
+existe la nota sin repo**, y el ancla es lo que separa esto de un microblog. Que además sea un
+repo propio y activo se valida en `src/lib/db/notes.ts`, no en el esquema, porque la propiedad
+puede cambiar (un repo semilla reclamado) y una nota antigua no debe volverse inválida.
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| id | uuid (PK) | Identificador interno |
+| author_profile_id | uuid (FK → profiles, cascada) | Quién la escribió |
+| repo_id | uuid (FK → repos, cascada) | El repo del que cuelga. NOT NULL |
+| body | text | Texto plano, 1–500 caracteres (`check`). Nunca se interpreta como Markdown |
+| created_at | timestamptz | Cuándo se escribió. Es la posición de la nota en el feed |
+
 ### signals
 Señales implícitas del feed. Solo instrumentación en v1: ningún ranking las consume.
 | Campo | Tipo | Descripción |
@@ -175,6 +188,10 @@ políticas (solo service role). Cascada con profiles y repos.
 | repo_id | uuid (PK, FK → repos) | A qué repo |
 | created_at | timestamptz | Alta |
 
+### notes
+- SELECT: pública (el feed y los perfiles lo son). INSERT/UPDATE/DELETE: solo service role, que
+  es quien comprueba el anclaje y la autoría.
+
 ### signals
 - INSERT: cualquier sesión (o anónimo vía servidor). SELECT: solo sistema — no se exponen.
 
@@ -195,6 +212,15 @@ políticas (solo service role). Cascada con profiles y repos.
 | 2026-08-29 | `supabase/migrations/006_follows.sql` | Tabla `follows` (PK compuesta, check anti auto-follow, cascada); RLS de lectura pública |
 | 2026-08-29 | `supabase/migrations/007_repo_click_count.sql` | `repos.click_count` (desnormalizado desde `signals`, con relleno) y función `increment_repo_clicks` |
 | 2026-08-29 | `supabase/migrations/008_profiles_onboarded.sql` | `profiles.onboarded_at` con relleno para quien ya tenía repos (redirección al onboarding) |
+| 2026-08-29 | `supabase/migrations/009_profiles_bio_social.sql` | `profiles.tagline`, `bio` y `social_links` (C-03); los topes son la última red, la validación vive en servidor |
+| 2026-08-29 | `supabase/migrations/010_notifications.sql` | Tabla `notifications` genérica (type + payload) para C-04 |
+| 2026-08-29 | `supabase/migrations/011_repos_readme.sql` | `repos.readme_md` y `readme_fetched_at` (README cacheado para C-05) |
+| 2026-08-29 | `supabase/migrations/012_notifications_rls.sql` | Corrige la 010: `notifications` sin RLS quedaba legible con la clave anónima |
+| 2026-08-29 | `supabase/migrations/013_repo_subscriptions.sql` | Tabla `repo_subscriptions` y tipo `repo_update` (C-06) |
+| 2026-08-29 | `supabase/migrations/014_github_app_tokens.sql` | Tokens user-to-server cifrados (C-07); RLS sin políticas |
+| 2026-08-29 | `supabase/migrations/015_profiles_installation.sql` | `profiles.github_installation_id` (C-08) |
+| 2026-08-31 | `supabase/migrations/016_increment_clicks_hardening.sql` | `increment_repo_clicks` con `search_path` fijo y sin EXECUTE para `anon` |
+| 2026-08-31 | `supabase/migrations/017_notes.sql` | Tabla `notes` con RLS de lectura pública, sus índices y el tipo `new_note` de notificación (C-09) |
 
 ---
 

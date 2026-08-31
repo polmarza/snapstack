@@ -13,6 +13,8 @@ import { createServiceClient } from "@/lib/db/client";
 import { getFollowCounts, isFollowing } from "@/lib/db/follows";
 import { listOwnedActiveRepos } from "@/lib/db/selection";
 import { isSubscribed } from "@/lib/db/subscriptions";
+import { listNotesForRepo } from "@/lib/db/notes";
+import { NoteCard } from "@/components/notes/note-card";
 import { getGithubAppToken } from "@/lib/db/github-app-tokens";
 import { githubAppConfigured } from "@/lib/github/app-oauth";
 import { isStarred } from "@/lib/github/starring";
@@ -96,6 +98,10 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
     };
   }
   const alreadySubscribed = viewer ? await isSubscribed(db, viewer.id, repo.id) : false;
+
+  // Las notas del repo, lo primero bajo la ficha: es lo que ha pasado desde
+  // que se importó, y envejece antes que el README.
+  const notes = await listNotesForRepo(db, repo.id).catch(() => []);
 
   // Estrella real (C-07): solo con la App configurada y sesión. Con token, se
   // consulta el estado inicial; sin él, el primer click lleva a conectar.
@@ -237,6 +243,20 @@ export default async function RepoDetailPage({ params }: RepoPageProps) {
             </li>
           ))}
         </ul>
+      ) : null}
+
+      {notes.length > 0 ? (
+        <section data-testid="repo-notes" className="mt-8 flex flex-col gap-3">
+          <h2 className="font-mono text-sm font-bold text-content-secondary">Notes</h2>
+          {notes.map((note) => (
+            <NoteCard
+              key={note.id}
+              note={note}
+              showRepo={false}
+              canDelete={viewer !== null && viewer.id === note.author_profile_id}
+            />
+          ))}
+        </section>
       ) : null}
 
       <section className="mt-8">

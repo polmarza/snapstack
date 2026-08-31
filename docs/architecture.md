@@ -49,13 +49,15 @@ src/
 │   ├── page.tsx          → ✅ Feed de scroll infinito (M-06)
 │   ├── dev/cards/        → ✅ Demo local de fichas sobre fixtures
 │   ├── dev/seed/         → ✅ Demo local de los repos semilla importados (lee de la DB)
+│   ├── dev/notes/        → ✅ Demo local de la nota y el compositor (fixtures; lo testeable sin Clerk)
 │   ├── u/[username]/     → ✅ Perfil público (M-05): identidad + grid de fichas, og:image propia
 │   ├── onboarding/       → ✅ Selección de repos tras el login (M-02)
 │   ├── settings/repos/   → ✅ Gestión de la selección + server action de importación (M-03)
 │   ├── settings/account/ → ✅ Baja de cuenta (M-11): borrado real DB→Clerk con cascada
 │   └── api/
 │       ├── og/               → ✅ Generación de fichas con @vercel/og (og:image/embeds)
-│       ├── feed/             → ✅ Paginación del feed por cursor keyset
+│       ├── feed/             → ✅ Paginación del feed por cursor keyset (lista mixta: repos + notas, C-11)
+│       ├── notes/            → ✅ Server actions de publicar y borrar notas (C-09)
 │       ├── webhooks/github/  → ✅ Webhooks de GitHub (M-08): firma HMAC + sync desde payload
 │       └── signals/          → ✅ Registro de señales implícitas (M-09; solo escritura)
 ├── components/
@@ -63,12 +65,13 @@ src/
 │   ├── auth/             → ✅ AuthControls (entrar con GitHub / menú de usuario / Mis repos)
 │   ├── follow/           → ✅ FollowButton (toggle optimista; emite follow_author desde tarjetas)
 │   ├── selection/        → ✅ SelectionPage + RepoSelector (onboarding y settings comparten)
-│   └── feed/             → ✅ RepoCard (HTML/CSS), FeedList (IntersectionObserver); ui/ ⏳
+│   ├── feed/             → ✅ RepoCard (HTML/CSS), FeedList (IntersectionObserver, lista mixta); ui/ ⏳
+│   └── notes/            → ✅ NoteCard y NoteComposer (C-09)
 ├── proxy.ts              → ✅ clerkMiddleware (sesión en todas las rutas; ninguna exige login aún)
 ├── lib/
 │   ├── card-seed/        → ✅ Semilla determinista, colores Linguist vendorizados, paleta
 │   ├── github/           → ✅ Cliente GraphQL, token OAuth vía Clerk, listado/importación, verificación y handlers de webhooks
-│   ├── db/               → ✅ Cliente Supabase (service role), queries de repos, profiles, selección, señales y reportes
+│   ├── db/               → ✅ Cliente Supabase (service role), queries de repos, profiles, selección, señales, reportes y notas
 │   ├── moderation/       → ✅ Filtro básico de contenido (S-01): lista corta + límites de palabra
 │   └── signals/          → ✅ Tipos/validación de señales y tracker de cliente (dwell, expand, click)
 ├── jobs/

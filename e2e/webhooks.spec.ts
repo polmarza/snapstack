@@ -34,8 +34,9 @@ interface FeedRepoLite {
 }
 
 /**
- * El feed completo, vuelta entera de cursores: con el orden aleatorio (ficha
- * feed-orden-aleatorio) ninguna ficha tiene garantizada la primera página.
+ * El feed completo, vuelta entera de cursores. Desde C-11 el feed es una lista
+ * mixta ordenada por recencia: se filtran los ítems de tipo `repo`, porque una
+ * ficha antigua no tiene garantizada la primera página.
  */
 async function feedCompleto(): Promise<FeedRepoLite[]> {
   const api = await playwrightRequest.newContext({ baseURL: "http://localhost:3000" });
@@ -44,10 +45,12 @@ async function feedCompleto(): Promise<FeedRepoLite[]> {
   do {
     const url = cursor ? `/api/feed?cursor=${encodeURIComponent(cursor)}` : "/api/feed";
     const page = (await (await api.get(url)).json()) as {
-      repos: FeedRepoLite[];
+      items: Array<{ kind: string; repo?: FeedRepoLite }>;
       nextCursor: string | null;
     };
-    repos.push(...page.repos);
+    for (const item of page.items) {
+      if (item.kind === "repo" && item.repo) repos.push(item.repo);
+    }
     cursor = page.nextCursor;
   } while (cursor);
   return repos;

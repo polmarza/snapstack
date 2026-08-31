@@ -8,9 +8,9 @@ import { test, expect, request as playwrightRequest } from "@playwright/test";
 async function unaSemilla() {
   const api = await playwrightRequest.newContext({ baseURL: "http://localhost:3000" });
   const feed = (await (await api.get("/api/feed?limit=50")).json()) as {
-    repos: Array<{ full_name: string; is_seed: boolean; stars: number }>;
+    items: Array<{ kind: string; repo?: { full_name: string; is_seed: boolean; stars: number } }>;
   };
-  const seed = feed.repos.find((r) => r.is_seed);
+  const seed = feed.items.find((i) => i.kind === "repo" && i.repo?.is_seed)?.repo;
   expect(seed).toBeTruthy();
   return seed as { full_name: string; stars: number };
 }

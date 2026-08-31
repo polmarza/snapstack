@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
-import { Bell, LayoutList, LogOut, Settings, User, BookMarked } from "lucide-react";
+import { Bell, LayoutList, LogOut, Settings, User } from "lucide-react";
 import { NOTIFICATIONS_READ_EVENT } from "@/components/notifications/mark-read-on-open";
 import { ContributeButton, SponsorButton } from "./support-links";
 import { Logo } from "./logo";
@@ -12,6 +12,12 @@ import { Logo } from "./logo";
 /**
  * Navegación de la app, solo con sesión: barra lateral en desktop y barra
  * inferior en móvil (donde llega el pulgar). El item activo sale del pathname.
+ *
+ * **"Repos" ya no está aquí** (C-11). Apuntaba a `/settings/repos`, que es *tu
+ * selección de cinco*, pero se leía como "los repos" — o sea, como el feed, que
+ * está justo al lado. La URL ya decía `settings`; lo que mentía era el menú. Y
+ * curar tu selección es algo que se hace cada muchas semanas: no merece un
+ * sitio permanente. Ahora se llega desde Settings.
  *
  * Los enlaces son `prefetch` por defecto en Next, y cada ruta tiene su
  * `loading.tsx`: al pulsar, el esqueleto aparece al instante.
@@ -25,12 +31,6 @@ const items = [
     label: "Alerts",
     Icon: Bell,
     match: (p: string) => p.startsWith("/notifications"),
-  },
-  {
-    href: "/settings/repos",
-    label: "Repos",
-    Icon: BookMarked,
-    match: (p: string) => p.startsWith("/settings/repos"),
   },
   {
     href: "/settings/account",
@@ -149,8 +149,8 @@ export function AppNav({
             {label}
           </Link>
         ))}
-        {/* Sign out vive en Settings (y en la barra lateral de desktop):
-            barra móvil de 4 items, con hueco para crecer. */}
+        {/* Sign out y la selección de repos viven en Settings (y en la barra
+            lateral de desktop): barra móvil de 3 items, con hueco de sobra. */}
       </nav>
     </>
   );

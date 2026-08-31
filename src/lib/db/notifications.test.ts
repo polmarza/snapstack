@@ -5,6 +5,7 @@ import {
   countUnreadNotifications,
   listNotifications,
   markAllNotificationsRead,
+  notifyNewNote,
   notifyRepoUpdate,
   type NotificationRow,
   type RepoUpdatePayload,
@@ -192,5 +193,36 @@ describe("notifyRepoUpdate (C-06)", () => {
     await notifyRepoUpdate(db, "pol", { ...push(7), repo_id: "repo2", full_name: "c/d" });
     expect(rows).toHaveLength(3);
     expect(await countUnreadNotifications(db, "pol")).toBe(2);
+  });
+});
+
+describe("notifyNewNote (C-09)", () => {
+  const nota = {
+    note_id: "nota-1",
+    repo_id: "repo-1",
+    full_name: "dev/repo-1",
+    excerpt: "he arreglado el bug raro",
+  };
+
+  it("avisa al suscriptor con el recorte, para leerla sin abrirla", async () => {
+    const { db } = fakeDb();
+    expect(await notifyNewNote(db, "suscriptor", "autor", nota)).toBe(true);
+    const [n] = await listNotifications(db, "suscriptor");
+    expect(n.type).toBe("new_note");
+    expect(n.actor_profile_id).toBe("autor");
+    expect(n.payload).toMatchObject({ note_id: "nota-1", excerpt: "he arreglado el bug raro" });
+  });
+
+  it("el autor no se avisa a sí mismo", async () => {
+    const { db } = fakeDb();
+    expect(await notifyNewNote(db, "autor", "autor", nota)).toBe(false);
+    expect(await countUnreadNotifications(db, "autor")).toBe(0);
+  });
+
+  it("dos notas del mismo repo son dos avisos: a diferencia de los pushes, no se funden", async () => {
+    const { db } = fakeDb();
+    await notifyNewNote(db, "suscriptor", "autor", nota);
+    await notifyNewNote(db, "suscriptor", "autor", { ...nota, note_id: "nota-2", excerpt: "y otra cosa" });
+    expect(await countUnreadNotifications(db, "suscriptor")).toBe(2);
   });
 });

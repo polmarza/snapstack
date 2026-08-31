@@ -10,6 +10,8 @@ import type { FeedRepo } from "@/lib/db/feed-page";
 import { getFollowCounts, isFollowing } from "@/lib/db/follows";
 import { getProfileByClerkId, getProfileByUsername } from "@/lib/db/profiles";
 import { listOwnedActiveRepos } from "@/lib/db/selection";
+import { listNotesForProfile } from "@/lib/db/notes";
+import { NoteCard } from "@/components/notes/note-card";
 import { SocialIconLinks } from "@/components/profile/social-icon-links";
 import { parseStoredSocialLinks } from "@/lib/profile/social-links";
 
@@ -93,6 +95,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const repos = (await listOwnedActiveRepos(db, profile.id)) as FeedRepo[];
   repos.sort((a, b) => b.imported_at.localeCompare(a.imported_at));
   const counts = await getFollowCounts(db, profile.id);
+
+  // Las notas van bajo el repo del que cuelgan (C-09): el ancla se ve, y el
+  // perfil se lee como "esto construyo, y esto es lo último que le ha pasado".
+  const notes = await listNotesForProfile(db, profile.id).catch(() => []);
+  const notesByRepo = new Map<string, typeof notes>();
+  for (const note of notes) {
+    if (!note.repo) continue;
+    const list = notesByRepo.get(note.repo.id) ?? [];
+    list.push(note);
+    notesByRepo.set(note.repo.id, list);
+  }
 
   // Botón Follow: solo con sesión y sobre perfiles ajenos.
   const user = await currentUser();
@@ -196,9 +209,24 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         // tamaños están pensados para este ancho (a dos columnas el texto
         // desbordaba y el menú de la esquina quedaba fuera).
         <div className="flex flex-col gap-6">
-          {repos.map((repo) => (
-            <RepoCard key={repo.id} repo={repo} showFooter={false} />
-          ))}
+          {repos.map((repo) => {
+            // Solo las tres últimas: el resto vive en el detalle del repo. Un
+            // perfil no debería crecer sin fin porque su dueño escriba mucho.
+            const repoNotes = (notesByRepo.get(repo.id) ?? []).slice(0, 3);
+            return (
+              <div key={repo.id} className="flex flex-col gap-3">
+                <RepoCard repo={repo} showFooter={false} />
+                {repoNotes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    showRepo={false}
+                    canDelete={viewer !== null && viewer.id === profile.id}
+                  />
+                ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </main>
