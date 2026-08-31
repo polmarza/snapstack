@@ -173,6 +173,25 @@ En v1 son el mismo perfil de persona en dos momentos de uso distintos.
   sin App, los datos se quedan como en el import. Construido el 2026-08-29 (ficha
   `instalacion-guiada.md`).
 
+- **[C-09] Notas ancladas a un repo** — Dado un usuario con sesión, cuando escribe una nota
+  (texto ≤ 500) y elige obligatoriamente uno de sus repos activos, entonces la nota aparece en
+  su perfil bajo ese repo, en la página de detalle del repo y en el feed, y genera notificación
+  a quien esté suscrito a ese repo (misma vía que C-06). El autor puede borrar su nota. **No
+  existe la nota sin repo**: el repo es el ancla que distingue snapstack de un microblog.
+  Acordada el 2026-08-31 (ficha `notas-de-repo.md`).
+
+- **[C-10] Imagen en una nota** — Dado un usuario escribiendo una nota, cuando adjunta una
+  imagen (una sola, PNG/JPEG/WebP, ≤ 5 MB), entonces se almacena en Supabase Storage y se
+  muestra dentro de la nota en perfil, detalle y feed. El tipo y el tamaño se validan en
+  servidor, no solo en el navegador. Sin imagen la nota sigue siendo válida.
+  Acordada el 2026-08-31 (ficha `notas-de-repo.md`).
+
+- **[C-11] El feed como línea de tiempo mixta** — Dado cualquier visitante del feed, cuando
+  carga, entonces ve fichas de repo y notas en la misma lista, ordenada por recencia de
+  actividad en lugar de por el orden barajado actual, con paginación por cursor sobre ese
+  orden. La selección de repos deja de ser un destino de la navegación principal y pasa a
+  Settings. Absorbe MEJORA-01. Acordada el 2026-08-31 (ficha `notas-de-repo.md`).
+
 ### WON'T (esta versión)
 
 - Swipe o señal explícita de like/dislike sobre tarjetas.
