@@ -1,6 +1,6 @@
 # Notas ancladas a un repo
 
-**Estado:** Acordada
+**Estado:** En construcción
 **Requisitos que cierra:** C-09, C-11
 **Fecha de acuerdo:** 2026-08-31
 
@@ -48,15 +48,21 @@ la selección propia y se lee como si fuera el feed— se va dentro de Settings.
 
 | Requisito | Se implementa en | Se valida con |
 |-----------|------------------|---------------|
-| C-09 | `supabase/migrations/017_notes.sql`, `src/lib/db/notes.ts`, `src/components/notes/`, `src/lib/db/notifications.ts` | `src/lib/db/notes.test.ts`, `src/lib/db/notifications.test.ts`, `e2e/notes.spec.ts` |
+| C-09 | `supabase/migrations/017_notes.sql`, `src/lib/db/notes.ts`, `src/app/api/notes/actions.ts`, `src/components/notes/`, `src/lib/db/notifications.ts` | `src/lib/db/notes.test.ts`, `src/lib/db/notifications.test.ts`, `e2e/notes.spec.ts` |
 | C-11 | `src/lib/db/feed-page.ts`, `src/app/(feed)/page.tsx`, `src/components/shell/app-nav.tsx`, `src/app/settings/` | `src/lib/db/feed-page.test.ts`, `e2e/notes.spec.ts` |
 
 Qué cubre cada cosa, y qué se queda fuera de los tests:
 
-- **C-09** — los unitarios cubren el anclaje obligatorio (una nota sin repo propio y activo se
-  rechaza en servidor), el tope de 500, que solo el autor borra la suya, y el caso `note` nuevo
-  en las notificaciones sobre la base de C-06. El e2e comprueba que la nota publicada aparece en
-  los tres sitios: feed, detalle del repo y perfil.
+- **C-09** — los unitarios cubren el anclaje obligatorio (repo ajeno, retirado, semilla o
+  inexistente se rechazan en servidor), el tope de 500, la normalización del cuerpo, que solo el
+  autor borra la suya, y el aviso `new_note` sobre la base de C-06. El e2e cubre la tarjeta y el
+  compositor contra `/dev/notes`, que los monta con datos de mentira.
+
+  **Lo que el e2e no cubre, y no puede:** publicar de verdad exige sesión de Clerk y repos
+  propios, y el proyecto no testea contra Clerk (`docs/testing.md`). Que la nota publicada
+  aparezca en el feed, en el perfil y en el detalle es **pasada manual con sesión**, con la
+  evidencia en el PR — mismo trato que el flujo OAuth de C-07. `/dev/notes` existe justamente
+  para que la parte que sí se puede automatizar no dependa de esa pasada.
 - **C-11** — `feed-page.test.ts` se reescribe: el orden barajado y su cursor de vuelta al
   principio desaparecen, y entran los casos del orden por recencia con ítems de los dos tipos.
   El e2e comprueba que la barra principal ya no lleva "Repos" y que la selección sigue

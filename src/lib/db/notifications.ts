@@ -6,7 +6,7 @@ import type { Db } from "./client";
  * feedback, futura) se monte encima sin migrar nada.
  */
 
-export type NotificationType = "new_follower" | "repo_update";
+export type NotificationType = "new_follower" | "repo_update" | "new_note";
 
 export interface NotificationRow {
   id: string;
@@ -146,4 +146,39 @@ export async function notifyRepoUpdate(
     payload: push,
   });
   if (error) throw new Error(`Error al crear la notificación: ${error.message}`);
+}
+
+export interface NewNotePayload {
+  note_id: string;
+  repo_id: string;
+  full_name: string;
+  /** Recorte del cuerpo, para leer la notificación sin abrirla. */
+  excerpt: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Notificación de nota nueva para un suscriptor del repo (C-09), sobre la vía
+ * que C-06 ya abrió para los pushes.
+ *
+ * A diferencia de `repo_update`, **no se acumula**: cada nota es un texto que
+ * alguien escribió a mano y fundir dos en una perdería la primera. El anti-ruido
+ * aquí es que las notas las escribe una persona, no un `git push`.
+ */
+export async function notifyNewNote(
+  db: Db,
+  recipientProfileId: string,
+  actorProfileId: string,
+  note: NewNotePayload,
+): Promise<boolean> {
+  if (recipientProfileId === actorProfileId) return false;
+
+  const { error } = await db.from("notifications").insert({
+    recipient_profile_id: recipientProfileId,
+    actor_profile_id: actorProfileId,
+    type: "new_note",
+    payload: note,
+  });
+  if (error) throw new Error(`Error al crear la notificación de nota: ${error.message}`);
+  return true;
 }

@@ -26,10 +26,13 @@ test("la paginación del feed encadena páginas sin duplicar ni saltar fichas", 
     const url = cursor ? `/api/feed?cursor=${encodeURIComponent(cursor)}` : "/api/feed";
     const res = await request.get(url);
     expect(res.status()).toBe(200);
-    const page = (await res.json()) as { repos: Array<{ id: string }>; nextCursor: string | null };
-    for (const repo of page.repos) {
-      expect(vistos.has(repo.id)).toBe(false); // sin duplicados entre páginas
-      vistos.add(repo.id);
+    const page = (await res.json()) as {
+      items: Array<{ kind: string; id: string }>;
+      nextCursor: string | null;
+    };
+    for (const item of page.items) {
+      expect(vistos.has(item.id)).toBe(false); // sin duplicados entre páginas
+      vistos.add(item.id);
     }
     cursor = page.nextCursor;
     paginas++;

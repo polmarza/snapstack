@@ -1,43 +1,40 @@
 /**
- * Paginación keyset del feed (M-06, revisada en la ficha "feed-orden-aleatorio"):
- * orden pseudoaleatorio estable por (card_seed, id) descendente, con punto de
- * entrada aleatorio y vuelta completa. `card_seed` es el hash FNV-1a del repo:
- * uniforme y sin correlación con autor ni fecha de importación, así que rompe el
- * bloque de "los 5 repos del mismo usuario seguidos" que producía el orden
- * cronológico de importación.
+ * Paginación keyset del feed (M-06, revisada por C-11).
  *
- * Cada visita arranca en una semilla `s` distinta y la paginación desciende
- * desde ahí; al agotar ese tramo, da la vuelta por arriba (`card_seed > s`)
- * hasta cerrar el círculo. Dentro de una sesión, el keyset garantiza que no se
- * repite ni se salta ninguna ficha — con offset, los inserts continuos
- * duplicarían o saltarían. El cursor viaja como token opaco (base64url de JSON).
+ * **Qué cambió y por qué.** Hasta la ficha `notas-de-repo` el feed iba
+ * barajado: orden pseudoaleatorio estable por `card_seed`, con entrada
+ * aleatoria y vuelta completa, para que los cinco repos del mismo autor no
+ * salieran en bloque. Con notas dentro, ese orden deja de valer: una nota es
+ * una novedad, y una novedad de hace una semana no puede estar arriba del todo.
+ * Gana la recencia — y se pierde la propiedad de reparto que daba el barajado
+ * (ver "Decisiones tomadas" en la ficha).
+ *
+ * **La unidad ya no es el repo, es el ítem**, que puede ser `repo` o `note`.
+ * Cada uno trae su instante en el feed: el repo, cuándo entró a la selección;
+ * la nota, cuándo se escribió. Se piden las dos tablas por separado con el
+ * mismo keyset y se mezclan aquí: no hay vista ni tabla unificada que mantener
+ * en dos sitios, y cada consulta usa su propio índice.
+ *
+ * El orden total es `(at, id)` descendente. `id` desempata: son uuid y son
+ * únicos entre tablas, así que dos ítems con el mismo instante siempre caen en
+ * el mismo orden en la base y aquí. El cursor viaja como token opaco.
  */
 
-import { randomBytes } from "node:crypto";
 import type { Db } from "./client";
+import type { NoteWithContext } from "./notes";
+import { NOTE_SELECT } from "./notes";
 import type { RepoRow } from "./repos";
 
 export const FEED_PAGE_SIZE = 10;
-export const FEED_ORDER_FIELD = "card_seed" as const;
 
 export interface FeedCursor {
-  /** Semilla de entrada de esta vuelta al feed (8 hex, formato de card_seed). */
-  s: string;
-  /** card_seed del último elemento servido. */
+  /** Instante del último ítem servido (timestamptz tal cual lo da PostgREST). */
   t: string;
-  /** Desempate: id del último elemento servido. */
+  /** Desempate: id del último ítem servido. */
   id: string;
-  /** 1 si la paginación ya dio la vuelta por encima de `s`. */
-  w: 0 | 1;
 }
 
-export interface FeedPage {
-  repos: FeedRepo[];
-  /** null cuando no queda más contenido: el fin del feed es explícito. */
-  nextCursor: string | null;
-}
-
-/** Fila del feed: RepoRow más el id que necesita el cursor. */
+/** Fila de repo en el feed. */
 export type FeedRepo = RepoRow & {
   id: string;
   imported_at: string;
@@ -45,73 +42,88 @@ export type FeedRepo = RepoRow & {
   owner_followed?: boolean;
 };
 
-/** Semilla de entrada aleatoria: 8 hex, el mismo formato que card_seed. */
-export function randomStartSeed(): string {
-  return randomBytes(4).toString("hex");
+/** Nota en el feed, con su autor y el repo del que cuelga. */
+export type FeedNote = NoteWithContext & {
+  /** true/false con sesión (¿sigo al autor?); ausente sin sesión o si es mía. */
+  author_followed?: boolean;
+};
+
+export type FeedItem =
+  | { kind: "repo"; at: string; id: string; repo: FeedRepo }
+  | { kind: "note"; at: string; id: string; note: FeedNote };
+
+export interface FeedPage {
+  items: FeedItem[];
+  /** null cuando no queda más contenido: el fin del feed es explícito. */
+  nextCursor: string | null;
 }
 
 export function encodeCursor(cursor: FeedCursor): string {
   return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
 }
 
-const CURSOR_SEED_RE = /^[0-9a-f]{8}$/;
 const CURSOR_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** `2026-08-31T11:36:26.123456+00:00` — con fracción opcional y offset o Z. */
+const CURSOR_TS_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?([+-]\d{2}:\d{2}|Z)$/;
 
 /**
  * Devuelve null ante un cursor ausente, corrupto o con formato inesperado
- * (incluidos los cursores cronológicos anteriores a esta revisión): la página
- * vuelve al principio.
+ * (incluidos los cursores barajados anteriores a C-11): la página vuelve al
+ * principio.
  *
- * El formato se valida estrictamente porque `t` e `id` acaban dentro del
- * filtro `or=(...)` de PostgREST, y ahí una coma o un paréntesis del cliente
+ * El formato se valida estrictamente porque `t` e `id` acaban dentro del filtro
+ * `or=(...)` de PostgREST, y ahí una coma o un paréntesis del cliente
  * cambiarían la condición de la consulta.
  */
 export function decodeCursor(token: string | null | undefined): FeedCursor | null {
   if (!token) return null;
   try {
     const parsed = JSON.parse(Buffer.from(token, "base64url").toString("utf8"));
-    if (typeof parsed?.s !== "string" || typeof parsed?.t !== "string" || typeof parsed?.id !== "string") {
-      return null;
-    }
-    if (!CURSOR_SEED_RE.test(parsed.s) || !CURSOR_SEED_RE.test(parsed.t)) return null;
+    if (typeof parsed?.t !== "string" || typeof parsed?.id !== "string") return null;
+    if (!CURSOR_TS_RE.test(parsed.t)) return null;
     if (!CURSOR_UUID_RE.test(parsed.id)) return null;
-    if (parsed.w !== 0 && parsed.w !== 1) return null;
-    return { s: parsed.s, t: parsed.t, id: parsed.id, w: parsed.w };
+    return { t: parsed.t, id: parsed.id };
   } catch {
     return null;
   }
 }
 
 /**
- * Corta las filas de los dos tramos de la vuelta (antes y después del salto
- * por arriba) en página + cursor. Entre ambos llegan hasta `limit + 1` filas:
- * la extra solo indica que hay más contenido, no se sirve.
+ * Orden del feed: por instante descendente, y a igualdad de instante por id
+ * descendente. La comparación de los instantes es textual a propósito — son
+ * ISO-8601 del mismo Postgres, con el mismo offset, así que el orden
+ * lexicográfico coincide con el cronológico y no se pierde precisión por el
+ * camino (`Date.parse` se come los microsegundos, y Postgres los guarda).
  */
-export function pageFromSegments(
-  beforeWrap: FeedRepo[],
-  afterWrap: FeedRepo[],
-  limit: number,
-  start: string,
-): FeedPage {
-  const all = [
-    ...beforeWrap.map((row) => ({ row, w: 0 as const })),
-    ...afterWrap.map((row) => ({ row, w: 1 as const })),
-  ];
-  const hasMore = all.length > limit;
-  const served = hasMore ? all.slice(0, limit) : all;
+export function compareFeedItems(a: FeedItem, b: FeedItem): number {
+  if (a.at !== b.at) return a.at < b.at ? 1 : -1;
+  if (a.id !== b.id) return a.id < b.id ? 1 : -1;
+  return 0;
+}
+
+/**
+ * Corta la mezcla de los dos orígenes en página + cursor. Entre ambos llegan
+ * hasta `limit + 1` ítems por tabla: los que sobran solo indican que hay más.
+ */
+export function pageFromItems(items: FeedItem[], limit: number): FeedPage {
+  const ordered = [...items].sort(compareFeedItems);
+  const hasMore = ordered.length > limit;
+  const served = hasMore ? ordered.slice(0, limit) : ordered;
   const last = served[served.length - 1];
   return {
-    repos: served.map((item) => item.row),
-    nextCursor:
-      hasMore && last
-        ? encodeCursor({ s: start, t: last.row[FEED_ORDER_FIELD], id: last.row.id, w: last.w })
-        : null,
+    items: served,
+    nextCursor: hasMore && last ? encodeCursor({ t: last.at, id: last.id }) : null,
   };
 }
 
 export interface FeedFilter {
-  /** Restringe el feed a repos de estos dueños (filtro "Following", M-07). */
+  /** Restringe el feed a repos y notas de estos perfiles (filtro "Following", M-07). */
   ownerIn?: string[];
+}
+
+/** Keyset: `(at, id)` estrictamente menores que el último ítem servido. */
+function keyset(field: string, cursor: FeedCursor): string {
+  return `${field}.lt.${cursor.t},and(${field}.eq.${cursor.t},id.lt.${cursor.id})`;
 }
 
 export async function listFeedPage(
@@ -119,61 +131,54 @@ export async function listFeedPage(
   cursorToken?: string | null,
   limit = FEED_PAGE_SIZE,
   filter: FeedFilter = {},
-  /** Semilla de entrada explícita (tests); sin cursor ni semilla, aleatoria. */
-  startSeed?: string,
 ): Promise<FeedPage> {
   // Sin seguidos, el resultado es el vacío explícito — sin tocar la base.
   if (filter.ownerIn && filter.ownerIn.length === 0) {
-    return { repos: [], nextCursor: null };
+    return { items: [], nextCursor: null };
   }
 
   const cursor = decodeCursor(cursorToken);
-  const start = cursor?.s ?? (startSeed && CURSOR_SEED_RE.test(startSeed) ? startSeed : randomStartSeed());
 
-  const base = () => {
-    let query = db
-      .from("repos")
-      .select("*")
-      .eq("status", "active")
-      .order(FEED_ORDER_FIELD, { ascending: false })
-      .order("id", { ascending: false });
-    if (filter.ownerIn) query = query.in("owner_profile_id", filter.ownerIn);
-    return query;
-  };
+  let repoQuery = db
+    .from("repos")
+    .select("*")
+    .eq("status", "active")
+    .order("imported_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(limit + 1);
+  if (filter.ownerIn) repoQuery = repoQuery.in("owner_profile_id", filter.ownerIn);
+  if (cursor) repoQuery = repoQuery.or(keyset("imported_at", cursor));
 
-  // Keyset: (t, id) estrictamente menores que el último elemento servido.
-  const keyset = (c: FeedCursor) =>
-    `${FEED_ORDER_FIELD}.lt.${c.t},and(${FEED_ORDER_FIELD}.eq.${c.t},id.lt.${c.id})`;
+  let noteQuery = db
+    .from("notes")
+    .select(NOTE_SELECT)
+    .eq("repo.status", "active")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(limit + 1);
+  if (filter.ownerIn) noteQuery = noteQuery.in("author_profile_id", filter.ownerIn);
+  if (cursor) noteQuery = noteQuery.or(keyset("created_at", cursor));
 
-  // Tramo 1: desde la semilla de entrada hacia abajo.
-  let beforeWrap: FeedRepo[] = [];
-  if (!cursor || cursor.w === 0) {
-    const query = cursor
-      ? base().or(keyset(cursor)).limit(limit + 1)
-      : base().lte(FEED_ORDER_FIELD, start).limit(limit + 1);
-    const { data, error } = await query;
-    if (error) throw new Error(`Error al paginar el feed: ${error.message}`);
-    beforeWrap = (data ?? []) as FeedRepo[];
-  }
+  const [repos, notes] = await Promise.all([repoQuery, noteQuery]);
+  if (repos.error) throw new Error(`Error al paginar el feed: ${repos.error.message}`);
+  if (notes.error) throw new Error(`Error al paginar las notas del feed: ${notes.error.message}`);
 
-  // Tramo 2 (la vuelta por arriba): solo lo que falte para limit + 1.
-  const missing = limit + 1 - beforeWrap.length;
-  let afterWrap: FeedRepo[] = [];
-  if (missing > 0) {
-    let query = base().gt(FEED_ORDER_FIELD, start).limit(missing);
-    if (cursor?.w === 1) query = query.or(keyset(cursor));
-    const { data, error } = await query;
-    if (error) throw new Error(`Error al paginar el feed (vuelta): ${error.message}`);
-    afterWrap = (data ?? []) as FeedRepo[];
-  }
+  const items: FeedItem[] = [
+    ...((repos.data ?? []) as FeedRepo[]).map(
+      (repo): FeedItem => ({ kind: "repo", at: repo.imported_at, id: repo.id, repo }),
+    ),
+    ...((notes.data ?? []) as unknown as FeedNote[]).map(
+      (note): FeedItem => ({ kind: "note", at: note.created_at, id: note.id, note }),
+    ),
+  ];
 
-  return pageFromSegments(beforeWrap, afterWrap, limit, start);
+  return pageFromItems(items, limit);
 }
 
 /**
- * Anota cada tarjeta con si el visitante sigue a su dueño (para el botón
- * Follow). Los repos del propio visitante se dejan sin anotar: nadie se sigue
- * a sí mismo y el botón no debe aparecer en ellos.
+ * Anota cada ítem con si el visitante sigue a su autor (para el botón Follow).
+ * Lo propio se deja sin anotar: nadie se sigue a sí mismo y el botón no debe
+ * aparecer ahí.
  */
 export function annotateFollowed(
   page: FeedPage,
@@ -182,10 +187,15 @@ export function annotateFollowed(
 ): FeedPage {
   return {
     ...page,
-    repos: page.repos.map((repo) =>
-      repo.owner_profile_id && repo.owner_profile_id !== selfProfileId
-        ? { ...repo, owner_followed: followedIds.has(repo.owner_profile_id) }
-        : repo,
-    ),
+    items: page.items.map((item) => {
+      if (item.kind === "repo") {
+        const owner = item.repo.owner_profile_id;
+        if (!owner || owner === selfProfileId) return item;
+        return { ...item, repo: { ...item.repo, owner_followed: followedIds.has(owner) } };
+      }
+      const author = item.note.author_profile_id;
+      if (!author || author === selfProfileId) return item;
+      return { ...item, note: { ...item.note, author_followed: followedIds.has(author) } };
+    }),
   };
 }

@@ -2,25 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
-import { BellOff, GitCommitHorizontal } from "lucide-react";
+import { BellOff, GitCommitHorizontal, PencilLine } from "lucide-react";
 import { MarkReadOnOpen } from "@/components/notifications/mark-read-on-open";
+import { timeAgo } from "@/lib/time-ago";
 import { createServiceClient } from "@/lib/db/client";
-import { listNotifications, type NotificationWithActor, type RepoUpdatePayload } from "@/lib/db/notifications";
+import {
+  listNotifications,
+  type NewNotePayload,
+  type NotificationWithActor,
+  type RepoUpdatePayload,
+} from "@/lib/db/notifications";
 import { getProfileByClerkId } from "@/lib/db/profiles";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Notifications · snapstack" };
-
-/** "3d ago" sin dependencias; para un listado alcanza de sobra. */
-function timeAgo(iso: string, now = Date.now()): string {
-  const s = Math.max(0, Math.floor((now - Date.parse(iso)) / 1000));
-  if (s < 60) return "just now";
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  if (s < 86400 * 30) return `${Math.floor(s / 86400)}d ago`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
 
 /** Push en un repo suscrito (C-06): enlace al repo y al diff en GitHub. */
 function RepoUpdateNotification({ n }: { n: NotificationWithActor }) {
@@ -57,6 +53,50 @@ function RepoUpdateNotification({ n }: { n: NotificationWithActor }) {
           see the changes ↗
         </a>
       </p>
+      <span className="flex shrink-0 items-center gap-2">
+        <time className="font-mono text-xs text-content-secondary">{timeAgo(n.created_at)}</time>
+        {unread ? <span aria-hidden className="h-2 w-2 rounded-full bg-primary" /> : null}
+      </span>
+    </li>
+  );
+}
+
+/** Nota nueva en un repo suscrito (C-09): quién, dónde y el recorte. */
+function NewNoteNotification({ n }: { n: NotificationWithActor }) {
+  const payload = n.payload as unknown as NewNotePayload;
+  const name = n.actor?.display_name ?? n.actor?.username ?? "Someone";
+  const unread = n.read_at === null;
+  return (
+    <li
+      data-testid="notification-item"
+      data-unread={unread}
+      className={`flex items-start gap-3 rounded-xl border px-4 py-3 ${
+        unread ? "border-primary/40 bg-primary/5" : "border-edge"
+      }`}
+    >
+      <span
+        aria-hidden
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-edge text-content-secondary"
+      >
+        <PencilLine size={18} strokeWidth={1.75} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm">
+          {n.actor ? (
+            <Link href={`/u/${n.actor.username}`} className="font-medium hover:underline">
+              {name}
+            </Link>
+          ) : (
+            <span className="font-medium">{name}</span>
+          )}{" "}
+          <span className="text-content-secondary">wrote a note about</span>{" "}
+          <Link href={`/r/${payload.full_name}`} className="font-medium hover:underline">
+            {payload.full_name}
+          </Link>
+        </p>
+        {/* El recorte se pinta como texto: es lo que escribió otra persona. */}
+        <p className="mt-1 break-words text-sm text-content-secondary">{payload.excerpt}</p>
+      </div>
       <span className="flex shrink-0 items-center gap-2">
         <time className="font-mono text-xs text-content-secondary">{timeAgo(n.created_at)}</time>
         {unread ? <span aria-hidden className="h-2 w-2 rounded-full bg-primary" /> : null}
@@ -140,6 +180,8 @@ export default async function NotificationsPage() {
           {notifications.map((n) =>
             n.type === "repo_update" ? (
               <RepoUpdateNotification key={n.id} n={n} />
+            ) : n.type === "new_note" ? (
+              <NewNoteNotification key={n.id} n={n} />
             ) : (
               <FollowNotification key={n.id} n={n} />
             ),

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { SignOutButton } from "@clerk/nextjs";
-import { LogOut } from "lucide-react";
+import { BookMarked, ChevronRight, LogOut } from "lucide-react";
 import { DeleteAccount } from "@/components/account/delete-account";
 import { ProfileForm } from "@/components/account/profile-form";
 import { GithubAppSection } from "@/components/account/github-app-section";
@@ -33,13 +33,27 @@ export default async function AccountSettingsPage() {
       <header className="mb-8">
         <h1 className="font-mono text-2xl font-bold">Settings</h1>
         <p className="mt-1 text-sm text-content-secondary">
-          Manage your snapstack account. Your repo selection lives in{" "}
-          <Link href="/settings/repos" className="text-primary hover:underline">
-            My repos
-          </Link>
-          .
+          Manage your snapstack account.
         </p>
       </header>
+
+      {/* La selección de repos salió de la navegación principal (C-11) y su
+          puerta es esta: una entrada de verdad, no una frase con un enlace
+          dentro, que es lo que había y no se veía. */}
+      <Link
+        href="/settings/repos"
+        data-testid="settings-repos-link"
+        className="mb-10 flex items-center gap-3 rounded-xl border border-edge p-4 transition-colors hover:border-primary"
+      >
+        <BookMarked size={20} strokeWidth={1.75} aria-hidden className="shrink-0 text-primary" />
+        <span className="min-w-0 flex-1">
+          <span className="block font-mono text-sm font-bold">My repos</span>
+          <span className="block text-sm text-content-secondary">
+            Pick the five repos your profile shows.
+          </span>
+        </span>
+        <ChevronRight size={18} strokeWidth={1.75} aria-hidden className="shrink-0 text-content-secondary" />
+      </Link>
 
       {profile ? <GithubAppSection installed={installationId != null} /> : null}
 
