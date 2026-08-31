@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { PencilLine, Send } from "lucide-react";
 import { createNoteAction } from "@/app/api/notes/actions";
@@ -14,9 +14,14 @@ import { NOTE_MAX_LENGTH } from "@/lib/db/notes";
  * El feed es para mirar; un formulario desplegado permanentemente arriba lo
  * convertiría en un formulario con feed debajo.
  *
- * **Lo primero que pide es el repo**, y por eso el selector va antes del texto:
- * es la regla del producto hecha interfaz. Si el usuario no tiene ningún repo
- * activo, el compositor no se pinta — no hay dónde anclar la nota.
+ * **Lo primero que pide es el repo**, y no hay ninguno preseleccionado: el
+ * texto no se puede escribir hasta elegirlo. Con un repo por defecto, quien no
+ * mire el selector publica sobre el que tocara y tiene que borrar y reescribir
+ * (una nota publicada no se edita) — y ese error solo se descubre después de
+ * publicar. Un paso de más aquí ahorra un borrado allí.
+ *
+ * Si el usuario no tiene ningún repo activo, el compositor no se pinta: no hay
+ * dónde anclar la nota.
  */
 export interface ComposerRepo {
   id: string;
@@ -27,10 +32,12 @@ export interface ComposerRepo {
 export function NoteComposer({ repos }: { repos: ComposerRepo[] }) {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
-  const [repoId, setRepoId] = useState(repos[0]?.id ?? "");
+  // Vacío a propósito: elegir el repo es un acto, no un valor por defecto.
+  const [repoId, setRepoId] = useState("");
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const textoRef = useRef<HTMLTextAreaElement>(null);
 
   if (repos.length === 0) return null;
 
@@ -67,23 +74,29 @@ export function NoteComposer({ repos }: { repos: ComposerRepo[] }) {
     );
   }
 
-  const seleccionado = repos.find((r) => r.id === repoId) ?? repos[0];
+  const seleccionado = repos.find((r) => r.id === repoId) ?? null;
 
   return (
-    <div data-testid="note-composer" className="rounded-xl border border-primary bg-surface p-5">
+    <div data-testid="note-composer" className="rounded-xl border border-edge bg-surface p-5">
       <label className="flex items-center gap-2 font-mono text-xs text-content-secondary">
         <span
           aria-hidden
-          className="h-2.5 w-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: languageColor(seleccionado?.primary_language ?? null) }}
+          className={`h-2.5 w-2.5 shrink-0 rounded-full ${seleccionado ? "" : "border border-edge"}`}
+          style={seleccionado ? { backgroundColor: languageColor(seleccionado.primary_language) } : undefined}
         />
         About
         <select
           data-testid="note-composer-repo"
           value={repoId}
-          onChange={(event) => setRepoId(event.target.value)}
-          className="min-w-0 flex-1 rounded-lg border border-edge bg-background px-2 py-1 font-mono text-xs text-content"
+          onChange={(event) => {
+            setRepoId(event.target.value);
+            // Elegido el repo, el cursor va al texto: el paso extra no debe
+            // costar un click de más.
+            if (event.target.value !== "") requestAnimationFrame(() => textoRef.current?.focus());
+          }}
+          className="min-w-0 flex-1 rounded-lg border border-edge bg-background px-2 py-1 font-mono text-xs text-content transition-colors focus:border-primary focus:outline-none"
         >
+          <option value="">Pick one of your repos…</option>
           {repos.map((repo) => (
             <option key={repo.id} value={repo.id}>
               {repo.full_name}
@@ -93,14 +106,19 @@ export function NoteComposer({ repos }: { repos: ComposerRepo[] }) {
       </label>
 
       <textarea
+        ref={textoRef}
         data-testid="note-composer-body"
         value={body}
-        autoFocus
         rows={4}
+        disabled={repoId === ""}
         maxLength={NOTE_MAX_LENGTH + 1}
-        placeholder="Shipped a new screen, hit a weird bug, changed my mind about the architecture…"
+        placeholder={
+          repoId === ""
+            ? "Pick a repo first."
+            : "Shipped a new screen, hit a weird bug, changed my mind about the architecture…"
+        }
         onChange={(event) => setBody(event.target.value)}
-        className="mt-3 w-full resize-y rounded-lg border border-edge bg-background p-3 text-base leading-relaxed text-content placeholder:text-content-secondary/60"
+        className="mt-3 w-full resize-y rounded-lg border border-edge bg-background p-3 text-base leading-relaxed text-content transition-colors placeholder:text-content-secondary/60 focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       />
 
       {error ? (

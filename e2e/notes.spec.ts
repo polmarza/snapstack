@@ -80,7 +80,9 @@ test("C-09: en el perfil y el detalle la nota no repite el repo, que ya está en
   await expect(ultima.getByTestId("note-repo")).toHaveCount(0);
 });
 
-test("C-09: el compositor pide primero el repo y no deja publicar de vacío", async ({ page }) => {
+test("C-09: sin repo elegido no se puede ni escribir — no hay ninguno por defecto", async ({
+  page,
+}) => {
   await page.goto("/dev/notes");
 
   // Empieza plegado: el feed es para mirar, no un formulario con feed debajo.
@@ -90,21 +92,31 @@ test("C-09: el compositor pide primero el repo y no deja publicar de vacío", as
   const compositor = page.getByTestId("note-composer");
   await expect(compositor).toBeVisible();
 
-  // El selector de repo existe y está antes del texto en el orden del DOM.
+  // El selector va antes del texto en el orden del DOM, y arranca sin elegir.
   const selector = compositor.getByTestId("note-composer-repo");
-  await expect(selector).toBeVisible();
+  const texto = compositor.getByTestId("note-composer-body");
   const orden = await compositor.evaluate((root) =>
     Array.from(root.querySelectorAll("[data-testid]")).map((n) => n.getAttribute("data-testid")),
   );
   expect(orden.indexOf("note-composer-repo")).toBeLessThan(orden.indexOf("note-composer-body"));
+  await expect(selector).toHaveValue("");
 
-  // De vacío no se publica.
+  // Lo que evita el error caro: sin ancla no se escribe, así que no se puede
+  // publicar sobre el repo equivocado y tener que borrar y reescribir.
+  await expect(texto).toBeDisabled();
   await expect(compositor.getByTestId("note-composer-submit")).toBeDisabled();
 
-  await compositor.getByTestId("note-composer-body").fill("   ");
+  // Elegido el repo, el texto se abre y recibe el foco.
+  await selector.selectOption({ index: 1 });
+  await expect(texto).toBeEnabled();
+  await expect(texto).toBeFocused();
   await expect(compositor.getByTestId("note-composer-submit")).toBeDisabled();
 
-  await compositor.getByTestId("note-composer-body").fill("arreglado el bug del cursor");
+  // Y de vacío sigue sin publicarse.
+  await texto.fill("   ");
+  await expect(compositor.getByTestId("note-composer-submit")).toBeDisabled();
+
+  await texto.fill("arreglado el bug del cursor");
   await expect(compositor.getByTestId("note-composer-submit")).toBeEnabled();
   await expect(compositor.getByTestId("note-composer-count")).toHaveText("473");
 });
