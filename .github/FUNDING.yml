@@ -1,0 +1,4 @@
+# Pone el botón "Sponsor" en la cabecera del propio repo, con las dos mismas
+# vías que ofrece la app (ver src/components/shell/support-links.tsx).
+github: polmarza
+buy_me_a_coffee: polmarza

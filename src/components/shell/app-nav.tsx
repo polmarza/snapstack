@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
 import { Bell, LayoutList, LogOut, Settings, User, BookMarked } from "lucide-react";
 import { NOTIFICATIONS_READ_EVENT } from "@/components/notifications/mark-read-on-open";
-import { DonateButton } from "./donate-button";
+import { ContributeButton, SponsorButton } from "./support-links";
 import { Logo } from "./logo";
 
 /**
@@ -108,9 +108,13 @@ export function AppNav({
           </Link>
         ))}
 
-        <div className="mt-auto flex flex-col gap-3">
-          {/* En desktop la donación vive aquí; en móvil, en la cabecera. */}
-          <DonateButton className="w-full" />
+        <div className="mt-auto flex flex-col gap-2">
+          {/* Apoyo al proyecto: en desktop vive aquí; en móvil, en la cabecera,
+              donde solo cabe el de patrocinio. Primero colaborar y luego
+              patrocinar — a un dev le cuesta menos abrir el repo que la
+              cartera, y el orden de la petición lo respeta. */}
+          <ContributeButton className="w-full" />
+          <SponsorButton className="mb-1 w-full" />
           <SignOutButton>
             <button
               type="button"
