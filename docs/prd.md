@@ -184,7 +184,8 @@ En v1 son el mismo perfil de persona en dos momentos de uso distintos.
   imagen (una sola, PNG/JPEG/WebP, ≤ 5 MB), entonces se almacena en Supabase Storage y se
   muestra dentro de la nota en perfil, detalle y feed. El tipo y el tamaño se validan en
   servidor, no solo en el navegador. Sin imagen la nota sigue siendo válida.
-  Acordada el 2026-08-31 (ficha `notas-de-repo.md`).
+  **Aplazada el 2026-08-31**: sale de la ficha de notas para no alargarla y se queda sin
+  ficha propia hasta que las notas de texto estén en producción.
 
 - **[C-11] El feed como línea de tiempo mixta** — Dado cualquier visitante del feed, cuando
   carga, entonces ve fichas de repo y notas en la misma lista, ordenada por recencia de
