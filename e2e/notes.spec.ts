@@ -121,6 +121,20 @@ test("C-09: sin repo elegido no se puede ni escribir — no hay ninguno por defe
   await expect(compositor.getByTestId("note-composer-count")).toHaveText("473");
 });
 
+test("C-09: el compositor de la demo no publica — sus repos no existen", async ({ page }) => {
+  await page.goto("/dev/notes");
+  await page.getByTestId("note-composer-open").click();
+
+  const compositor = page.getByTestId("note-composer");
+  await compositor.getByTestId("note-composer-repo").selectOption({ index: 1 });
+  await compositor.getByTestId("note-composer-body").fill("esto no debería llegar al servidor");
+  await compositor.getByTestId("note-composer-submit").click();
+
+  // Sin este corte, la demo llamaba a la acción real con un repo inventado y
+  // el servidor respondía "no es tuyo": correcto, pero parece un fallo.
+  await expect(compositor.getByTestId("note-composer-error")).toContainText("nothing is published");
+});
+
 test("C-11: la selección de repos sale del menú principal y se llega desde Settings", async ({
   page,
 }) => {

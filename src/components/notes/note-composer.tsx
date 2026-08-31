@@ -29,7 +29,19 @@ export interface ComposerRepo {
   primary_language: string | null;
 }
 
-export function NoteComposer({ repos }: { repos: ComposerRepo[] }) {
+export function NoteComposer({
+  repos,
+  /**
+   * Modo demo (`/dev/notes`): no publica nada. La página de fixtures usa repos
+   * inventados, así que llamar a la acción real solo servía para que el
+   * servidor los rechazara con "no es tuyo" — un mensaje correcto en un sitio
+   * donde parece un fallo. Aquí no hay nada que publicar, y se dice.
+   */
+  demo = false,
+}: {
+  repos: ComposerRepo[];
+  demo?: boolean;
+}) {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   // Vacío a propósito: elegir el repo es un acto, no un valor por defecto.
@@ -47,6 +59,10 @@ export function NoteComposer({ repos }: { repos: ComposerRepo[] }) {
   const publicar = () => {
     if (!puedePublicar) return;
     setError(null);
+    if (demo) {
+      setError("Demo page: nothing is published from here. The real composer is in the feed.");
+      return;
+    }
     startTransition(async () => {
       const result = await createNoteAction(repoId, body);
       if (!result.ok) {
