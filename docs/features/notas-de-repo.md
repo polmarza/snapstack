@@ -1,6 +1,6 @@
 # Notas ancladas a un repo
 
-**Estado:** En construcción
+**Estado:** Verificada
 **Requisitos que cierra:** C-09, C-11
 **Fecha de acuerdo:** 2026-08-31
 
@@ -49,7 +49,7 @@ la selección propia y se lee como si fuera el feed— se va dentro de Settings.
 | Requisito | Se implementa en | Se valida con |
 |-----------|------------------|---------------|
 | C-09 | `supabase/migrations/017_notes.sql`, `src/lib/db/notes.ts`, `src/app/api/notes/actions.ts`, `src/components/notes/`, `src/lib/db/notifications.ts` | `src/lib/db/notes.test.ts`, `src/lib/db/notifications.test.ts`, `e2e/notes.spec.ts` |
-| C-11 | `src/lib/db/feed-page.ts`, `src/app/(feed)/page.tsx`, `src/components/shell/app-nav.tsx`, `src/app/settings/` | `src/lib/db/feed-page.test.ts`, `e2e/notes.spec.ts` |
+| C-11 | `src/lib/db/feed-page.ts`, `src/components/feed/feed-list.tsx`, `src/app/(feed)/page.tsx`, `src/components/shell/app-nav.tsx`, `src/app/settings/` | `src/lib/db/feed-page.test.ts`, `src/components/feed/feed-list.test.tsx`, `e2e/notes.spec.ts` |
 
 Qué cubre cada cosa, y qué se queda fuera de los tests:
 
@@ -60,13 +60,31 @@ Qué cubre cada cosa, y qué se queda fuera de los tests:
 
   **Lo que el e2e no cubre, y no puede:** publicar de verdad exige sesión de Clerk y repos
   propios, y el proyecto no testea contra Clerk (`docs/testing.md`). Que la nota publicada
-  aparezca en el feed, en el perfil y en el detalle es **pasada manual con sesión**, con la
-  evidencia en el PR — mismo trato que el flujo OAuth de C-07. `/dev/notes` existe justamente
-  para que la parte que sí se puede automatizar no dependa de esa pasada.
+  aparezca en el feed, en el perfil y en el detalle fue **pasada manual con sesión de Pol el
+  2026-08-31** — mismo trato que el flujo OAuth de C-07. `/dev/notes` existe justamente para que
+  la parte que sí se puede automatizar no dependa de esa pasada.
 - **C-11** — `feed-page.test.ts` se reescribe: el orden barajado y su cursor de vuelta al
   principio desaparecen, y entran los casos del orden por recencia con ítems de los dos tipos.
   El e2e comprueba que la barra principal ya no lleva "Repos" y que la selección sigue
   alcanzable desde Settings.
+
+## Lo que la pasada manual encontró
+
+Dos cosas, las dos arregladas y las dos con test que las sujeta:
+
+1. **La nota publicada no aparecía hasta recargar a mano.** El compositor sí refrescaba el
+   servidor; lo que fallaba es que `FeedList` guarda la lista en estado de cliente para acumular
+   páginas, y `useState` ignora el valor inicial en los renders siguientes. Ahora compara la firma
+   de la primera página servida y reinicia desde ahí cuando cambia. `feed-list.test.tsx` falla sin
+   el arreglo — comprobado revirtiéndolo.
+2. **El compositor de `/dev/notes` llamaba a la acción real** con repos de fixture, que el
+   servidor rechazaba con "no es tuyo": la respuesta correcta, en el único sitio donde parece un
+   fallo. La demo ya no publica nada y lo dice.
+
+Y una decisión de producto que salió de ahí: **ningún repo viene preseleccionado y no se puede
+escribir hasta elegirlo**. Con un valor por defecto, quien no mirara el selector publicaba sobre
+el repo equivocado, y como una nota publicada no se edita, la única salida era borrar y
+reescribir — un error que solo se descubre después de publicar.
 
 ## Fuera de esta feature
 
