@@ -281,3 +281,20 @@ versión de "poder aportar feedback":
 A resolver: permiso *Issues: write* (con el mismo coste de re-aprobación que MEJORA-13);
 plantilla mínima para que no se convierta en un canal de mensajes vagos; y qué pasa con los
 repos semilla, que no tienen dueño aquí.
+
+### [MEJORA-15] Notas de otros en vivo, sin recargar
+**Área:** Frontend
+**Prioridad estimada:** Baja
+**Origen:** Pol, 2026-08-31, al probar C-09 ("o bien una actualización tipo realtime")
+
+Al publicar **tu** nota ya no hace falta recargar: el compositor refresca el servidor y la lista
+se resincroniza. Lo que sigue exigiendo recarga es enterarte de la nota de **otro** mientras
+tienes el feed abierto.
+
+Supabase Realtime lo daría suscribiéndose a los `INSERT` de `notes`. Lo que hay que decidir antes
+de construirlo no es técnico: **un feed que se mueve solo es un feed que no puedes leer**. Lo
+sensato es no inyectar nada y mostrar un aviso discreto arriba ("3 new notes") que el lector pulsa
+cuando quiere — que es lo que hacen los que funcionan.
+
+Baja prioridad a propósito: con el volumen actual, nadie tiene el feed abierto a la vez que otro
+publica. Cuando eso pase, será señal de que el producto va bien y toca hacerlo.

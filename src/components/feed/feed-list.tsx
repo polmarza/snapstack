@@ -21,11 +21,32 @@ interface FeedListProps {
  *
  * Desde C-11 la lista es mixta: cada ítem sabe si es una ficha de repo o una
  * nota, y se pinta con el componente que le toca.
+ *
+ * **Por qué se resincroniza con el servidor.** La lista vive en estado de
+ * cliente para poder ir acumulando páginas, y `useState` ignora el valor
+ * inicial en los renders siguientes. Así que cuando el servidor mandaba una
+ * primera página nueva —al publicar una nota, el compositor llama a
+ * `router.refresh()`— el componente seguía enseñando la lista vieja, y la nota
+ * recién publicada no aparecía hasta recargar a mano. Comparar la firma de la
+ * primera página y reiniciar cuando cambia es el patrón que recomienda React
+ * para ajustar estado durante el render, sin `useEffect` ni recargas.
  */
 export function FeedList({ initialItems, initialCursor, filter, viewerProfileId = null }: FeedListProps) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [error, setError] = useState<string | null>(null);
+
+  // Firma de la primera página que mandó el servidor. Si cambia, el servidor
+  // tiene contenido nuevo y las páginas acumuladas ya no valen: se empieza de
+  // nuevo desde ahí. Si no cambia, no se toca nada y el scroll se conserva.
+  const firma = `${initialItems[0]?.id ?? ""}|${initialItems.length}|${initialCursor ?? ""}`;
+  const [firmaServida, setFirmaServida] = useState(firma);
+  if (firmaServida !== firma) {
+    setFirmaServida(firma);
+    setItems(initialItems);
+    setCursor(initialCursor);
+    setError(null);
+  }
   const loadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
