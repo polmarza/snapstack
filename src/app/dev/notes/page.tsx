@@ -48,7 +48,11 @@ export default function DevNotesPage() {
     <main className="mx-auto max-w-2xl px-6 py-12">
       <h1 className="font-mono text-2xl font-bold">Demo de notas</h1>
       <p className="mt-2 text-content-secondary">
-        Compositor y tarjetas con datos de mentira. Publicar de verdad exige sesión.
+        Compositor y tarjetas con datos de mentira. Esta página los pinta{" "}
+        <strong className="font-semibold text-content">como si hubiera sesión</strong>, que es
+        justamente lo que la hace testeable sin Clerk. En el producto, el compositor solo se
+        renderiza con sesión (ver <code className="font-mono text-sm">app/(feed)/page.tsx</code>),
+        y publicar sin ella lo rechaza la server action.
       </p>
 
       <div className="mt-8 flex flex-col gap-6">
