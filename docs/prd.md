@@ -193,6 +193,19 @@ En v1 son el mismo perfil de persona en dos momentos de uso distintos.
   orden. La selección de repos deja de ser un destino de la navegación principal y pasa a
   Settings. Absorbe MEJORA-01. Acordada el 2026-08-31 (ficha `notas-de-repo.md`).
 
+- **[C-12] Releases como borradores de nota** — Dado un usuario con sesión y repos activos,
+  cuando abre el compositor, entonces ve como sugerencias las releases recientes de sus repos que
+  todavía no ha publicado ni descartado; al elegir una, el compositor se rellena con un borrador
+  **editable** (cuerpo recortado a 500) y el repo ya seleccionado, y publicar crea una nota normal
+  marcada con su origen. Descartar una sugerencia la retira para siempre. **Nada se publica solo.**
+  Acordada el 2026-08-31 (ficha `candidatos-de-nota.md`).
+
+- **[C-13] PRs mergeados con etiqueta como candidatos** — Dado un repo del usuario, cuando se
+  mergea un pull request que lleva la etiqueta `snapstack`, entonces aparece como sugerencia junto
+  a las releases, con el mismo trato (editable, descartable, nunca automático). La etiqueta es el
+  filtro a propósito: el flujo de PRs completo es ruido, y "bump deps" no es una nota.
+  Acordada el 2026-08-31 (ficha `candidatos-de-nota.md`).
+
 ### WON'T (esta versión)
 
 - Swipe o señal explícita de like/dislike sobre tarjetas.

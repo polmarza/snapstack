@@ -166,6 +166,7 @@ si las notas son públicas siempre, si admiten edición o borrado, y si una nota
 —una nota "de perfil"— tiene sentido o confunde el modelo.
 
 ### [MEJORA-10] Cosechar releases y PRs como borradores de nota
+**Estado: acordada el 2026-08-31** → ficha `docs/features/candidatos-de-nota.md` (C-12 y C-13).
 **Área:** Backend
 **Prioridad estimada:** Alta — paso 2 del plan, junto con MEJORA-12
 **Origen:** Conversación del 2026-08-30: cómo evitar que MEJORA-09 nazca vacía
@@ -207,6 +208,9 @@ de terceros. Y el problema de la sala vacía: una caja de comentarios en silenci
 peor que no tenerla, así que solo tiene sentido cuando ya haya notas y gente.
 
 ### [MEJORA-12] Bandeja de publicación: ver de un vistazo qué se puede publicar
+**Estado: acordada el 2026-08-31**, fusionada con MEJORA-10 en la ficha `candidatos-de-nota.md`. La
+bandeja no acabó siendo una pantalla con badge sino sugerencias dentro del compositor, con la
+lista completa detrás de un "+3 more": un buzón con contador convierte la app en deberes.
 **Área:** Producto / Frontend / Backend
 **Prioridad estimada:** Alta — paso 2 del plan, es la cara visible de MEJORA-10
 **Origen:** Idea de Pol, conversación del 2026-08-30
